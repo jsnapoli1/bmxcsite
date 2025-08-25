@@ -11,6 +11,42 @@ nav ul {
   background-color: #f0f0f0;
 }
 
+.carousel {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 1rem auto;
+  overflow: hidden;
+}
+
+.carousel img {
+  width: 100%;
+  display: none;
+}
+
+.carousel img.active {
+  display: block;
+}
+
+.carousel button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.carousel button.prev {
+  left: 0;
+}
+
+.carousel button.next {
+  right: 0;
+}
+
 .albums {
   display: flex;
   flex-wrap: wrap;
