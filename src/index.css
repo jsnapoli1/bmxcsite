@@ -46,3 +46,38 @@ nav ul {
 .carousel button.next {
   right: 0;
 }
+
+.albums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+}
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.albums a {
+  width: 150px;
+  text-align: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.albums img {
+  width: 100%;
+  border-radius: 8px;
+
+.product-card {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.product-card img {
+  max-width: 100%;
+  height: auto;
+}
