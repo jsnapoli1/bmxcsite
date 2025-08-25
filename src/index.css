@@ -3,10 +3,36 @@ body {
   font-family: sans-serif;
 }
 
-nav ul {
+.navbar ul {
   display: flex;
   list-style: none;
   gap: 1rem;
   padding: 0.5rem;
   background-color: #f0f0f0;
+}
+
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  padding-bottom: 0.25rem;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background-color: currentColor;
+  transition: width 0.3s;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link.active::after {
+  width: 100%;
 }
