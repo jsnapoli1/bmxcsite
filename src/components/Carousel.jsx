@@ -1,25 +1,17 @@
-import { useState /*, useEffect*/ } from 'react';
+import { useState } from 'react';
 
-export default function Carousel({ images: initialImages /*, albumId*/ }) {
+export default function Carousel({ images = [] }) {
   const [current, setCurrent] = useState(0);
-  const [images, setImages] = useState(initialImages);
 
-  // Example code to load images from a Facebook album using the Graph API
-  // useEffect(() => {
-  //   async function fetchPhotos() {
-  //     const res = await fetch(
-  //       `https://graph.facebook.com/${albumId}/photos?fields=source&access_token=YOUR_TOKEN`
-  //     );
-  //     const data = await res.json();
-  //     setImages(data.data.map(photo => photo.source));
-  //   }
-  //   fetchPhotos();
-  // }, [albumId]);
+  const count = images.length;
+  // Clamp rather than trust `current`: if the images prop shrinks between
+  // renders the stored index can point past the end of the new array.
+  const active = count > 0 ? current % count : 0;
 
-  const next = () => setCurrent((current + 1) % images.length);
-  const prev = () => setCurrent((current - 1 + images.length) % images.length);
+  const next = () => setCurrent((c) => (c + 1) % count);
+  const prev = () => setCurrent((c) => (c - 1 + count) % count);
 
-  if (!images || images.length === 0) return null;
+  if (count === 0) return null;
 
   return (
     <div className="carousel">
@@ -28,11 +20,15 @@ export default function Carousel({ images: initialImages /*, albumId*/ }) {
           key={src}
           src={src}
           alt={`Slide ${idx + 1}`}
-          className={idx === current ? 'active' : ''}
+          className={idx === active ? 'active' : ''}
         />
       ))}
-      <button className="prev" onClick={prev}>&lt;</button>
-      <button className="next" onClick={next}>&gt;</button>
+      <button className="prev" onClick={prev} aria-label="Previous slide">
+        &lt;
+      </button>
+      <button className="next" onClick={next} aria-label="Next slide">
+        &gt;
+      </button>
     </div>
   );
 }

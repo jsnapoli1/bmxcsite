@@ -96,6 +96,15 @@ body {
 .albums img {
   width: 100%;
   border-radius: 8px;
+}
+
+.album-embed {
+  width: 100%;
+  max-width: 400px;
+  height: 380px;
+  border: 0;
+  border-radius: 12px;
+}
 
 .product-card {
   border: 1px solid #ccc;
@@ -106,4 +115,29 @@ body {
 .product-card img {
   max-width: 100%;
   height: auto;
+}
+
+.media-video {
+  margin: 1rem 0;
+}
+
+/* Keeps YouTube embeds from overflowing on narrow screens. */
+.media-video iframe {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+}
+
+.empty-state {
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+
+@media (max-width: 700px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

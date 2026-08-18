@@ -1,36 +1,51 @@
+import { youtubeEmbedUrl } from '../lib/embeds.js';
+
+// Paste YouTube share links here (watch, youtu.be, or shorts links all work).
+// Example: { title: '2026 Camp Highlights', url: 'https://youtu.be/...' }
+const videos = [];
+
+// Paste Google Photos (or any) album share links here.
+// Example: { title: '2026 Camp Album', url: 'https://photos.app.goo.gl/...' }
+const albums = [];
+
 export default function Media() {
+  const playable = videos.filter((video) => youtubeEmbedUrl(video.url));
+
   return (
     <div>
       <h1>Media</h1>
-      <div className="media-video">
-        <iframe
-          width="560"
-          height="315"
-          src="https://www.youtube.com/embed/tgbNymZ7vqY"
-          title="BMX Camp Highlights"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
-      </div>
+
+      <h2>Videos</h2>
+      {playable.length === 0 ? (
+        <p className="empty-state">Camp videos are on the way — check back soon.</p>
+      ) : (
+        playable.map((video) => (
+          <div className="media-video" key={video.url}>
+            <iframe
+              src={youtubeEmbedUrl(video.url)}
+              title={video.title ?? 'Camp video'}
+              loading="lazy"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ))
+      )}
+
       <h2>Photo Albums</h2>
-      <ul>
-        <li>
-          <a href="https://photos.app.goo.gl/album1" target="_blank" rel="noopener noreferrer">
-            2024 Camp Album
-          </a>
-        </li>
-        <li>
-          <a href="https://photos.app.goo.gl/album2" target="_blank" rel="noopener noreferrer">
-            2023 Camp Album
-          </a>
-        </li>
-        <li>
-          <a href="https://photos.app.goo.gl/album3" target="_blank" rel="noopener noreferrer">
-            2022 Camp Album
-          </a>
-        </li>
-      </ul>
+      {albums.length === 0 ? (
+        <p className="empty-state">Photo albums are on the way — check back soon.</p>
+      ) : (
+        <ul>
+          {albums.map((album) => (
+            <li key={album.url}>
+              <a href={album.url} target="_blank" rel="noopener noreferrer">
+                {album.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
