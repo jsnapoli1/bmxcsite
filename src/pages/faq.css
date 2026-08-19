@@ -1,0 +1,170 @@
+/* ===========================================================================
+   FAQ — sticky category rail beside an accordion panel.
+   =========================================================================== */
+
+.faq__layout {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+/* --- Rail --- */
+.faq__rail-list {
+  display: flex;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  padding-block-end: var(--space-xs);
+  scrollbar-width: thin;
+}
+
+.faq__rail-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  inline-size: 100%;
+  white-space: nowrap;
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  text-align: start;
+  color: var(--color-ink-soft);
+  transition:
+    color var(--duration-fast) var(--ease-out-quart),
+    border-color var(--duration-fast) var(--ease-out-quart),
+    background-color var(--duration-fast) var(--ease-out-quart);
+}
+
+.faq__rail-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.faq__rail-btn.is-active {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-surface);
+}
+
+.faq__rail-label { font-size: var(--text-sm); font-weight: 550; }
+
+.faq__rail-count {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  opacity: 0.7;
+  margin-inline-start: auto;
+}
+
+/* --- Accordion --- */
+.faq__list { display: flex; flex-direction: column; }
+
+.faq__item { border-block-end: 1px solid var(--color-line); }
+
+.faq__question {
+  inline-size: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding-block: var(--space-lg);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: start;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-ink);
+  transition: color var(--duration-fast) var(--ease-out-quart);
+}
+
+.faq__question:hover { color: var(--color-primary); }
+.faq__question.is-open { color: var(--color-primary); }
+
+/* Plus that rotates into a minus. */
+.faq__icon {
+  position: relative;
+  flex-shrink: 0;
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  margin-block-start: 0.2rem;
+}
+
+.faq__icon::before,
+.faq__icon::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 2px;
+  background: currentColor;
+  border-radius: var(--radius-pill);
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.faq__icon::after { transform: rotate(90deg); }
+.faq__question.is-open .faq__icon::after { transform: rotate(0deg); }
+
+.faq__answer {
+  padding-block-end: var(--space-lg);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+  max-inline-size: 68ch;
+  animation: faq-open var(--duration-normal) var(--ease-out-expo);
+}
+
+.faq__answer[hidden] { display: none; }
+
+@keyframes faq-open {
+  from { opacity: 0; transform: translate3d(0, -0.5rem, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --- Mail addresses --- */
+.faq__addresses {
+  margin-block-start: var(--space-xl);
+  padding: var(--space-xl);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-line);
+}
+
+.faq__addresses-title { font-size: var(--text-lg); margin-block-end: var(--space-lg); }
+
+.faq__addresses-grid { display: grid; gap: var(--space-lg); }
+
+.faq__address-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-block-end: var(--space-xs);
+}
+
+.faq__address address {
+  display: flex;
+  flex-direction: column;
+  font-style: normal;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-ink);
+}
+
+@media (min-width: 56rem) {
+  .faq__layout { grid-template-columns: 16rem 1fr; gap: var(--space-2xl); align-items: start; }
+
+  .faq__rail {
+    position: sticky;
+    inset-block-start: 7rem;
+  }
+
+  .faq__rail-list {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .faq__addresses-grid { grid-template-columns: repeat(2, 1fr); }
+}

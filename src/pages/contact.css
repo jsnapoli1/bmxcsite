@@ -1,0 +1,115 @@
+/* ===========================================================================
+   Contact — channel cards plus the two addresses people confuse.
+   =========================================================================== */
+
+.contact__channels {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.contact-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-xl);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition:
+    transform var(--duration-normal) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-quart),
+    border-color var(--duration-fast) var(--ease-out-quart);
+}
+
+.contact-card:hover {
+  transform: translateY(-4px);
+  border-color: transparent;
+  box-shadow: var(--shadow-lg);
+}
+
+.contact-card__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.contact-card__value {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-snug);
+  color: var(--color-ink);
+  word-break: break-word;
+}
+
+.contact-card__note {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+
+.contact-card__arrow {
+  position: absolute;
+  inset-block-start: var(--space-xl);
+  inset-inline-end: var(--space-xl);
+  font-size: var(--text-lg);
+  color: var(--color-line-strong);
+  transition:
+    transform var(--duration-normal) var(--ease-out-expo),
+    color var(--duration-fast) var(--ease-out-quart);
+}
+
+.contact-card:hover .contact-card__arrow {
+  transform: translateX(4px);
+  color: var(--color-primary);
+}
+
+/* --- Addresses --- */
+.contact__addresses {
+  display: grid;
+  gap: var(--space-lg);
+  margin-block-start: var(--space-2xl);
+}
+
+.contact-address {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-line);
+}
+
+.contact-address__title { font-size: var(--text-lg); }
+
+.contact-address__note {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+  max-inline-size: 46ch;
+}
+
+.contact-address address {
+  display: flex;
+  flex-direction: column;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-ink);
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--color-accent);
+}
+
+@media (min-width: 40rem) {
+  .contact__channels { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 56rem) {
+  .contact__addresses { grid-template-columns: repeat(2, 1fr); }
+}

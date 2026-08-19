@@ -1,0 +1,234 @@
+/* ===========================================================================
+   Hero — a dark mountain surface built from layered CSS ridgelines, so it has
+   real depth with zero image weight. Type is the hero; the mountain is stage.
+   =========================================================================== */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding-block-start: clamp(8rem, 18vw, 13rem);
+  padding-block-end: 0;
+  background:
+    radial-gradient(120% 85% at 18% 8%, oklch(34% 0.09 252) 0%, transparent 62%),
+    linear-gradient(178deg, var(--color-night) 0%, oklch(22% 0.05 254) 55%, oklch(26% 0.06 250) 100%);
+  color: var(--color-night-text);
+  overflow: hidden;
+}
+
+/* --- Atmosphere --- */
+.hero__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Three ridgelines at different depths. Each is a clipped block, so the
+   silhouette is pure CSS. Parallax comes from differing drift speeds. */
+.hero__ridge {
+  position: absolute;
+  inset-inline: -12%;
+  inset-block-end: 0;
+  background: linear-gradient(180deg, transparent, oklch(20% 0.04 254));
+}
+
+.hero__ridge--far {
+  block-size: 46%;
+  opacity: 0.5;
+  clip-path: polygon(0 62%, 12% 44%, 24% 56%, 38% 30%, 52% 50%, 66% 26%, 80% 47%, 92% 34%, 100% 48%, 100% 100%, 0 100%);
+  animation: ridge-drift-far 40s ease-in-out infinite alternate;
+}
+
+.hero__ridge--mid {
+  block-size: 34%;
+  opacity: 0.7;
+  background: linear-gradient(180deg, oklch(24% 0.055 254), oklch(19% 0.04 254));
+  clip-path: polygon(0 70%, 14% 46%, 30% 64%, 46% 36%, 60% 58%, 74% 40%, 88% 60%, 100% 44%, 100% 100%, 0 100%);
+  animation: ridge-drift-mid 32s ease-in-out infinite alternate;
+}
+
+.hero__ridge--near {
+  block-size: 22%;
+  background: linear-gradient(180deg, oklch(18% 0.035 254), oklch(15% 0.03 254));
+  clip-path: polygon(0 76%, 18% 52%, 34% 72%, 50% 46%, 68% 68%, 84% 50%, 100% 70%, 100% 100%, 0 100%);
+}
+
+@keyframes ridge-drift-far {
+  from { transform: translate3d(-1.5%, 0, 0); }
+  to { transform: translate3d(1.5%, 0, 0); }
+}
+
+@keyframes ridge-drift-mid {
+  from { transform: translate3d(1%, 0, 0); }
+  to { transform: translate3d(-1%, 0, 0); }
+}
+
+/* Fine grain keeps the flat gradients from looking synthetic. */
+.hero__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+
+/* --- Content --- */
+.hero__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-lg);
+}
+
+.hero__title {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-hero);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  margin-block: var(--space-xs) var(--space-sm);
+}
+
+.hero__title-line { display: block; }
+
+/* SplitText renders each word in its own span, and background-clip: text does
+   not reach descendants — so the gradient has to live on the word spans
+   themselves, not the wrapper.
+
+   To keep ONE continuous ramp across the whole line (rather than restarting
+   it per word), each word paints a gradient sized to the full line width and
+   then shifts it left by that word's offset. The three boxes line up into a
+   single uninterrupted gradient. --line-w and --word-x are set in SplitText. */
+.hero__title-line--accent .split-text__inner {
+  color: transparent;
+  background-image: linear-gradient(
+    96deg,
+    var(--color-accent) 8%,
+    var(--color-signal) 58%,
+    var(--color-accent-soft) 100%
+  );
+  background-size: var(--line-w, 100%) 100%;
+  background-position: calc(-1 * var(--word-x, 0px)) 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.hero__lead {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--color-night-muted);
+  max-inline-size: 46ch;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-block-start: var(--space-xs);
+}
+
+.hero__session {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-night-muted);
+}
+
+/* A pulsing dot — the only "live" signal on the page. */
+.hero__session-dot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-signal);
+  box-shadow: 0 0 0 0 oklch(72% 0.19 85 / 0.7);
+  animation: session-pulse 2.6s var(--ease-out-quart) infinite;
+}
+
+@keyframes session-pulse {
+  0% { box-shadow: 0 0 0 0 oklch(72% 0.19 85 / 0.6); }
+  70% { box-shadow: 0 0 0 0.6rem oklch(72% 0.19 85 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(72% 0.19 85 / 0); }
+}
+
+/* --- Stat strip --- */
+.hero__stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-block-start: clamp(3rem, 8vw, 5.5rem);
+  background: var(--color-night-line);
+  border-block-start: 1px solid var(--color-night-line);
+}
+
+.hero__stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-lg) var(--space-md);
+  background: var(--color-night);
+  transition: background-color var(--duration-normal) var(--ease-out-quart);
+}
+
+.hero__stat:hover { background: var(--color-night-raised); }
+
+.hero__stat-value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-night-text);
+}
+
+.hero__stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.hero__stat-detail {
+  font-size: var(--text-sm);
+  color: var(--color-night-muted);
+}
+
+/* --- Scroll cue --- */
+.hero__scroll {
+  position: absolute;
+  inset-block-end: clamp(9rem, 20vw, 12rem);
+  inset-inline-end: clamp(1.25rem, 5vw, 3rem);
+  inline-size: 1px;
+  block-size: 4.5rem;
+  background: var(--color-night-line);
+  overflow: hidden;
+  display: none;
+}
+
+/* A baton of light running the length of the line, on repeat. */
+.hero__scroll-line {
+  position: absolute;
+  inset-inline: 0;
+  block-size: 40%;
+  background: linear-gradient(180deg, transparent, var(--color-accent), transparent);
+  animation: scroll-baton 2.4s var(--ease-stride) infinite;
+}
+
+@keyframes scroll-baton {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(350%); }
+}
+
+@media (min-width: 48rem) {
+  .hero__stats { grid-template-columns: repeat(4, 1fr); }
+  .hero__stat { padding: var(--space-xl) var(--space-lg); }
+  .hero__scroll { display: block; }
+}

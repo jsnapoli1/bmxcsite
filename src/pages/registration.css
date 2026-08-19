@@ -1,0 +1,280 @@
+/* ===========================================================================
+   Registration — pricing tiers, bus routes, and the fine print.
+   =========================================================================== */
+
+.tiers {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-xl);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition:
+    transform var(--duration-normal) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-quart);
+}
+
+.tier:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+
+.tier--highlight {
+  border-color: transparent;
+  background:
+    radial-gradient(120% 100% at 0% 0%, oklch(95% 0.045 60) 0%, transparent 65%),
+    var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+}
+
+.tier--highlight::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 4px;
+  background: linear-gradient(180deg, var(--color-accent), var(--color-signal));
+}
+
+.tier__flag {
+  align-self: flex-start;
+  padding: 0.25rem 0.7rem;
+  margin-block-end: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: oklch(28% 0.08 48);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-pill);
+}
+
+.tier__name { font-size: var(--text-lg); }
+
+.tier__window {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.tier__price {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.1em;
+  margin-block-start: var(--space-md);
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+.tier__currency {
+  font-size: 0.42em;
+  padding-block-start: 0.35em;
+  color: var(--color-muted);
+}
+
+.tier__save {
+  margin-block-start: var(--space-xs);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.tier__save--muted { color: var(--color-muted); font-weight: 400; }
+
+/* --- Deposit callout --- */
+.deposit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-lg) var(--space-2xl);
+  margin-block-start: var(--space-xl);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-line);
+}
+
+.deposit__figure { display: flex; flex-direction: column; }
+
+.deposit__amount {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+.deposit__label {
+  margin-block-start: var(--space-2xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.deposit__body {
+  flex: 1;
+  min-inline-size: 18rem;
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+}
+
+/* --- Buses --- */
+.registration-buses {
+  background: var(--color-night);
+  color: var(--color-night-text);
+}
+
+.bus-routes { display: grid; gap: var(--space-md); }
+
+.bus-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--color-night-raised);
+  border: 1px solid var(--color-night-line);
+  border-radius: var(--radius-lg);
+  transition: transform var(--duration-normal) var(--ease-out-expo),
+              border-color var(--duration-fast) var(--ease-out-quart);
+}
+
+.bus-route:hover { transform: translateX(6px); border-color: var(--color-accent); }
+
+.bus-route__region { font-size: var(--text-lg); }
+
+.bus-route__stops {
+  margin-block-start: var(--space-2xs);
+  font-size: var(--text-sm);
+  color: var(--color-night-muted);
+}
+
+.bus-route__price {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+/* --- Details panels --- */
+.registration-details__grid { display: grid; gap: var(--space-xl); }
+
+.reg-panel__title {
+  font-size: var(--text-xl);
+  margin-block-end: var(--space-lg);
+  padding-block-end: var(--space-sm);
+  border-block-end: 2px solid var(--color-ink);
+}
+
+.reg-panel__list { display: flex; flex-direction: column; gap: var(--space-md); }
+
+.reg-panel__list li {
+  position: relative;
+  padding-inline-start: var(--space-lg);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+}
+
+.reg-panel__list li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.62em;
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.key-dates { display: flex; flex-direction: column; }
+
+.key-dates li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  padding-block: var(--space-md);
+  border-block-end: 1px solid var(--color-line);
+}
+
+.key-dates__date {
+  flex: 0 0 11rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent);
+  padding-block-start: 0.15rem;
+}
+
+.key-dates__label { color: var(--color-ink); font-weight: 550; }
+
+/* --- Fine print --- */
+.fine-print {
+  margin-block-start: var(--space-2xl);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-line-strong);
+  background: var(--color-surface-sunken);
+}
+
+.fine-print__title {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-block-end: var(--space-md);
+}
+
+.fine-print__list { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.fine-print__list li {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-normal);
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--color-line);
+}
+
+/* --- CTA --- */
+.registration-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-block-start: var(--space-2xl);
+  text-align: center;
+}
+
+.registration-cta p {
+  max-inline-size: 52ch;
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+}
+
+.registration-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+@media (min-width: 48rem) {
+  .tiers { grid-template-columns: repeat(3, 1fr); }
+  .bus-routes { grid-template-columns: repeat(2, 1fr); }
+  .registration-details__grid { grid-template-columns: 1fr 1fr; gap: var(--space-3xl); }
+}

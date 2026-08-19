@@ -1,0 +1,215 @@
+/* ===========================================================================
+   Playlists — a selector column of "equaliser rows" beside a sticky player.
+   =========================================================================== */
+
+.playlists__layout {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+.playlists__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* --- Row --- */
+.playlist-row {
+  position: relative;
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  text-align: start;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform var(--duration-normal) var(--ease-out-expo),
+    border-color var(--duration-fast) var(--ease-out-quart),
+    box-shadow var(--duration-normal) var(--ease-out-quart);
+}
+
+.playlist-row:hover {
+  transform: translateX(6px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.playlist-row.is-active {
+  border-color: transparent;
+  background: linear-gradient(120deg, oklch(96% 0.02 250), var(--color-surface-raised));
+  box-shadow: var(--shadow-glow);
+}
+
+/* Active row gets a filled lane down its leading edge. */
+.playlist-row.is-active::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 4px;
+  background: linear-gradient(180deg, var(--color-primary-bright), var(--color-accent));
+}
+
+/* --- Equaliser --- */
+.playlist-row__eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  block-size: 1.75rem;
+  inline-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.playlist-row__bar {
+  inline-size: 3px;
+  block-size: 28%;
+  background: var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  transform-origin: bottom center;
+  transition: background-color var(--duration-fast) var(--ease-out-quart);
+}
+
+/* Bars only dance for the playing row — motion earns its keep. */
+.playlist-row.is-active .playlist-row__bar {
+  background: var(--color-primary);
+  animation: eq-bounce 900ms var(--ease-stride) infinite alternate;
+  animation-delay: calc(var(--bar) * 130ms);
+}
+
+.playlist-row:hover .playlist-row__bar { background: var(--color-primary-bright); }
+
+@keyframes eq-bounce {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(3.2); }
+}
+
+/* --- Row text --- */
+.playlist-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.playlist-row__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-snug);
+  color: var(--color-ink);
+}
+
+.playlist-row__desc {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-normal);
+}
+
+.playlist-row__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2xs);
+  flex-shrink: 0;
+}
+
+.playlist-row__year {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-line-strong);
+  transition: color var(--duration-normal) var(--ease-out-quart);
+}
+
+.playlist-row:hover .playlist-row__year { color: var(--color-primary-bright); }
+.playlist-row.is-active .playlist-row__year { color: var(--color-accent); }
+
+.playlist-row__soon {
+  font-size: 0.6875rem;
+  color: var(--color-muted);
+}
+
+/* --- Player --- */
+.playlists__player-inner {
+  position: sticky;
+  inset-block-start: 7rem;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-line);
+}
+
+.playlists__embed {
+  display: block;
+  inline-size: 100%;
+  border: 0;
+}
+
+/* --- Empty state: still designed, not a grey box --- */
+.playlists__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  min-block-size: 420px;
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.playlists__empty-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  block-size: 3rem;
+}
+
+.playlists__empty-eq span {
+  inline-size: 5px;
+  block-size: 20%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--color-primary-bright), var(--color-accent));
+  transform-origin: bottom center;
+  animation: eq-bounce 1.15s var(--ease-stride) infinite alternate;
+  animation-delay: calc(var(--bar) * 120ms);
+  opacity: 0.55;
+}
+
+.playlists__empty-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.playlists__empty-body {
+  max-inline-size: 34ch;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+}
+
+.playlists__empty-body code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  padding: 0.15em 0.4em;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+}
+
+@media (min-width: 62rem) {
+  .playlists__layout {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+}
