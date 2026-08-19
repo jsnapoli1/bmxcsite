@@ -29,6 +29,7 @@ export default function Hero() {
             text="Cross Country Camp"
             className="hero__title-line hero__title-line--accent"
             delay={220}
+            continuousFill
           />
         </h1>
 

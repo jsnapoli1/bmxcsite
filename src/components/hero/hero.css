@@ -94,11 +94,24 @@
 .hero__title-line { display: block; }
 
 /* SplitText renders each word in its own span, and background-clip: text does
-   not reach descendants — so the gradient has to be applied to the word spans
-   themselves, not the wrapper. */
+   not reach descendants — so the gradient has to live on the word spans
+   themselves, not the wrapper.
+
+   To keep ONE continuous ramp across the whole line (rather than restarting
+   it per word), each word paints a gradient sized to the full line width and
+   then shifts it left by that word's offset. The three boxes line up into a
+   single uninterrupted gradient. --line-w and --word-x are set in SplitText. */
 .hero__title-line--accent .split-text__inner {
   color: transparent;
-  background: linear-gradient(96deg, var(--color-accent) 8%, var(--color-signal) 58%, var(--color-accent-soft) 100%);
+  background-image: linear-gradient(
+    96deg,
+    var(--color-accent) 8%,
+    var(--color-signal) 58%,
+    var(--color-accent-soft) 100%
+  );
+  background-size: var(--line-w, 100%) 100%;
+  background-position: calc(-1 * var(--word-x, 0px)) 0;
+  background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
 }
