@@ -22,13 +22,24 @@
     <meta property="og:site_name" content="Blue Mountain XC Camp" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- Fonts: preconnect first, then load only the weights actually used. -->
+    <!-- Fonts: preconnect, then load the stylesheet without blocking render.
+         The media/onload swap lets the browser paint immediately; font-display:swap
+         (in the Google CSS) handles the text handoff. A <noscript> copy keeps
+         fonts working with JS disabled. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      media="print"
+      onload="this.media='all';this.onload=null"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

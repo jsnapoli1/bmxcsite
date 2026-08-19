@@ -1,0 +1,11 @@
+# Hashed assets are immutable — the filename changes whenever the content
+# does, so they can be cached indefinitely with no revalidation round-trip.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The HTML entry point must always be revalidated so new deploys are picked
+# up immediately.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

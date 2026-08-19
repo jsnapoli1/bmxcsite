@@ -154,3 +154,9 @@ ul, ol {
 .skip-link:focus {
   top: 0;
 }
+
+/* Holds page height while a code-split route loads, preventing the footer
+   from flashing up the screen and shifting layout. */
+.route-fallback {
+  min-block-size: 70vh;
+}

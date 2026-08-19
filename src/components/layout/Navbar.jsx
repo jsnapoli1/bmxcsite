@@ -91,8 +91,8 @@ export default function Navbar() {
           onClick={() => setIsMenuOpen((open) => !open)}
         >
           <span className="sr-only">{isMenuOpen ? 'Close menu' : 'Open menu'}</span>
-          <span className="navbar__toggle-bar" aria-hidden="true" />
-          <span className="navbar__toggle-bar" aria-hidden="true" />
+          <span className="navbar__toggle-bar navbar__toggle-bar--top" aria-hidden="true" />
+          <span className="navbar__toggle-bar navbar__toggle-bar--bottom" aria-hidden="true" />
         </button>
       </div>
 
