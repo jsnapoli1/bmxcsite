@@ -9,6 +9,7 @@ import Home from './pages/Home.jsx';
 const Camp = lazy(() => import('./pages/Camp.jsx'));
 const Playlists = lazy(() => import('./pages/Playlists.jsx'));
 const Videos = lazy(() => import('./pages/Videos.jsx'));
+const Merch = lazy(() => import('./pages/Merch.jsx'));
 const Staff = lazy(() => import('./pages/Staff.jsx'));
 const Faq = lazy(() => import('./pages/Faq.jsx'));
 const Registration = lazy(() => import('./pages/Registration.jsx'));
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="/camp" element={<Camp />} />
             <Route path="/playlists" element={<Playlists />} />
             <Route path="/videos" element={<Videos />} />
+            <Route path="/merch" element={<Merch />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/faq" element={<Faq />} />
             <Route path="/registration" element={<Registration />} />

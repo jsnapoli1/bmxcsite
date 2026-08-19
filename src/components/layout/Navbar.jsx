@@ -7,6 +7,7 @@ const LINKS = [
   { to: '/camp', label: 'The Week' },
   { to: '/playlists', label: 'Playlists' },
   { to: '/videos', label: 'Videos' },
+  { to: '/merch', label: 'Merch' },
   { to: '/staff', label: 'Staff' },
   { to: '/faq', label: 'FAQ' },
   { to: '/registration', label: 'Register' },
