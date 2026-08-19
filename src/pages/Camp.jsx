@@ -26,7 +26,7 @@ export default function Camp() {
 
         <ol className="schedule">
           {SCHEDULE.map((slot, index) => (
-            <Reveal as="li" key={slot.time + slot.title} delay={index * 60} className="schedule__item">
+            <Reveal as="li" key={slot.time + slot.title} delay={Math.min(index, 5) * 35} className="schedule__item">
               <div className="schedule__time">{slot.time}</div>
               <div className="schedule__marker" aria-hidden="true">
                 <span className="schedule__dot" />
@@ -52,7 +52,7 @@ export default function Camp() {
 
           <div className="packing__grid">
             {PACKING_LIST.map((group, index) => (
-              <Reveal key={group.category} delay={index * 90} className="packing__card">
+              <Reveal key={group.category} delay={Math.min(index, 5) * 45} className="packing__card">
                 <h3 className="packing__category">{group.category}</h3>
                 <ul className="packing__items">
                   {group.items.map((item) => (

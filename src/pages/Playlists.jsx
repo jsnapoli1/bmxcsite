@@ -35,7 +35,7 @@ export default function Playlists() {
               const isReady = Boolean(getSpotifyEmbedId(playlist));
 
               return (
-                <Reveal as="li" key={playlist.id} delay={index * 45}>
+                <Reveal as="li" key={playlist.id} delay={Math.min(index, 5) * 30}>
                   <button
                     type="button"
                     className={`playlist-row${isActive ? ' is-active' : ''}`}

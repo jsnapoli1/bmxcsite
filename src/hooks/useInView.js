@@ -7,8 +7,13 @@ import { useEffect, useRef, useState } from 'react';
  * Elements already within the viewport on mount are revealed immediately —
  * IntersectionObserver reports them on its first callback, so above-the-fold
  * content never waits for a scroll that may never come.
+ *
+ * The default rootMargin extends the trigger zone 12% BELOW the viewport, so
+ * an element starts fading in just before its top edge appears. A negative
+ * margin does the opposite: it forces the element to travel well inside the
+ * viewport before firing, which reads as motion lagging behind the scroll.
  */
-export default function useInView({ threshold = 0, rootMargin = '0px 0px -8% 0px' } = {}) {
+export default function useInView({ threshold = 0, rootMargin = '0px 0px 12% 0px' } = {}) {
   const ref = useRef(null);
   const [isInView, setIsInView] = useState(false);
 

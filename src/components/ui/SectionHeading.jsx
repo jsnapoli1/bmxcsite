@@ -26,7 +26,7 @@ export default function SectionHeading({
       <SplitText as={Tag} text={title} className="section-heading__title" />
 
       {lead ? (
-        <Reveal delay={180} className="section-heading__lead measure">
+        <Reveal delay={110} className="section-heading__lead measure">
           <p>{lead}</p>
         </Reveal>
       ) : null}

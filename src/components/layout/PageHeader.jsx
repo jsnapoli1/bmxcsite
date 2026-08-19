@@ -20,7 +20,7 @@ export default function PageHeader({ eyebrow, title, lead }) {
         <SplitText as="h1" text={title} className="page-header__title" />
 
         {lead ? (
-          <Reveal delay={220} className="page-header__lead measure">
+          <Reveal delay={130} className="page-header__lead measure">
             <p>{lead}</p>
           </Reveal>
         ) : null}

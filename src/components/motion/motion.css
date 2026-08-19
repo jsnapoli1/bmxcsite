@@ -5,18 +5,22 @@
 
 .reveal {
   opacity: 0;
+  /* Opacity resolves faster than the travel: text becomes readable almost
+     immediately while the shorter movement settles underneath it. Fading and
+     travelling over the same long duration is what makes reveals feel slow. */
   transition:
-    opacity var(--duration-slow) var(--ease-out-expo),
+    opacity var(--duration-normal) var(--ease-out-quart),
     transform var(--duration-slow) var(--ease-out-expo);
   transition-delay: var(--reveal-delay, 0ms);
   will-change: transform, opacity;
 }
 
-.reveal-up { transform: translate3d(0, 2.5rem, 0); }
-.reveal-down { transform: translate3d(0, -2rem, 0); }
-.reveal-left { transform: translate3d(-2.5rem, 0, 0); }
-.reveal-right { transform: translate3d(2.5rem, 0, 0); }
-.reveal-scale { transform: scale(0.94); }
+/* Shorter travel distances read as quicker without changing the timing. */
+.reveal-up { transform: translate3d(0, 1.25rem, 0); }
+.reveal-down { transform: translate3d(0, -1rem, 0); }
+.reveal-left { transform: translate3d(-1.25rem, 0, 0); }
+.reveal-right { transform: translate3d(1.25rem, 0, 0); }
+.reveal-scale { transform: scale(0.97); }
 .reveal-fade { transform: none; }
 
 .reveal.is-visible {
@@ -53,7 +57,9 @@
 .split-text__inner {
   display: inline-block;
   transform: translate3d(0, 105%, 0);
-  transition: transform var(--duration-stride) var(--ease-out-expo);
+  /* Was --duration-stride (1100ms): long enough that a multi-word headline
+     was still arriving well after the reader had started on it. */
+  transition: transform var(--duration-slow) var(--ease-out-expo);
   transition-delay: var(--word-delay, 0ms);
 }
 

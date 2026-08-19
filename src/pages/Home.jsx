@@ -41,7 +41,7 @@ export default function Home() {
             {PILLARS.map((pillar, index) => (
               <Reveal
                 key={pillar.title}
-                delay={index * 110}
+                delay={Math.min(index, 5) * 50}
                 className={`pillar-card pillar-card--${index === 0 ? 'wide' : 'standard'}`}
               >
                 <span className="pillar-card__tag">{pillar.tag}</span>

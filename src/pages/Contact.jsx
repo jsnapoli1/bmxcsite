@@ -45,7 +45,7 @@ export default function Contact() {
 
         <ul className="contact__channels">
           {CHANNELS.map((channel, index) => (
-            <Reveal as="li" key={channel.label} delay={index * 90}>
+            <Reveal as="li" key={channel.label} delay={Math.min(index, 5) * 45}>
               <a
                 className="contact-card"
                 href={channel.href}

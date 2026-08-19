@@ -28,16 +28,16 @@ export default function Hero() {
             as="span"
             text="Cross Country Camp"
             className="hero__title-line hero__title-line--accent"
-            delay={220}
+            delay={140}
             continuousFill
           />
         </h1>
 
-        <Reveal delay={520} className="hero__lead">
+        <Reveal delay={300} className="hero__lead">
           <p>{CAMP.tagline}</p>
         </Reveal>
 
-        <Reveal delay={640} className="hero__actions">
+        <Reveal delay={380} className="hero__actions">
           <Button to="/registration" variant="accent" size="lg">
             Register for {CAMP.session.year}
           </Button>
@@ -46,7 +46,7 @@ export default function Hero() {
           </Button>
         </Reveal>
 
-        <Reveal delay={760} className="hero__session">
+        <Reveal delay={450} className="hero__session">
           <span className="hero__session-dot" aria-hidden="true" />
           <span>
             {CAMP.session.year} session · {CAMP.session.start} – {CAMP.session.end}
@@ -57,7 +57,7 @@ export default function Hero() {
       {/* Stat strip anchors the hero and bleeds into the next section. */}
       <div className="hero__stats container-wide">
         {STATS.map((stat, index) => (
-          <Reveal key={stat.label} delay={880 + index * 90} className="hero__stat">
+          <Reveal key={stat.label} delay={520 + Math.min(index, 3) * 55} className="hero__stat">
             <span className="hero__stat-value">{stat.value}</span>
             <span className="hero__stat-label">{stat.label}</span>
             <span className="hero__stat-detail">{stat.detail}</span>

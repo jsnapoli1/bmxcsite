@@ -36,7 +36,7 @@ export default function Registration() {
             <Reveal
               as="li"
               key={tier.name}
-              delay={index * 110}
+              delay={Math.min(index, 5) * 50}
               className={`tier${tier.highlight ? ' tier--highlight' : ''}`}
             >
               {tier.highlight ? <span className="tier__flag">Best price</span> : null}
@@ -80,7 +80,7 @@ export default function Registration() {
 
           <ul className="bus-routes">
             {BUS_ROUTES.map((route, index) => (
-              <Reveal as="li" key={route.region} delay={index * 120} className="bus-route">
+              <Reveal as="li" key={route.region} delay={Math.min(index, 5) * 50} className="bus-route">
                 <div className="bus-route__body">
                   <h3 className="bus-route__region">{route.region}</h3>
                   <p className="bus-route__stops">{route.stops}</p>

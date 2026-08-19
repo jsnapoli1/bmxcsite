@@ -115,7 +115,7 @@ export default function Videos() {
             const isActive = video.id === activeId;
 
             return (
-              <Reveal as="li" key={video.id} delay={index * 100}>
+              <Reveal as="li" key={video.id} delay={Math.min(index, 5) * 45}>
                 <button
                   type="button"
                   className={`video-card${isActive ? ' is-active' : ''}`}

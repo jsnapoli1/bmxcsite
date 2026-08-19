@@ -19,7 +19,7 @@ export default function SplitText({
   text,
   as: Tag = 'span',
   className = '',
-  stagger = 55,
+  stagger = 38,
   delay = 0,
   continuousFill = false,
 }) {

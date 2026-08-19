@@ -29,7 +29,7 @@ export default function Merch() {
         <h2 className="sr-only" id="essentials-heading">How merch works</h2>
         <ul className="merch-facts">
           {MERCH_FACTS.map((fact, index) => (
-            <Reveal as="li" key={fact.title} delay={index * 90} className="merch-fact">
+            <Reveal as="li" key={fact.title} delay={Math.min(index, 5) * 45} className="merch-fact">
               <span className="merch-fact__tag">{fact.tag}</span>
               <h3 className="merch-fact__title">{fact.title}</h3>
               <p className="merch-fact__body">{fact.body}</p>
@@ -57,7 +57,7 @@ export default function Merch() {
               <Reveal
                 as="li"
                 key={item.name}
-                delay={index * 100}
+                delay={Math.min(index, 5) * 45}
                 className={`merch-item${item.hero ? ' merch-item--hero' : ''}`}
               >
                 {item.hero ? <span className="merch-item__flag">Most iconic</span> : null}

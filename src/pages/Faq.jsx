@@ -55,7 +55,7 @@ export default function Faq() {
                 const isOpen = openQuestion === key;
 
                 return (
-                  <Reveal as="li" key={key} delay={index * 45} className="faq__item">
+                  <Reveal as="li" key={key} delay={Math.min(index, 5) * 30} className="faq__item">
                     <h3>
                       <button
                         type="button"

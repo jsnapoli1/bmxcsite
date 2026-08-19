@@ -37,7 +37,7 @@ export default function Staff() {
 
             <ul className="staff-grid">
               {group.members.map((member, index) => (
-                <Reveal as="li" key={member.name} delay={index * 80} className="staff-card">
+                <Reveal as="li" key={member.name} delay={Math.min(index, 5) * 45} className="staff-card">
                   <span className="staff-card__avatar" aria-hidden="true">
                     {initialsOf(member.name)}
                   </span>
@@ -67,7 +67,7 @@ export default function Staff() {
           />
           <ul className="credentials__list">
             {STAFF_CREDENTIALS.map((credential, index) => (
-              <Reveal as="li" key={credential} delay={index * 80} className="credentials__item">
+              <Reveal as="li" key={credential} delay={Math.min(index, 5) * 45} className="credentials__item">
                 <span className="credentials__index" aria-hidden="true">
                   {String(index + 1).padStart(2, '0')}
                 </span>
@@ -89,7 +89,7 @@ export default function Staff() {
 
         <ul className="speakers">
           {GUEST_SPEAKERS.map((speaker, index) => (
-            <Reveal as="li" key={speaker.name + index} delay={index * 60} className="speaker">
+            <Reveal as="li" key={speaker.name + index} delay={Math.min(index, 5) * 35} className="speaker">
               <span className="speaker__year">{speaker.year ?? '—'}</span>
               <div className="speaker__body">
                 <h3 className="speaker__name">{speaker.name}</h3>
