@@ -1,24 +1,106 @@
-import { Link } from 'react-router-dom';
-import Carousel from '../components/Carousel.jsx';
+import Hero from '../components/hero/Hero.jsx';
+import SectionHeading from '../components/ui/SectionHeading.jsx';
+import Button from '../components/ui/Button.jsx';
+import Reveal from '../components/motion/Reveal.jsx';
+import { CAMP, PILLARS } from '../data/camp.js';
+import './home.css';
 
 export default function Home() {
-  const stockImages = [
-    'https://images.unsplash.com/photo-1526318472351-bc6d1a96e579?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1502810190503-83002708f736?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1508766206392-8bd5cf550d1d?auto=format&fit=crop&w=800&q=80'
-  ];
-
   return (
-    <div>
-      <h1>BMXC Camp</h1>
-      <p>50+ years of great training, creating friends, strengthening teams, and tradition</p>
-      <p>
-        Founded in 1969, Blue Mountain Cross Country Camp is the oldest and longest running XC summer camp in the Northeast! We're a sleepover running camp for students entering grade 7th-12th and are dedicated to fostering a love for running and providing an environment in which student athletes are healthy and successful. Individuals and teams come from all over New York, Pennsylvania, & New Jersey to kick off their season and develop friendships that span beyond their running years in high school.
-      </p>
-      <Carousel images={stockImages} />
-      {/* Example using a Facebook album */}
-      {/* <Carousel albumId="YOUR_FACEBOOK_ALBUM_ID" images={[]} /> */}
-      <p><Link to="/about">Get in touch with us!</Link></p>
-    </div>
+    <>
+      <Hero />
+
+      {/* --- Intro: the camp in its own words --- */}
+      <section className="section container" aria-labelledby="intro-heading">
+        <div className="home-intro">
+          <SectionHeading
+            eyebrow="Since 1969"
+            title="The oldest and longest running XC summer camp in the Northeast"
+            as="h2"
+            className="home-intro__heading"
+          />
+          <Reveal delay={140} className="home-intro__body">
+            <p className="home-intro__lead">{CAMP.intro}</p>
+            <p>{CAMP.reach}</p>
+            <Button to="/camp" variant="ghost">What a week looks like →</Button>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* --- Pillars: bento-ish grid, deliberately uneven --- */}
+      <section className="section home-pillars" aria-labelledby="pillars-heading">
+        <div className="container">
+          <SectionHeading
+            eyebrow="What makes it BMXC"
+            title="Built around the running, and everything that surrounds it"
+            lead="Three hundred campers, seventy teams, one week on the mountain."
+            as="h2"
+          />
+
+          <div className="home-pillars__grid">
+            {PILLARS.map((pillar, index) => (
+              <Reveal
+                key={pillar.title}
+                delay={index * 110}
+                className={`pillar-card pillar-card--${index === 0 ? 'wide' : 'standard'}`}
+              >
+                <span className="pillar-card__tag">{pillar.tag}</span>
+                <h3 className="pillar-card__title">{pillar.title}</h3>
+                <p className="pillar-card__body">{pillar.body}</p>
+                <span className="pillar-card__index" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- Location --- */}
+      <section className="section home-location" aria-labelledby="location-heading">
+        <div className="container home-location__inner">
+          <SectionHeading
+            eyebrow="The place"
+            title="Camp Westmont, in the Pocono Mountains"
+            tone="light"
+            as="h2"
+          />
+          <Reveal delay={160} className="home-location__body">
+            <p>
+              We run miles and miles of scenic dirt roads and trails out of an ACA-accredited
+              facility in {CAMP.venue.town}. It is all-inclusive: a dining hall with healthy
+              and filling meals, separate boys and girls cabins, a private lake, and a program
+              of educational and fun activities.
+            </p>
+            <ul className="home-location__facts">
+              <li><span>Venue</span>{CAMP.venue.name}</li>
+              <li><span>Region</span>{CAMP.venue.region}</li>
+              <li><span>Buses from</span>Buffalo, Rochester, Syracuse, Rockaway & Woodbridge</li>
+            </ul>
+            <Button href="https://maps.google.com/?q=Blue+Mountain+XC+Camp" variant="light">
+              Open in Google Maps
+            </Button>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* --- Closing CTA --- */}
+      <section className="section container" aria-labelledby="cta-heading">
+        <Reveal variant="scale" className="home-cta">
+          <span className="eyebrow eyebrow-accent">{CAMP.session.year} session</span>
+          <h2 className="home-cta__title" id="cta-heading">
+            {CAMP.session.start} – {CAMP.session.end}
+          </h2>
+          <p className="home-cta__body">
+            Registration opens January 1st at 12:01am. We are usually 80% full by early May,
+            and buses fill even sooner.
+          </p>
+          <div className="home-cta__actions">
+            <Button to="/registration" variant="primary" size="lg">Registration & pricing</Button>
+            <Button to="/faq" variant="outline" size="lg">Read the FAQ</Button>
+          </div>
+        </Reveal>
+      </section>
+    </>
   );
 }

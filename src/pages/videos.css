@@ -1,0 +1,319 @@
+/* ===========================================================================
+   Videos — a large stage with a click-to-play poster, plus a thumbnail grid.
+   =========================================================================== */
+
+.video-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-night);
+  box-shadow: var(--shadow-lg);
+}
+
+.video-stage__frame,
+.video-stage__poster {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+}
+
+.video-stage__poster { display: grid; place-items: center; }
+
+.video-stage__thumb {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* --- Play button --- */
+.video-stage__play {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: clamp(4rem, 9vw, 5.5rem);
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  background: oklch(100% 0 0 / 0.16);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px oklch(100% 0 0 / 0.3);
+  cursor: pointer;
+  transition: transform var(--duration-normal) var(--ease-spring),
+              background-color var(--duration-fast) var(--ease-out-quart);
+}
+
+.video-stage__play::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid oklch(100% 0 0 / 0.5);
+  animation: play-ring 2.4s var(--ease-out-quart) infinite;
+}
+
+.video-stage__play:hover {
+  transform: scale(1.08);
+  background: var(--color-accent);
+}
+
+/* Triangle drawn with borders — no icon dependency. */
+.video-stage__play-icon {
+  inline-size: 0;
+  block-size: 0;
+  border-block: 0.62rem solid transparent;
+  border-inline-start: 1.05rem solid white;
+  margin-inline-start: 0.28rem;
+}
+
+@keyframes play-ring {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* --- Empty stage --- */
+.video-stage__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--color-night-text);
+}
+
+.video-stage__empty-mark {
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(150deg, var(--color-primary-bright), var(--color-accent));
+  opacity: 0.65;
+  animation: stride-bob 3.2s var(--ease-stride) infinite;
+}
+
+.video-stage__empty-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.video-stage__empty-body {
+  max-inline-size: 36ch;
+  font-size: var(--text-sm);
+  color: var(--color-night-muted);
+}
+
+.video-stage__empty-body code,
+.videos__channel code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  padding: 0.15em 0.4em;
+  border-radius: var(--radius-sm);
+  background: oklch(100% 0 0 / 0.1);
+}
+
+/* --- Caption --- */
+.video-stage__caption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin-block-start: var(--space-lg);
+}
+
+.video-stage__caption-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-snug);
+}
+
+.video-stage__caption-body {
+  color: var(--color-ink-soft);
+  max-inline-size: var(--measure);
+}
+
+/* --- Grid --- */
+.videos__grid {
+  display: grid;
+  gap: var(--space-lg);
+  margin-block-start: var(--space-2xl);
+}
+
+.video-card {
+  inline-size: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  text-align: start;
+  cursor: pointer;
+}
+
+.video-card__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-line);
+  transition:
+    transform var(--duration-normal) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-quart),
+    border-color var(--duration-fast) var(--ease-out-quart);
+}
+
+.video-card__media img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-out-expo);
+}
+
+.video-card:hover .video-card__media {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
+}
+
+.video-card:hover .video-card__media img { transform: scale(1.06); }
+
+.video-card.is-active .video-card__media {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.video-card__placeholder {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      var(--color-surface-sunken) 0 12px,
+      var(--color-surface) 12px 24px
+    );
+}
+
+/* A light sweep passes across the thumbnail on hover. */
+.video-card__scan {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 35%;
+  background: linear-gradient(100deg, transparent, oklch(100% 0 0 / 0.28), transparent);
+  transform: translate3d(-140%, 0, 0);
+  transition: transform var(--duration-stride) var(--ease-out-expo);
+}
+
+.video-card:hover .video-card__scan { transform: translate3d(340%, 0, 0); }
+
+.video-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.video-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.video-card__desc {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-normal);
+}
+
+.videos__channel {
+  display: flex;
+  justify-content: center;
+  margin-block-start: var(--space-2xl);
+}
+
+.videos__channel--pending {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.videos__channel--pending code {
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-line);
+}
+
+@media (min-width: 40rem) {
+  .videos__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 64rem) {
+  .videos__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* --- Year filter chips --- */
+.videos__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-block-start: var(--space-2xl);
+  padding-block-end: var(--space-md);
+  border-block-end: 1px solid var(--color-line);
+}
+
+.videos__filters-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.videos__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.videos__chip {
+  padding: 0.4rem 0.95rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-ink-soft);
+  background: transparent;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-out-quart),
+    border-color var(--duration-fast) var(--ease-out-quart),
+    background-color var(--duration-fast) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-spring);
+}
+
+.videos__chip:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.videos__chip.is-active {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-surface);
+}
+
+/* --- Year badge on cards --- */
+.video-card__year {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-accent);
+}

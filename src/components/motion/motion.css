@@ -1,0 +1,86 @@
+/* ===========================================================================
+   Motion primitives — transform + opacity only, so everything stays on the
+   compositor. Track-inspired: things accelerate out of the blocks and settle.
+   =========================================================================== */
+
+.reveal {
+  opacity: 0;
+  transition:
+    opacity var(--duration-slow) var(--ease-out-expo),
+    transform var(--duration-slow) var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: transform, opacity;
+}
+
+.reveal-up { transform: translate3d(0, 2.5rem, 0); }
+.reveal-down { transform: translate3d(0, -2rem, 0); }
+.reveal-left { transform: translate3d(-2.5rem, 0, 0); }
+.reveal-right { transform: translate3d(2.5rem, 0, 0); }
+.reveal-scale { transform: scale(0.94); }
+.reveal-fade { transform: none; }
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  /* Drop the compositor hint once the animation has finished its job. */
+  will-change: auto;
+}
+
+/* --- Word-by-word headline reveal --- */
+.split-text {
+  display: inline;
+}
+
+.split-text__word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* Words clip their own overflow, so the trailing space rides along outside
+     the clipped inner span to keep it from collapsing. */
+  white-space: pre;
+  /* Tight display line-heights make the line box shorter than the glyph box,
+     so the clip would shave ascenders and descenders. Pad the clipping box
+     out and pull the extra height back so layout is unaffected. */
+  padding-block: 0.16em;
+  margin-block: -0.16em;
+}
+
+.split-text__space {
+  display: inline-block;
+  inline-size: 0.26em;
+}
+
+.split-text__inner {
+  display: inline-block;
+  transform: translate3d(0, 105%, 0);
+  transition: transform var(--duration-stride) var(--ease-out-expo);
+  transition-delay: var(--word-delay, 0ms);
+}
+
+.split-text.is-visible .split-text__inner {
+  transform: translate3d(0, 0, 0);
+}
+
+/* --- Lane sweep: a baton of light travelling a track lane --- */
+@keyframes lane-sweep {
+  0% { transform: translate3d(-100%, 0, 0); }
+  100% { transform: translate3d(400%, 0, 0); }
+}
+
+/* --- Stride: the subtle up-and-down of a runner's gait --- */
+@keyframes stride-bob {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -0.5rem, 0); }
+}
+
+/* --- Track lines drifting past, like ground seen while running --- */
+@keyframes track-drift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+/* --- Split-flap style ticker for stat counters --- */
+@keyframes count-in {
+  0% { opacity: 0; transform: translate3d(0, 0.6em, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}

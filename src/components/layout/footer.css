@@ -1,0 +1,123 @@
+/* ===========================================================================
+   Footer — dark surface, with track lane lines drifting slowly along the top.
+   =========================================================================== */
+
+.footer {
+  position: relative;
+  background: var(--color-night);
+  color: var(--color-night-text);
+  padding-block-start: var(--space-3xl);
+  overflow: hidden;
+}
+
+/* --- Drifting lane lines --- */
+.footer__lanes {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 3px;
+  overflow: hidden;
+}
+
+.footer__lanes-track {
+  inline-size: 200%;
+  block-size: 100%;
+  background: repeating-linear-gradient(
+    to right,
+    var(--color-primary-bright) 0 4rem,
+    transparent 4rem 6rem,
+    var(--color-accent) 6rem 8rem,
+    transparent 8rem 12rem
+  );
+  opacity: 0.7;
+  animation: track-drift 22s linear infinite;
+}
+
+.footer__inner {
+  display: grid;
+  gap: var(--space-2xl);
+  padding-block-end: var(--space-2xl);
+}
+
+.footer__wordmark {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+  line-height: 1;
+}
+
+.footer__tagline {
+  margin-block-start: var(--space-md);
+  max-inline-size: 34ch;
+  color: var(--color-night-muted);
+  line-height: var(--leading-relaxed);
+}
+
+.footer__est {
+  margin-block-start: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-primary-bright);
+}
+
+.footer__heading {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-night-muted);
+  margin-block-end: var(--space-md);
+}
+
+.footer__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.footer__link {
+  position: relative;
+  display: inline-block;
+  color: var(--color-night-text);
+  font-size: var(--text-sm);
+  transition: color var(--duration-fast) var(--ease-out-quart);
+}
+
+/* Underline grows from the left on hover — same lane language as the nav. */
+.footer__link::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-end: -2px;
+  block-size: 1px;
+  inline-size: 100%;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.footer__link:hover { color: var(--color-accent); }
+.footer__link:hover::after { transform: scaleX(1); }
+
+.footer__base {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  justify-content: space-between;
+  padding-block: var(--space-lg);
+  border-block-start: 1px solid var(--color-night-line);
+  font-size: var(--text-xs);
+  color: var(--color-night-muted);
+}
+
+@media (min-width: 48rem) {
+  .footer__inner {
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: var(--space-xl);
+  }
+}

@@ -1,0 +1,241 @@
+/* ===========================================================================
+   Navbar — glass bar that solidifies on scroll. Links carry a "lane" underline
+   that sweeps in from the left, like a runner entering a lane.
+   =========================================================================== */
+
+.navbar {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--z-nav);
+  transition:
+    background-color var(--duration-normal) var(--ease-out-quart),
+    box-shadow var(--duration-normal) var(--ease-out-quart),
+    border-color var(--duration-normal) var(--ease-out-quart);
+  border-block-end: 1px solid transparent;
+}
+
+.navbar.is-scrolled {
+  /* High opacity, and no saturate() — content scrolling under the bar (the
+     accent CTA especially) otherwise bleeds through as a colour smear. */
+  background: oklch(98.5% 0.004 250 / 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-block-end-color: var(--color-line);
+  box-shadow: var(--shadow-sm);
+}
+
+.navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  block-size: clamp(4rem, 8vw, 5.25rem);
+}
+
+/* --- Brand --- */
+.navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.navbar__mark {
+  position: relative;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(155deg, var(--color-primary-bright), var(--color-primary-deep));
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.navbar__brand:hover .navbar__mark {
+  transform: translateY(-2px) rotate(-4deg);
+}
+
+/* A small mountain peak carved out of the mark. */
+.navbar__mark-peak {
+  inline-size: 0;
+  block-size: 0;
+  border-inline: 0.5rem solid transparent;
+  border-block-end: 0.72rem solid oklch(100% 0 0 / 0.92);
+  transform: translateY(1px);
+}
+
+.navbar__wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.navbar__wordmark-main {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-snug);
+  color: var(--color-night-text);
+  transition: color var(--duration-normal) var(--ease-out-quart);
+}
+
+.navbar.is-scrolled .navbar__wordmark-main { color: var(--color-ink); }
+
+.navbar__wordmark-sub {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-night-muted);
+  margin-block-start: 3px;
+  transition: color var(--duration-normal) var(--ease-out-quart);
+}
+
+.navbar.is-scrolled .navbar__wordmark-sub { color: var(--color-muted); }
+
+/* --- Desktop links --- */
+.navbar__nav { display: none; }
+
+.navbar__list {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.25rem, 1.4vw, 1.25rem);
+}
+
+.navbar__link {
+  position: relative;
+  display: block;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--text-sm);
+  font-weight: 550;
+  color: var(--color-ink-soft);
+  transition: color var(--duration-fast) var(--ease-out-quart);
+}
+
+.navbar__link { color: oklch(88% 0.015 250); }
+.navbar__link:hover { color: white; }
+.navbar__link.is-active { color: white; }
+
+.navbar.is-scrolled .navbar__link { color: var(--color-ink-soft); }
+.navbar.is-scrolled .navbar__link:hover { color: var(--color-primary); }
+.navbar.is-scrolled .navbar__link.is-active { color: var(--color-ink); }
+
+/* The lane: a 2px rule that sweeps in from the left on hover, and sits
+   filled for the active route. */
+.navbar__link-lane {
+  position: absolute;
+  inset-inline: var(--space-sm);
+  inset-block-end: 0;
+  block-size: 2px;
+  background: var(--color-primary);
+  border-radius: var(--radius-pill);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.navbar__link:hover .navbar__link-lane,
+.navbar__link.is-active .navbar__link-lane {
+  transform: scaleX(1);
+}
+
+.navbar__link.is-active .navbar__link-lane {
+  background: var(--color-accent);
+}
+
+/* --- Mobile toggle --- */
+.navbar.is-scrolled .navbar__toggle-bar,
+.navbar.is-open .navbar__toggle-bar { background: var(--color-ink); }
+
+.navbar__toggle {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding: 0 0.6rem;
+  background: transparent;
+  border: 1px solid oklch(100% 0 0 / 0.3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out-quart);
+}
+
+.navbar__toggle:hover { border-color: var(--color-accent); }
+.navbar.is-scrolled .navbar__toggle,
+.navbar.is-open .navbar__toggle { border-color: var(--color-line-strong); }
+
+.navbar__toggle-bar {
+  display: block;
+  block-size: 2px;
+  inline-size: 100%;
+  background: var(--color-night-text);
+  border-radius: var(--radius-pill);
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.navbar.is-open .navbar__toggle-bar:first-child {
+  transform: translateY(4px) rotate(45deg);
+}
+
+.navbar.is-open .navbar__toggle-bar:last-child {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+/* --- Mobile drawer --- */
+.navbar__drawer {
+  position: fixed;
+  inset-block-start: clamp(4rem, 8vw, 5.25rem);
+  inset-inline: 0;
+  inset-block-end: 0;
+  background: var(--color-surface);
+  padding: var(--space-xl) clamp(1.25rem, 5vw, 3rem);
+  overflow-y: auto;
+}
+
+.navbar__drawer[hidden] { display: none; }
+
+.navbar__drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.navbar__drawer-link {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  padding-block: var(--space-md);
+  border-block-end: 1px solid var(--color-line);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-snug);
+  color: var(--color-ink);
+  opacity: 0;
+  transform: translate3d(0, 1.25rem, 0);
+  animation: drawer-item-in var(--duration-normal) var(--ease-out-expo) forwards;
+  animation-delay: calc(var(--item-index) * 45ms);
+}
+
+.navbar__drawer-link.is-active { color: var(--color-primary); }
+
+.navbar__drawer-index {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  letter-spacing: var(--tracking-wide);
+}
+
+@keyframes drawer-item-in {
+  to { opacity: 1; transform: none; }
+}
+
+@media (min-width: 62rem) {
+  .navbar__nav { display: block; }
+  .navbar__toggle { display: none; }
+  .navbar__drawer { display: none; }
+}
