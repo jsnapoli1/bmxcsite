@@ -35,7 +35,7 @@ export default function Playlists() {
               const isReady = Boolean(getSpotifyEmbedId(playlist));
 
               return (
-                <Reveal as="li" key={playlist.id} delay={index * 90}>
+                <Reveal as="li" key={playlist.id} delay={index * 45}>
                   <button
                     type="button"
                     className={`playlist-row${isActive ? ' is-active' : ''}`}
@@ -68,14 +68,18 @@ export default function Playlists() {
           <Reveal variant="right" className="playlists__player">
             <div className="playlists__player-inner">
               {activeEmbedId ? (
+                /* No `key` here on purpose: keying by playlist id would make
+                   React tear down and remount the iframe on every switch,
+                   cold-booting the whole Spotify app each time. Keeping one
+                   persistent iframe and only swapping `src` lets the embed
+                   stay warm, so switching is a navigation rather than a
+                   full reload. */
                 <iframe
-                  key={activeEmbedId}
                   className="playlists__embed"
                   src={`https://open.spotify.com/embed/playlist/${activeEmbedId}?theme=0`}
                   title={`${active.title} on Spotify`}
                   height="420"
                   frameBorder="0"
-                  loading="lazy"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                 />
               ) : (
