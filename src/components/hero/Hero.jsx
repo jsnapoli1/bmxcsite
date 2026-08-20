@@ -7,12 +7,15 @@ import './hero.css';
 export default function Hero() {
   return (
     <section className="hero" aria-labelledby="hero-heading">
-      {/* Layered atmosphere: ridgelines, drifting lane, and grain. */}
-      <div className="hero__atmosphere" aria-hidden="true">
-        <div className="hero__ridge hero__ridge--far" />
-        <div className="hero__ridge hero__ridge--mid" />
-        <div className="hero__ridge hero__ridge--near" />
-        <div className="hero__grain" />
+      {/* A real photo of camp rather than a synthetic CSS mountain. */}
+      <div className="hero__photo" aria-hidden="true">
+        <img
+          src="/photos/camp-group.jpg"
+          alt=""
+          width="1600"
+          height="726"
+          fetchPriority="high"
+        />
       </div>
 
       <div className="hero__inner container-wide">

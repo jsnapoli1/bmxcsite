@@ -2,9 +2,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background:
-    radial-gradient(100% 90% at 15% 10%, oklch(32% 0.085 252) 0%, transparent 65%),
-    linear-gradient(170deg, var(--color-night), oklch(23% 0.05 254));
+  background: var(--color-night);
   color: var(--color-night-text);
   padding-block: clamp(7rem, 12vw, 9rem) clamp(2.5rem, 5vw, 3.5rem);
 }
@@ -21,15 +19,7 @@
 .page-header__lanes-track {
   inline-size: 200%;
   block-size: 100%;
-  background: repeating-linear-gradient(
-    to right,
-    var(--color-primary-bright) 0 3rem,
-    transparent 3rem 5rem,
-    var(--color-accent) 5rem 6.5rem,
-    transparent 6.5rem 10rem
-  );
-  opacity: 0.6;
-  animation: track-drift 20s linear infinite;
+  background: var(--color-accent);
 }
 
 .page-header__inner {
@@ -41,7 +31,6 @@
 
 .page-header__title {
   font-size: var(--text-3xl);
-  text-transform: uppercase;
   letter-spacing: -0.04em;
   line-height: 1.04;
   max-inline-size: 18ch;

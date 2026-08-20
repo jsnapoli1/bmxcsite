@@ -49,7 +49,7 @@
 .faq__rail-label { font-size: var(--text-sm); font-weight: 550; }
 
 .faq__rail-count {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.6875rem;
   opacity: 0.7;
   margin-inline-start: auto;
@@ -136,10 +136,9 @@
 
 .faq__address-label {
   display: block;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--color-accent);
   margin-block-end: var(--space-xs);
 }

@@ -134,7 +134,6 @@ export default function Videos() {
                     ) : (
                       <span className="video-card__placeholder" aria-hidden="true" />
                     )}
-                    <span className="video-card__scan" aria-hidden="true" />
                   </span>
                   <span className="video-card__body">
                     <span className="video-card__year">{video.year}</span>

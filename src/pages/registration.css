@@ -22,13 +22,11 @@
     box-shadow var(--duration-normal) var(--ease-out-quart);
 }
 
-.tier:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+.tier:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
 .tier--highlight {
   border-color: transparent;
-  background:
-    radial-gradient(120% 100% at 0% 0%, oklch(95% 0.045 60) 0%, transparent 65%),
-    var(--color-surface-raised);
+  background: var(--color-surface-raised);
   box-shadow: var(--shadow-md);
 }
 
@@ -38,17 +36,16 @@
   inset-block: 0;
   inset-inline-start: 0;
   inline-size: 4px;
-  background: linear-gradient(180deg, var(--color-accent), var(--color-signal));
+  background: var(--color-accent);
 }
 
 .tier__flag {
   align-self: flex-start;
   padding: 0.25rem 0.7rem;
   margin-block-end: var(--space-xs);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.6875rem;
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: oklch(28% 0.08 48);
   background: var(--color-accent-soft);
   border-radius: var(--radius-pill);
@@ -57,10 +54,9 @@
 .tier__name { font-size: var(--text-lg); }
 
 .tier__window {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--color-muted);
 }
 
@@ -117,10 +113,9 @@
 
 .deposit__label {
   margin-block-start: var(--space-2xs);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--color-muted);
 }
 
@@ -211,10 +206,9 @@
 
 .key-dates__date {
   flex: 0 0 11rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--color-accent);
   padding-block-start: 0.15rem;
 }
@@ -231,11 +225,10 @@
 }
 
 .fine-print__title {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 500;
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--color-muted);
   margin-block-end: var(--space-md);
 }

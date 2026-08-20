@@ -74,10 +74,9 @@
 .navbar.is-scrolled .navbar__wordmark-main { color: var(--color-ink); }
 
 .navbar__wordmark-sub {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.625rem;
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
+  letter-spacing: normal;
   color: var(--color-night-muted);
   margin-block-start: 3px;
   transition: color var(--duration-normal) var(--ease-out-quart);
@@ -221,10 +220,10 @@
 .navbar__drawer-link.is-active { color: var(--color-primary); }
 
 .navbar__drawer-index {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
   color: var(--color-muted);
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: normal;
 }
 
 @keyframes drawer-item-in {
