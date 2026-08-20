@@ -22,12 +22,11 @@
     box-shadow var(--duration-normal) var(--ease-out-quart);
 }
 
-.tier:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.tier:hover { border-color: var(--color-ink); }
 
 .tier--highlight {
   border-color: transparent;
   background: var(--color-surface-raised);
-  box-shadow: var(--shadow-md);
 }
 
 .tier--highlight::before {
@@ -48,7 +47,7 @@
   letter-spacing: normal;
   color: oklch(28% 0.08 48);
   background: var(--color-accent-soft);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
 }
 
 .tier__name { font-size: var(--text-lg); }

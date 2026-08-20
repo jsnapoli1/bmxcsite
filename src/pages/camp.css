@@ -92,17 +92,15 @@
 
 .packing__card {
   padding: var(--space-xl);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border-block-start: 1px solid var(--color-line);
   transition:
     transform var(--duration-normal) var(--ease-out-expo),
     box-shadow var(--duration-normal) var(--ease-out-quart);
 }
 
 .packing__card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  
 }
 
 .packing__category {

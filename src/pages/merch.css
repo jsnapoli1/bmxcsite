@@ -13,7 +13,6 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
   border: 1px solid var(--color-accent-soft);
-  box-shadow: var(--shadow-md);
 }
 
 .merch-alert__badge {
@@ -25,7 +24,7 @@
   letter-spacing: normal;
   color: oklch(26% 0.08 48);
   background: var(--color-accent-soft);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
 }
 
 .merch-alert__body {
@@ -47,9 +46,8 @@
   flex-direction: column;
   gap: var(--space-sm);
   padding: var(--space-xl);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border-block-start: 1px solid var(--color-line);
   overflow: hidden;
   transition:
     transform var(--duration-normal) var(--ease-out-expo),
@@ -71,8 +69,7 @@
 }
 
 .merch-fact:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  
   border-color: transparent;
 }
 
@@ -120,7 +117,6 @@
   padding: var(--space-xl);
   background: var(--color-night-raised);
   border: 1px solid var(--color-night-line);
-  border-radius: var(--radius-lg);
   transition:
     transform var(--duration-normal) var(--ease-out-expo),
     border-color var(--duration-fast) var(--ease-out-quart);
@@ -192,7 +188,6 @@
 }
 
 .merch-item:hover {
-  transform: translateY(-2px);
   border-color: var(--color-accent);
 }
 
@@ -212,7 +207,7 @@
   letter-spacing: normal;
   color: var(--color-night);
   background: var(--color-accent);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
 }
 
 .merch-item__name { font-size: var(--text-lg); }

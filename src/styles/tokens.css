@@ -9,13 +9,13 @@
      Sampled from the camp's own logo art: navy #183060 (62% of the mark),
      kelly green #306030, and gold #c09018. Their site also runs a charcoal
      #2a2a2a for body text. This is their palette, not an invented one. */
-  --color-ink: #2a2a2a;
-  --color-ink-soft: #4d4d4d;
-  --color-muted: #767676;
+  --color-ink: #1c1a17;
+  --color-ink-soft: #4a463f;
+  --color-muted: #7d766a;
 
-  --color-surface: #ffffff;
+  --color-surface: #faf8f4;
   --color-surface-raised: #ffffff;
-  --color-surface-sunken: #f2f2f0;
+  --color-surface-sunken: #f0ece4;
 
   /* Navy — the logo's dominant colour. */
   --color-primary: #183060;
@@ -29,8 +29,8 @@
   /* Kelly green — the mountains and pines. */
   --color-signal: #306030;
 
-  --color-line: #dcdcd8;
-  --color-line-strong: #b8b8b2;
+  --color-line: #ddd6c9;
+  --color-line-strong: #a89f8d;
 
   /* --- Dark surfaces (used per-section, not as a global theme) --- */
   --color-night: #182f4f;
@@ -42,7 +42,7 @@
   /* --- Typography ---------------------------------------------------------
      Two families only. A condensed grotesque for display (athletic, editorial,
      reads at scale) + a humanist sans for body. */
-  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
@@ -54,9 +54,9 @@
   --text-xl: clamp(1.375rem, 1.2rem + 0.85vw, 2rem);
   --text-2xl: clamp(1.5rem, 1.25rem + 1.1vw, 2.25rem);
   --text-3xl: clamp(1.75rem, 1.35rem + 1.7vw, 2.75rem);
-  --text-hero: clamp(2.25rem, 1.5rem + 3.2vw, 4rem);
+  --text-hero: clamp(2.5rem, 1.7rem + 3.4vw, 4.25rem);
 
-  --leading-tight: 1.15;
+  --leading-tight: 1.08;
   --leading-snug: 1.3;
   --leading-normal: 1.6;
   --leading-relaxed: 1.75;
@@ -82,21 +82,17 @@
   --container-wide: 92rem;
 
   /* --- Radii — deliberately varied, not one value everywhere --- */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
   --radius-pill: 999px;
 
   /* --- Depth --- */
-  --shadow-sm: 0 1px 2px oklch(20% 0.03 250 / 0.06),
-               0 2px 6px oklch(20% 0.03 250 / 0.05);
-  --shadow-md: 0 2px 6px oklch(20% 0.03 250 / 0.07),
-               0 10px 24px oklch(20% 0.03 250 / 0.08);
-  --shadow-lg: 0 6px 16px oklch(20% 0.03 250 / 0.09),
-               0 24px 56px oklch(20% 0.03 250 / 0.12);
-  --shadow-glow: 0 0 0 1px oklch(48% 0.15 250 / 0.15),
-                 0 12px 40px oklch(48% 0.15 250 / 0.22);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-glow: none;
 
   /* --- Motion ---
      Track-inspired easing: a hard drive out of the blocks, a long float. */

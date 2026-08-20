@@ -27,78 +27,55 @@
 .home-pillars { background: var(--color-surface-sunken); }
 
 .home-pillars__grid {
-  display: grid;
-  gap: var(--space-md);
-}
-
-.pillar-card {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  padding: var(--space-xl);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition:
-    transform var(--duration-normal) var(--ease-out-expo),
-    box-shadow var(--duration-normal) var(--ease-out-quart),
-    border-color var(--duration-normal) var(--ease-out-quart);
+  border-block-end: 1px solid var(--color-line);
+  max-inline-size: 58rem;
 }
 
-/* A lane of colour sweeps down the left edge on hover. */
-.pillar-card::before {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: 3px;
-  background: var(--color-accent);
-  transform: scaleY(0);
-  transform-origin: top center;
-  transition: transform var(--duration-slow) var(--ease-out-expo);
+/* Entries in a guide, not floating cards: a ruled list with the index
+   set as a marginal figure, the way a handbook numbers its sections. */
+.pillar-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: var(--space-md);
+  align-items: start;
+  padding-block: var(--space-lg);
+  border-block-start: 1px solid var(--color-line);
+  background: transparent;
+  transition: background-color var(--duration-fast) var(--ease-out-quart);
 }
 
-.pillar-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-color: transparent;
-}
+.pillar-card:hover { background: var(--color-surface-raised); }
 
-.pillar-card:hover::before { transform: scaleY(1); }
+.pillar-card__index {
+  grid-row: 1 / span 3;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+  padding-block-start: 0.1em;
+}
 
 .pillar-card__tag {
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  letter-spacing: normal;
+  font-size: var(--text-sm);
+  font-weight: 600;
   color: var(--color-primary);
 }
 
 .pillar-card__title {
-  font-size: var(--text-xl);
-  max-inline-size: 22ch;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  max-inline-size: 30ch;
 }
 
 .pillar-card__body {
   color: var(--color-ink-soft);
   line-height: var(--leading-relaxed);
-  max-inline-size: 56ch;
+  max-inline-size: 62ch;
 }
-
-/* Oversized index numeral, ghosted into the corner. */
-.pillar-card__index {
-  position: absolute;
-  inset-block-start: var(--space-md);
-  inset-inline-end: var(--space-lg);
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 800;
-  color: var(--color-line);
-  transition: color var(--duration-normal) var(--ease-out-quart);
-}
-
-.pillar-card:hover .pillar-card__index { color: var(--color-accent-soft); }
 
 /* --- Location: dark section --- */
 .home-location {
@@ -177,8 +154,5 @@
 @media (min-width: 56rem) {
   .home-intro { grid-template-columns: minmax(0, 34rem); gap: var(--space-lg); }
   .home-location__inner { grid-template-columns: 1fr 1.1fr; gap: var(--space-3xl); align-items: start; }
-  .home-pillars__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); }
-  /* All four cards share the grid evenly. Spanning the first card across
-     both columns left the fourth one orphaned beside an empty cell. */
-  .pillar-card--wide { grid-column: auto; }
+
 }

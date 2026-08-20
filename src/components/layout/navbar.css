@@ -22,7 +22,6 @@
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-block-end-color: var(--color-line);
-  box-shadow: var(--shadow-sm);
 }
 
 .navbar__inner {

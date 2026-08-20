@@ -35,9 +35,8 @@
   display: flex;
   gap: var(--space-md);
   padding: var(--space-lg);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border-block-start: 1px solid var(--color-line);
   transition:
     transform var(--duration-normal) var(--ease-out-expo),
     box-shadow var(--duration-normal) var(--ease-out-quart),
@@ -45,8 +44,7 @@
 }
 
 .staff-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  
   border-color: transparent;
 }
 

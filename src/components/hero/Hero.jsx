@@ -19,10 +19,12 @@ export default function Hero() {
       </div>
 
       <div className="hero__inner container-wide">
-        <Reveal variant="fade" className="hero__eyebrow">
-          <span className="eyebrow eyebrow-light">
-            Est. {CAMP.founded} · {CAMP.venue.town}
-          </span>
+        {/* The founding year set as a masthead rule, the way a handbook
+            or field guide states its edition. */}
+        <Reveal variant="fade" className="hero__masthead">
+          <span className="hero__est">Established 1969</span>
+          <span className="hero__rule" aria-hidden="true" />
+          <span className="hero__place">{CAMP.venue.town}</span>
         </Reveal>
 
         <h1 className="hero__title" id="hero-heading">
