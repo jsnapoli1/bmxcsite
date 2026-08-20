@@ -1,0 +1,119 @@
+/* ===========================================================================
+   Carousel — native scroll-snap so touch and trackpad behave the way the
+   platform expects; arrows and dots drive the same scroll for pointer users.
+   =========================================================================== */
+
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.carousel__track {
+  display: flex;
+  /* Stretch so every slide matches the tallest card's height. */
+  align-items: stretch;
+  gap: var(--space-lg);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  /* Room for the card lift on hover, and for focus rings. */
+  padding-block: var(--space-xs);
+  padding-inline: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.carousel__track::-webkit-scrollbar { display: none; }
+
+.carousel__slide {
+  display: flex;
+  flex: 0 0 auto;
+  inline-size: min(20rem, 78vw);
+  scroll-snap-align: start;
+}
+
+/* --- Controls --- */
+.carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.carousel__dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.carousel__dot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out-quart),
+    inline-size var(--duration-normal) var(--ease-out-expo);
+}
+
+.carousel__dot:hover { background: var(--color-primary); }
+
+/* The active dot stretches into a lane rather than just changing colour. */
+.carousel__dot.is-active {
+  inline-size: 1.75rem;
+  background: var(--color-accent);
+}
+
+.carousel__arrows {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.carousel__arrow {
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-spring),
+    border-color var(--duration-fast) var(--ease-out-quart),
+    background-color var(--duration-fast) var(--ease-out-quart),
+    opacity var(--duration-fast) var(--ease-out-quart);
+}
+
+.carousel__arrow:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
+}
+
+.carousel__arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* --- On dark surfaces --- */
+.carousel--light .carousel__dot { background: var(--color-night-line); }
+.carousel--light .carousel__dot.is-active { background: var(--color-accent); }
+
+.carousel--light .carousel__arrow {
+  border-color: var(--color-night-line);
+  color: var(--color-night-text);
+}
+
+.carousel--light .carousel__arrow:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background: var(--color-night-raised);
+  color: var(--color-accent);
+}

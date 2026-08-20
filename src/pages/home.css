@@ -177,8 +177,10 @@
 }
 
 @media (min-width: 56rem) {
-  .home-intro { grid-template-columns: 1fr 1fr; gap: var(--space-3xl); align-items: start; }
+  .home-intro { grid-template-columns: 0.85fr 1.15fr; gap: var(--space-2xl); align-items: start; }
   .home-location__inner { grid-template-columns: 1fr 1.1fr; gap: var(--space-3xl); align-items: start; }
   .home-pillars__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); }
-  .pillar-card--wide { grid-column: span 2; }
+  /* All four cards share the grid evenly. Spanning the first card across
+     both columns left the fourth one orphaned beside an empty cell. */
+  .pillar-card--wide { grid-column: auto; }
 }

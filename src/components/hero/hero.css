@@ -162,9 +162,7 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
   margin-block-start: clamp(3rem, 8vw, 5.5rem);
-  background: var(--color-night-line);
   border-block-start: 1px solid var(--color-night-line);
 }
 
@@ -173,9 +171,14 @@
   flex-direction: column;
   gap: var(--space-2xs);
   padding: var(--space-lg) var(--space-md);
-  background: var(--color-night);
+  /* Dividers are drawn as cell borders rather than a grid gap showing a
+     background through it — a gap-based divider bleeds past the container
+     padding and paints slabs beyond the content edges. */
+  border-block-end: 1px solid var(--color-night-line);
   transition: background-color var(--duration-normal) var(--ease-out-quart);
 }
+
+.hero__stat + .hero__stat { border-inline-start: 1px solid var(--color-night-line); }
 
 .hero__stat:hover { background: var(--color-night-raised); }
 
@@ -229,6 +232,9 @@
 
 @media (min-width: 48rem) {
   .hero__stats { grid-template-columns: repeat(4, 1fr); }
-  .hero__stat { padding: var(--space-xl) var(--space-lg); }
+  .hero__stat {
+    padding: var(--space-xl) var(--space-lg);
+    border-block-end: 0;
+  }
   .hero__scroll { display: block; }
 }

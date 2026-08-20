@@ -58,9 +58,14 @@ export default function Navbar() {
     <header className={`navbar${isScrolled ? ' is-scrolled' : ''}${isMenuOpen ? ' is-open' : ''}`}>
       <div className="navbar__inner container-wide">
         <NavLink to="/" className="navbar__brand" aria-label="Blue Mountain XC Camp — home">
-          <span className="navbar__mark" aria-hidden="true">
-            <span className="navbar__mark-peak" />
-          </span>
+          <img
+            className="navbar__mark"
+            src="/bmxc-logo.png"
+            alt=""
+            width="40"
+            height="40"
+            aria-hidden="true"
+          />
           <span className="navbar__wordmark">
             <span className="navbar__wordmark-main">BMXC</span>
             <span className="navbar__wordmark-sub">Est. 1969</span>

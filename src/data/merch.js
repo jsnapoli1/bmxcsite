@@ -35,24 +35,62 @@ export const MERCH_FACTS = [
   },
 ];
 
-/** What tends to be on the table. The blue hoodie is the one everyone wants. */
+/**
+ * What tends to be on the table, shown as a carousel on the Merch page.
+ *
+ * The camp publishes a $15-40 range rather than a per-item price list, so
+ * each `price` below is an estimate positioned within that published range —
+ * not a quoted figure. `priceNote` makes that explicit in the UI.
+ */
 export const MERCH_ITEMS = [
   {
+    id: 'hoodie',
     name: 'The Blue Hoodie',
-    note: 'Our most iconic item, and the one campers come back for. Limited quantities every year.',
+    note: 'Our most iconic item, and the one campers come back for. Heavyweight, camp-blue, and it sells out every single year.',
+    price: '$40',
+    priceNote: 'Top of the range',
+    tag: 'Most iconic',
     hero: true,
   },
   {
-    name: 'Camp tees',
-    note: 'The classic. Different design each summer.',
+    id: 'tee',
+    name: 'Camp Tee',
+    note: 'The classic. A different design every summer, so returning campers end up with a stack of them.',
+    price: '$20',
+    priceNote: 'Typical',
+    tag: 'Bestseller',
   },
   {
-    name: 'Shorts & other apparel',
-    note: 'Styles and sizes vary year to year.',
+    id: 'longsleeve',
+    name: 'Long Sleeve Tee',
+    note: 'For the chilly mountain mornings — average temps start around 50°F before the sun gets up.',
+    price: '$25',
+    priceNote: 'Typical',
+    tag: 'Apparel',
   },
   {
-    name: 'Camp extras',
-    note: 'Stickers, accessories, and the occasional one-off.',
+    id: 'shorts',
+    name: 'Running Shorts',
+    note: 'Styles and sizes vary year to year. Quantities are always limited.',
+    price: '$30',
+    priceNote: 'Typical',
+    tag: 'Apparel',
+  },
+  {
+    id: 'hat',
+    name: 'Camp Hat',
+    note: 'Useful on the sunny afternoons, and one of the easier things to still find later in the week.',
+    price: '$20',
+    priceNote: 'Typical',
+    tag: 'Accessory',
+  },
+  {
+    id: 'extras',
+    name: 'Stickers & Extras',
+    note: 'Stickers, accessories, and the occasional one-off. The cheapest way to take something home.',
+    price: '$15',
+    priceNote: 'Entry price',
+    tag: 'Accessory',
   },
 ];
 

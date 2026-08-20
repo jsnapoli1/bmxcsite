@@ -2,6 +2,7 @@ import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import Button from '../components/ui/Button.jsx';
+import Carousel from '../components/ui/Carousel.jsx';
 import { MERCH, MERCH_FACTS, MERCH_ITEMS, GIVEAWAYS } from '../data/merch.js';
 import './merch.css';
 
@@ -52,20 +53,32 @@ export default function Merch() {
             as="h2"
           />
 
-          <ul className="merch-lineup__grid">
-            {MERCH_ITEMS.map((item, index) => (
-              <Reveal
-                as="li"
-                key={item.name}
-                delay={Math.min(index, 5) * 45}
-                className={`merch-item${item.hero ? ' merch-item--hero' : ''}`}
+          <Carousel label="BMXC merch" className="carousel--light merch-carousel">
+            {MERCH_ITEMS.map((item) => (
+              <article
+                key={item.id}
+                className={`carousel__slide merch-item${item.hero ? ' merch-item--hero' : ''}`}
               >
-                {item.hero ? <span className="merch-item__flag">Most iconic</span> : null}
+                <div className="merch-item__top">
+                  <span className="merch-item__flag">{item.tag}</span>
+                  <span className="merch-item__price">
+                    {item.price}
+                    <span className="merch-item__price-note">{item.priceNote}</span>
+                  </span>
+                </div>
                 <h3 className="merch-item__name">{item.name}</h3>
                 <p className="merch-item__note">{item.note}</p>
-              </Reveal>
+              </article>
             ))}
-          </ul>
+          </Carousel>
+
+          <Reveal delay={140} className="merch-lineup__disclaimer">
+            <p>
+              Prices are indicative. The camp publishes a ${MERCH.priceRange.min}–
+              {MERCH.priceRange.max} range rather than a per-item list, and styles,
+              sizes, and quantities change every summer.
+            </p>
+          </Reveal>
         </div>
       </section>
 

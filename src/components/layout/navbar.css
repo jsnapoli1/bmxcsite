@@ -41,29 +41,19 @@
   flex-shrink: 0;
 }
 
+/* The camp's own mark. The source art is square with its own navy field,
+   so it sits in a rounded frame rather than being masked or recoloured. */
 .navbar__mark {
-  position: relative;
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
   border-radius: var(--radius-md);
-  background: linear-gradient(155deg, var(--color-primary-bright), var(--color-primary-deep));
-  overflow: hidden;
-  display: grid;
-  place-items: center;
+  object-fit: cover;
+  flex-shrink: 0;
   transition: transform var(--duration-normal) var(--ease-spring);
 }
 
 .navbar__brand:hover .navbar__mark {
   transform: translateY(-2px) rotate(-4deg);
-}
-
-/* A small mountain peak carved out of the mark. */
-.navbar__mark-peak {
-  inline-size: 0;
-  block-size: 0;
-  border-inline: 0.5rem solid transparent;
-  border-block-end: 0.72rem solid oklch(100% 0 0 / 0.92);
-  transform: translateY(1px);
 }
 
 .navbar__wordmark {
