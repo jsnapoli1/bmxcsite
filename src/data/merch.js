@@ -36,62 +36,67 @@ export const MERCH_FACTS = [
 ];
 
 /**
- * What tends to be on the table, shown as a carousel on the Merch page.
+ * The apparel line, sourced from bluemountainxccamp.com/apparel.html —
+ * product photos, materials, and colours are the camp's own.
  *
- * The camp publishes a $15-40 range rather than a per-item price list, so
- * each `price` below is an estimate positioned within that published range —
- * not a quoted figure. `priceNote` makes that explicit in the UI.
+ * The camp does NOT publish per-item prices, only a $15-40 range across all
+ * merch. `priceNote` positions each item inside that range without implying
+ * a quoted figure. The page states this explicitly.
  */
 export const MERCH_ITEMS = [
   {
     id: 'hoodie',
-    name: 'The Blue Hoodie',
-    note: 'Our most iconic item, and the one campers come back for. Heavyweight, camp-blue, and it sells out every single year.',
-    price: '$40',
+    name: 'BMXC Hoodie',
+    fit: 'Unisex',
+    material: '100% cotton',
+    color: 'Royal Blue',
+    note: 'The most iconic item at camp, and the one campers come back for. It sells out every single year.',
+    image: '/merch/hoodie.jpg',
     priceNote: 'Top of the range',
     tag: 'Most iconic',
     hero: true,
   },
   {
-    id: 'tee',
-    name: 'Camp Tee',
-    note: 'The classic. A different design every summer, so returning campers end up with a stack of them.',
-    price: '$20',
-    priceNote: 'Typical',
-    tag: 'Bestseller',
-  },
-  {
-    id: 'longsleeve',
-    name: 'Long Sleeve Tee',
-    note: 'For the chilly mountain mornings — average temps start around 50°F before the sun gets up.',
-    price: '$25',
-    priceNote: 'Typical',
+    id: 'singlet',
+    name: 'BMXC Singlet',
+    fit: "Unisex and women's",
+    material: '100% polyester wicking knit',
+    color: 'Varies by year',
+    note: 'Race-ready wicking knit carrying the mountain logo. Colours are set fresh each summer.',
+    image: '/merch/singlet.jpg',
+    priceNote: 'Mid range',
     tag: 'Apparel',
   },
   {
-    id: 'shorts',
-    name: 'Running Shorts',
-    note: 'Styles and sizes vary year to year. Quantities are always limited.',
-    price: '$30',
-    priceNote: 'Typical',
+    id: 'eat-run-sleep',
+    name: 'EAT-RUN-SLEEP Singlet',
+    fit: 'Unisex',
+    material: '100% polyester wicking knit',
+    color: 'Varies by year',
+    note: 'The camp mantra down the front, mountain logo on the back.',
+    image: '/merch/eat-run-sleep.jpg',
+    priceNote: 'Mid range',
     tag: 'Apparel',
   },
+];
+
+/** Shirts campers receive or earn rather than buy. */
+export const INCLUDED_SHIRTS = [
   {
-    id: 'hat',
-    name: 'Camp Hat',
-    note: 'Useful on the sunny afternoons, and one of the easier things to still find later in the week.',
-    price: '$20',
-    priceNote: 'Typical',
-    tag: 'Accessory',
+    title: 'Limited edition camper tee',
+    body: 'Every camper gets one free. A new design every summer.',
   },
   {
-    id: 'extras',
-    name: 'Stickers & Extras',
-    note: 'Stickers, accessories, and the occasional one-off. The cheapest way to take something home.',
-    price: '$15',
-    priceNote: 'Entry price',
-    tag: 'Accessory',
+    title: 'Camp Champion tee',
+    body: 'Not for sale at any price — these are won by taking on camp challenges during the week.',
   },
+];
+
+/** Caveats the camp states directly on its apparel page. */
+export const MERCH_CAVEATS = [
+  'Offerings may vary from what is shown without notice, including styles, colour, size, and price.',
+  'No pre-orders or reservations.',
+  'Availability is limited.',
 ];
 
 /** Prizes are given away, not sold — worth distinguishing on this page. */

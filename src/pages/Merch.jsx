@@ -3,7 +3,14 @@ import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import Button from '../components/ui/Button.jsx';
 import Carousel from '../components/ui/Carousel.jsx';
-import { MERCH, MERCH_FACTS, MERCH_ITEMS, GIVEAWAYS } from '../data/merch.js';
+import {
+  MERCH,
+  MERCH_FACTS,
+  MERCH_ITEMS,
+  MERCH_CAVEATS,
+  INCLUDED_SHIRTS,
+  GIVEAWAYS,
+} from '../data/merch.js';
 import './merch.css';
 
 export default function Merch() {
@@ -53,33 +60,85 @@ export default function Merch() {
             as="h2"
           />
 
-          <Carousel label="BMXC merch" className="carousel--light merch-carousel">
+          <Carousel label="BMXC apparel" className="carousel--light merch-carousel">
             {MERCH_ITEMS.map((item) => (
               <article
                 key={item.id}
                 className={`carousel__slide merch-item${item.hero ? ' merch-item--hero' : ''}`}
               >
-                <div className="merch-item__top">
+                <div className="merch-item__media">
+                  <img
+                    src={item.image}
+                    alt={`${item.name} — ${item.color}`}
+                    width="600"
+                    height="600"
+                    loading="lazy"
+                  />
                   <span className="merch-item__flag">{item.tag}</span>
-                  <span className="merch-item__price">
-                    {item.price}
-                    <span className="merch-item__price-note">{item.priceNote}</span>
+                </div>
+
+                <div className="merch-item__body">
+                  <h3 className="merch-item__name">{item.name}</h3>
+                  <p className="merch-item__note">{item.note}</p>
+
+                  <dl className="merch-item__specs">
+                    <div>
+                      <dt>Fit</dt>
+                      <dd>{item.fit}</dd>
+                    </div>
+                    <div>
+                      <dt>Fabric</dt>
+                      <dd>{item.material}</dd>
+                    </div>
+                    <div>
+                      <dt>Colour</dt>
+                      <dd>{item.color}</dd>
+                    </div>
+                  </dl>
+
+                  <span className="merch-item__price-note">
+                    {item.priceNote} of ${MERCH.priceRange.min}–{MERCH.priceRange.max}
                   </span>
                 </div>
-                <h3 className="merch-item__name">{item.name}</h3>
-                <p className="merch-item__note">{item.note}</p>
               </article>
             ))}
           </Carousel>
 
           <Reveal delay={140} className="merch-lineup__disclaimer">
             <p>
-              Prices are indicative. The camp publishes a ${MERCH.priceRange.min}–
-              {MERCH.priceRange.max} range rather than a per-item list, and styles,
-              sizes, and quantities change every summer.
+              The camp publishes a ${MERCH.priceRange.min}–{MERCH.priceRange.max} range
+              across all merch rather than per-item prices, so the notes above place each
+              item within that range. Straight from the camp:
             </p>
+            <ul className="merch-caveats">
+              {MERCH_CAVEATS.map((caveat) => (
+                <li key={caveat}>{caveat}</li>
+              ))}
+            </ul>
           </Reveal>
         </div>
+      </section>
+
+      {/* --- Shirts you don't pay for --- */}
+      <section className="section container" aria-labelledby="included-heading">
+        <SectionHeading
+          eyebrow="No cash required"
+          title="Two shirts you don't buy"
+          as="h2"
+        />
+        <ul className="included-shirts">
+          {INCLUDED_SHIRTS.map((shirt, index) => (
+            <Reveal
+              as="li"
+              key={shirt.title}
+              delay={Math.min(index, 5) * 45}
+              className="included-shirt"
+            >
+              <h3 className="included-shirt__title">{shirt.title}</h3>
+              <p className="included-shirt__body">{shirt.body}</p>
+            </Reveal>
+          ))}
+        </ul>
       </section>
 
       {/* --- Giveaways are earned, not bought --- */}

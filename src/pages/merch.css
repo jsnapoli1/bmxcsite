@@ -130,35 +130,71 @@
     border-color var(--duration-fast) var(--ease-out-quart);
 }
 
-.merch-item__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-md);
-  margin-block-end: var(--space-xs);
+/* --- Product photo --- */
+.merch-item__media {
+  position: relative;
+  aspect-ratio: 1;
+  margin-block-end: var(--space-md);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  /* The source shots are on white, so a light plate keeps them from
+     floating on the dark card. */
+  background: oklch(97% 0.004 250);
 }
 
-.merch-item__price {
+.merch-item__media img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  padding: var(--space-md);
+  transition: transform var(--duration-slow) var(--ease-out-expo);
+}
+
+.merch-item:hover .merch-item__media img { transform: scale(1.05); }
+
+.merch-item__body {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  flex-shrink: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-accent);
+  gap: var(--space-xs);
+  flex: 1;
 }
 
-.merch-item__price-note {
-  margin-block-start: var(--space-2xs);
+/* --- Specs --- */
+.merch-item__specs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin-block-start: var(--space-xs);
+  padding-block-start: var(--space-sm);
+  border-block-start: 1px solid var(--color-night-line);
+}
+
+.merch-item__specs > div {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: var(--text-xs);
+}
+
+.merch-item__specs dt {
+  flex: 0 0 3.5rem;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 400;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--color-night-muted);
+}
+
+.merch-item__specs dd {
+  margin: 0;
+  color: var(--color-night-text);
+}
+
+.merch-item__price-note {
+  margin-block-start: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent);
 }
 
 .merch-item:hover {
@@ -175,7 +211,9 @@
 }
 
 .merch-item__flag {
-  align-self: flex-start;
+  position: absolute;
+  inset-block-start: var(--space-sm);
+  inset-inline-start: var(--space-sm);
   padding: 0.25rem 0.7rem;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
@@ -195,7 +233,6 @@
   color: var(--color-night-muted);
   line-height: var(--leading-relaxed);
   font-size: var(--text-sm);
-  flex: 1;
 }
 
 .merch-lineup__disclaimer {
@@ -225,4 +262,58 @@
 
 @media (min-width: 56rem) {
   .merch-giveaways { grid-template-columns: 1fr 1.1fr; gap: var(--space-3xl); align-items: start; }
+}
+
+/* --- Caveats stated by the camp --- */
+.merch-caveats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin-block-start: var(--space-sm);
+}
+
+.merch-caveats li {
+  position: relative;
+  padding-inline-start: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--color-night-muted);
+}
+
+.merch-caveats li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.62em;
+  inline-size: 0.3rem;
+  block-size: 0.3rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+/* --- Shirts you don't pay for --- */
+.included-shirts {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.included-shirt {
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+  border-inline-start: 3px solid var(--color-accent);
+}
+
+.included-shirt__title {
+  font-size: var(--text-lg);
+  margin-block-end: var(--space-2xs);
+}
+
+.included-shirt__body {
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+}
+
+@media (min-width: 48rem) {
+  .included-shirts { grid-template-columns: repeat(2, 1fr); }
 }
