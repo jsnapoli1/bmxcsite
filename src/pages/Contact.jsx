@@ -37,7 +37,7 @@ export default function Contact() {
       <PageHeader
         eyebrow="Say hello"
         title="Contact Us"
-        lead={`Camp is run by ${CAMP.contact.directors}. Email is the fastest way to get an answer — they answer everything.`}
+        lead={`Questions? Email Camp Directors ${CAMP.contact.directors}, or give us a call.`}
       />
 
       <section className="section container contact" aria-labelledby="contact-heading">

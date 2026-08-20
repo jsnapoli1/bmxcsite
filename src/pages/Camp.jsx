@@ -10,8 +10,8 @@ export default function Camp() {
   return (
     <>
       <PageHeader
-        eyebrow="A week on the mountain"
-        title="What the week looks like"
+        eyebrow="2026 session"
+        title="The Week at Camp"
         lead={`${CAMP.session.start} – ${CAMP.session.end}, ${CAMP.session.year}. Seven days at ${CAMP.venue.name} in ${CAMP.venue.town}.`}
       />
 
@@ -19,8 +19,8 @@ export default function Camp() {
       <section className="section container" aria-labelledby="schedule-heading">
         <SectionHeading
           eyebrow="Full day example"
-          title="One day, start to finish"
-          lead="Every full day follows this rhythm. Run, eat, learn, run again, and get to bed early enough that tomorrow works."
+          title="A full day at camp"
+          lead="Here is what a full day at BMXC looks like."
           as="h2"
         />
 
@@ -46,7 +46,7 @@ export default function Camp() {
           <SectionHeading
             eyebrow="Before you go"
             title="What to pack"
-            lead="Twelve exercise sessions happen during the week, so bring more running kit than you think you need."
+            lead="There are 12 exercise sessions during the week, so bring at least 7 running outfits."
             as="h2"
           />
 
@@ -66,9 +66,9 @@ export default function Camp() {
           <Reveal delay={200} className="packing__note">
             <h3>Please leave at home</h3>
             <p>
-              XC spikes (we don’t wear them for any run or workout), packs of bottled water,
-              and anything valuable enough that losing it would ruin the week — there is no
-              locked storage and no laundry.
+              XC spikes (we do not wear them for any run or workout) and packs of bottled water.
+              There is no locked storage and no laundry, so if an item must be safeguarded,
+              consider leaving it at home.
             </p>
             <Button to="/faq" variant="ghost">More in the FAQ →</Button>
           </Reveal>

@@ -19,9 +19,9 @@ export default function Faq() {
   return (
     <>
       <PageHeader
-        eyebrow="Everything you asked"
+        eyebrow="Common questions"
         title="Frequently Asked Questions"
-        lead="Registration, running groups, cabins, food, buses, and mail. If it isn't here, email the directors."
+        lead="If your question is not answered here, email Camp Directors Ken and Sarah."
       />
 
       <section className="section container faq" aria-labelledby="faq-heading">

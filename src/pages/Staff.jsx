@@ -18,9 +18,9 @@ export default function Staff() {
   return (
     <>
       <PageHeader
-        eyebrow="Who you'll run with"
+        eyebrow="Our staff"
         title="The Staff"
-        lead="Hall of Fame high school coaches, college athletes, nurses, and lifeguards — many of whom have been coming back for decades."
+        lead="Many of our staff have been coming back to BMXC for decades. Some have been with us since the 1980s and 1990s."
       />
 
       <section className="section container" aria-labelledby="staff-heading">
@@ -60,8 +60,8 @@ export default function Staff() {
       <section className="section staff-credentials" aria-labelledby="credentials-heading">
         <div className="container">
           <SectionHeading
-            eyebrow="On staff every week"
-            title="Who else is on the mountain"
+            eyebrow="Every week"
+            title="Also on staff"
             tone="light"
             as="h2"
           />
@@ -82,8 +82,8 @@ export default function Staff() {
       <section className="section container" aria-labelledby="speakers-heading">
         <SectionHeading
           eyebrow="Guest speakers"
-          title="Olympians, authors, and former campers who came back"
-          lead="We bring the best athletes, coaches, and educators to spend time with the campers — including former BMXC campers who went on to run professionally."
+          title="Guest Speakers"
+          lead="We bring the best athletes, coaches, and educators to spend time with the campers. Some are former BMXC campers who went on to run professionally."
           as="h2"
         />
 

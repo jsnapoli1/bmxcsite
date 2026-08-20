@@ -21,7 +21,7 @@ export default function Playlists() {
       <PageHeader
         eyebrow="Sound"
         title="Camp Playlists"
-        lead="The soundtrack to the bus ride, the warm-up, and the last night campfire — one playlist per year, built by the campers themselves."
+        lead="A playlist for each year of camp, put together by campers."
       />
 
       <section className="section container playlists" aria-labelledby="playlists-heading">

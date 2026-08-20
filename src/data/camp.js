@@ -43,22 +43,22 @@ export const STATS = [
 export const PILLARS = [
   {
     title: 'Grouped by ability, not by age',
-    body: 'We collect your training data right before camp so we have an accurate view of your fitness, then build running groups from it. Every group runs with an assigned coach, and road support cars are out on the route.',
+    body: 'We collect your training data right before camp so we have an accurate view of your training and fitness, and we create running groups based on that data. Every group stays together with an assigned coach, and we have road support cars out on the route.',
     tag: 'Training',
   },
   {
-    title: 'Miles of Pocono terrain',
-    body: 'Winding dirt roads, sprawling grass fields, smooth paved roads, and a long cinder path. No track, no measured intervals — just honest running on real ground.',
+    title: 'Miles of running terrain',
+    body: 'We run on a combination of winding dirt roads, grass fields, paved roads, and a long cinder path. There is no track at camp, and we do not do measured intervals.',
     tag: 'Terrain',
   },
   {
-    title: 'Coaches with decades in the sport',
-    body: 'Hall of Fame high school coaches, current and former Division 1, 2 and 3 athletes, a registered nurse, and Red Cross certified lifeguards.',
+    title: 'Experienced staff',
+    body: 'Our staff includes Hall of Fame high school coaches, current and former Division 1, 2 and 3 college athletes, a registered nurse, and Red Cross certified lifeguards.',
     tag: 'Staff',
   },
   {
-    title: 'The people you keep',
-    body: 'About half the camp arrives as teams of 7+, the other half in small groups or alone. Nobody stays a stranger — the friendships tend to outlast the seasons.',
+    title: 'Teams and individuals',
+    body: 'About half the camp comes as teams of 7 or more, and the other half in smaller groups or on their own. Campers develop friendships that last well beyond high school.',
     tag: 'Community',
   },
 ];

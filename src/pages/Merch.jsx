@@ -17,20 +17,20 @@ export default function Merch() {
   return (
     <>
       <PageHeader
-        eyebrow="At camp only"
-        title="BMXC Merch"
-        lead="There is no online store. Merch is sold in person during camp week, cash only, first come first served — and the blue hoodie always goes fast."
+        eyebrow="BMXC merchandise"
+        title="Apparel"
+        lead="Show your BMXC pride with the items below, available during the week of camp. Cash only, and availability is limited."
       />
 
       {/* --- The one thing everyone needs to know --- */}
       <section className="section container" aria-labelledby="essentials-heading">
         <Reveal variant="scale" className="merch-alert">
-          <span className="merch-alert__badge">Bring cash</span>
+          <span className="merch-alert__badge">Cash only</span>
           <p className="merch-alert__body">
-            We only accept cash for merch, and there is no ATM at camp. Most campers who
-            buy a few items — plus snacks from the Canteen at ${MERCH.canteenPrice.min}–
-            {MERCH.canteenPrice.max} each — spend around ${MERCH.typicalSpend.min}–
-            {MERCH.typicalSpend.max} across the week.
+            There is no ATM at camp, so bring cash if you plan to buy anything. Canteen
+            snacks are ${MERCH.canteenPrice.min}-{MERCH.canteenPrice.max} each, and most
+            campers spend about ${MERCH.typicalSpend.min}-{MERCH.typicalSpend.max} over
+            the week on merch and snacks.
           </p>
         </Reveal>
 
@@ -53,9 +53,9 @@ export default function Merch() {
       <section className="section merch-lineup" aria-labelledby="lineup-heading">
         <div className="container">
           <SectionHeading
-            eyebrow={`Typically $${MERCH.priceRange.min}–${MERCH.priceRange.max}`}
-            title="What's usually on the table"
-            lead="Styles and sizes change every summer, and quantities are limited. This is the shape of it, not a guaranteed lineup."
+            eyebrow={`Items are $${MERCH.priceRange.min}-${MERCH.priceRange.max} each`}
+            title="What we sell"
+            lead="Offerings may vary from what is shown without notice, including styles, color, size, and price."
             tone="light"
             as="h2"
           />
@@ -95,21 +95,13 @@ export default function Merch() {
                       <dd>{item.color}</dd>
                     </div>
                   </dl>
-
-                  <span className="merch-item__price-note">
-                    {item.priceNote} of ${MERCH.priceRange.min}–{MERCH.priceRange.max}
-                  </span>
                 </div>
               </article>
             ))}
           </Carousel>
 
           <Reveal delay={140} className="merch-lineup__disclaimer">
-            <p>
-              The camp publishes a ${MERCH.priceRange.min}–{MERCH.priceRange.max} range
-              across all merch rather than per-item prices, so the notes above place each
-              item within that range. Straight from the camp:
-            </p>
+            <p>Please note:</p>
             <ul className="merch-caveats">
               {MERCH_CAVEATS.map((caveat) => (
                 <li key={caveat}>{caveat}</li>
@@ -122,8 +114,8 @@ export default function Merch() {
       {/* --- Shirts you don't pay for --- */}
       <section className="section container" aria-labelledby="included-heading">
         <SectionHeading
-          eyebrow="No cash required"
-          title="Two shirts you don't buy"
+          eyebrow="Included with camp"
+          title="T-shirts you do not buy"
           as="h2"
         />
         <ul className="included-shirts">
@@ -145,8 +137,8 @@ export default function Merch() {
       <section className="section container" aria-labelledby="giveaways-heading">
         <div className="merch-giveaways">
           <SectionHeading
-            eyebrow="Not for sale"
-            title="Hundreds of giveaways every week"
+            eyebrow="Prizes"
+            title="Giveaways during the week"
             as="h2"
             className="merch-giveaways__heading"
           />

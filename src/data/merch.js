@@ -11,26 +11,26 @@ export const MERCH = {
   canteenPrice: { min: 1, max: 3 },
 };
 
-/** The facts campers and parents actually need before arriving. */
+/** Merch facts, taken from the camp's FAQ and apparel page. */
 export const MERCH_FACTS = [
   {
     title: 'Cash only',
-    body: 'We only accept cash for BMXC merchandise. There is no ATM at camp, so bring what you plan to spend. The one exception: if we partner with a shoe store for a pop-up shop, they typically take credit cards.',
+    body: 'We only accept cash for BMXC merchandise, and there is no ATM at camp. If we partner with a shoe store for a pop-up shop, they usually take credit cards.',
     tag: 'Payment',
   },
   {
-    title: 'Sold in person, at camp',
-    body: 'Merch is only available in person during camp week. We do not offer preorders or online ordering at this time.',
+    title: 'Available during the week of camp',
+    body: 'Merch is sold in person at camp. No pre-orders, no reservations, and no online ordering.',
     tag: 'Where',
   },
   {
-    title: 'First come, first served',
-    body: 'Merch is sold at various times during the week and every sale is announced ahead of time. Quantities, sizes, and styles are all limited.',
+    title: 'Availability is limited',
+    body: 'Merch is sold at various times during the week, and every sale is announced ahead of time. Quantities, sizes, and styles are limited, and it is first come, first served.',
     tag: 'When',
   },
   {
-    title: 'Reasonable prices',
-    body: 'Items typically run $15-40 each. Most campers who buy a few things — merch plus late-night snacks from the Canteen — spend somewhere around $75-100 across the week.',
+    title: 'Items are $15-40 each',
+    body: 'Most campers spend about $75-100 over the week on merchandise and snacks from the Canteen.',
     tag: 'Cost',
   },
 ];
@@ -39,9 +39,8 @@ export const MERCH_FACTS = [
  * The apparel line, sourced from bluemountainxccamp.com/apparel.html —
  * product photos, materials, and colours are the camp's own.
  *
- * The camp does NOT publish per-item prices, only a $15-40 range across all
- * merch. `priceNote` positions each item inside that range without implying
- * a quoted figure. The page states this explicitly.
+ * The camp does not publish per-item prices, only a $15-40 range across all
+ * merch, so no per-item price is shown.
  */
 export const MERCH_ITEMS = [
   {
@@ -50,10 +49,9 @@ export const MERCH_ITEMS = [
     fit: 'Unisex',
     material: '100% cotton',
     color: 'Royal Blue',
-    note: 'The most iconic item at camp, and the one campers come back for. It sells out every single year.',
+    note: 'Our most popular item. Sizes go quickly.',
     image: '/merch/hoodie.jpg',
-    priceNote: 'Top of the range',
-    tag: 'Most iconic',
+    tag: 'Hoodie',
     hero: true,
   },
   {
@@ -61,34 +59,32 @@ export const MERCH_ITEMS = [
     name: 'BMXC Singlet',
     fit: "Unisex and women's",
     material: '100% polyester wicking knit',
-    color: 'Varies by year',
-    note: 'Race-ready wicking knit carrying the mountain logo. Colours are set fresh each summer.',
+    color: 'TBD for this year',
+    note: 'Wicking knit singlet with the BMXC logo on the front.',
     image: '/merch/singlet.jpg',
-    priceNote: 'Mid range',
-    tag: 'Apparel',
+    tag: 'Singlet',
   },
   {
     id: 'eat-run-sleep',
     name: 'EAT-RUN-SLEEP Singlet',
     fit: 'Unisex',
     material: '100% polyester wicking knit',
-    color: 'Varies by year',
-    note: 'The camp mantra down the front, mountain logo on the back.',
+    color: 'TBD for this year',
+    note: 'EAT-RUN-EAT-RUN-EAT-SLEEP-REPEAT on the front, BMXC logo on the back.',
     image: '/merch/eat-run-sleep.jpg',
-    priceNote: 'Mid range',
-    tag: 'Apparel',
+    tag: 'Singlet',
   },
 ];
 
 /** Shirts campers receive or earn rather than buy. */
 export const INCLUDED_SHIRTS = [
   {
-    title: 'Limited edition camper tee',
-    body: 'Every camper gets one free. A new design every summer.',
+    title: 'Camper t-shirt',
+    body: 'Every camper gets a free limited edition camper t-shirt.',
   },
   {
-    title: 'Camp Champion tee',
-    body: 'Not for sale at any price — these are won by taking on camp challenges during the week.',
+    title: 'Camp Champion t-shirt',
+    body: 'The coveted Camp Champion t-shirts can be won by participating in camp challenges.',
   },
 ];
 

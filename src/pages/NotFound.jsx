@@ -7,8 +7,8 @@ export default function NotFound() {
     <>
       <PageHeader
         eyebrow="Error 404"
-        title="You've run off the course"
-        lead="That page doesn't exist. Head back to the start and pick up the trail again."
+        title="Page not found"
+        lead="That page does not exist. Try the home page or the FAQ."
       />
       <section className="section container">
         <Reveal>

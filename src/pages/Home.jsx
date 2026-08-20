@@ -31,9 +31,9 @@ export default function Home() {
       <section className="section home-pillars" aria-labelledby="pillars-heading">
         <div className="container">
           <SectionHeading
-            eyebrow="What makes it BMXC"
-            title="Built around the running, and everything that surrounds it"
-            lead="Three hundred campers, seventy teams, one week on the mountain."
+            eyebrow="About camp"
+            title="What makes BMXC different"
+            lead="Around 300 campers and about 70 teams attend each summer."
             as="h2"
           />
 
@@ -60,7 +60,7 @@ export default function Home() {
       <section className="section home-location" aria-labelledby="location-heading">
         <div className="container home-location__inner">
           <SectionHeading
-            eyebrow="The place"
+            eyebrow="Location"
             title="Camp Westmont, in the Pocono Mountains"
             tone="light"
             as="h2"
