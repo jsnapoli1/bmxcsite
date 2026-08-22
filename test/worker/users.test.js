@@ -1,0 +1,152 @@
+import { describe, it, expect, vi } from 'vitest';
+import { env } from 'cloudflare:test';
+import app from '../../worker/app.js';
+import * as jwt from '../../worker/auth/jwt.js';
+
+function asUser(email) {
+  vi.spyOn(jwt, 'verifyAccessJwt').mockResolvedValue(email);
+}
+
+async function seedAdmin(email = 'admin@example.com') {
+  await env.DB.prepare(
+    'INSERT INTO users (email, is_admin) VALUES (?, 1)',
+  ).bind(email).run();
+  return email;
+}
+
+async function call(method, path, body) {
+  return app.fetch(
+    new Request(`https://bmxc.camp${path}`, {
+      method,
+      headers: body ? { 'content-type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+    env,
+  );
+}
+
+describe('users API authorisation', () => {
+  it('denies a non-admin', async () => {
+    await env.DB.prepare(
+      'INSERT INTO users (email, can_blog) VALUES (?, 1)',
+    ).bind('editor@example.com').run();
+    asUser('editor@example.com');
+
+    expect((await call('GET', '/api/admin/users')).status).toBe(403);
+    expect((await call('POST', '/api/admin/users',
+      { email: 'x@example.com' })).status).toBe(403);
+  });
+
+  it('denies an unregistered but verified email', async () => {
+    asUser('stranger@example.com');
+    expect((await call('GET', '/api/admin/users')).status).toBe(403);
+  });
+});
+
+describe('users API', () => {
+  it('lists users', async () => {
+    const admin = await seedAdmin('list-admin@example.com');
+    asUser(admin);
+    const res = await call('GET', '/api/admin/users');
+    expect(res.status).toBe(200);
+    const { users } = await res.json();
+    // Storage in this test file is shared across `it()` blocks (not reset
+    // per test), so assert this admin is present rather than asserting an
+    // exact row count that earlier tests in the file would inflate.
+    expect(users.map((u) => u.email)).toContain(admin);
+  });
+
+  it('creates a user with the requested permissions', async () => {
+    const admin = await seedAdmin('create-admin@example.com');
+    asUser(admin);
+    const res = await call('POST', '/api/admin/users', {
+      email: 'New@Example.com',
+      name: 'New Person',
+      permissions: { blog: true, media: false, merch: false, campinfo: false },
+    });
+    expect(res.status).toBe(201);
+    const { user } = await res.json();
+    expect(user.email).toBe('new@example.com');
+    expect(user.permissions.blog).toBe(true);
+    expect(user.isAdmin).toBe(false);
+  });
+
+  it('rejects an invalid email', async () => {
+    const admin = await seedAdmin('invalid-email-admin@example.com');
+    asUser(admin);
+    const res = await call('POST', '/api/admin/users', { email: 'not-email' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a duplicate email', async () => {
+    const admin = await seedAdmin('dupe-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'dupe@example.com' });
+    const res = await call('POST', '/api/admin/users',
+      { email: 'dupe@example.com' });
+    expect(res.status).toBe(409);
+  });
+
+  it('updates permissions', async () => {
+    const admin = await seedAdmin('update-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'p@example.com' });
+    const res = await call('PATCH', '/api/admin/users/p@example.com', {
+      permissions: { blog: false, media: true, merch: false, campinfo: false },
+    });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.permissions.media).toBe(true);
+  });
+
+  it('deletes a user', async () => {
+    const admin = await seedAdmin('delete-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'gone@example.com' });
+    expect((await call('DELETE', '/api/admin/users/gone@example.com')).status)
+      .toBe(200);
+    const res = await call('GET', '/api/admin/users');
+    const { users } = await res.json();
+    expect(users.map((u) => u.email)).not.toContain('gone@example.com');
+  });
+
+  it('refuses to let an admin remove their own admin flag', async () => {
+    const admin = await seedAdmin('lockout-admin@example.com');
+    asUser(admin);
+    const res = await call('PATCH', `/api/admin/users/${admin}`,
+      { isAdmin: false });
+    expect(res.status).toBe(400);
+  });
+
+  it('refuses to let an admin delete themselves', async () => {
+    const admin = await seedAdmin('selfdelete-admin@example.com');
+    asUser(admin);
+    const res = await call('DELETE', `/api/admin/users/${admin}`);
+    expect(res.status).toBe(400);
+  });
+
+  it('refuses self-deletion even when the URL email differs in case', async () => {
+    const admin = await seedAdmin('case-admin@example.com');
+    asUser('case-admin@example.com');
+    const res = await call('DELETE', '/api/admin/users/CASE-ADMIN@EXAMPLE.COM');
+    expect(res.status).toBe(400);
+    // The admin must still exist afterward — a case-sensitive comparison
+    // would have let this DELETE fall through and remove the account.
+    const check = await env.DB.prepare('SELECT email FROM users WHERE email = ?')
+      .bind(admin).first();
+    expect(check).not.toBeNull();
+  });
+
+  it('writes an audit entry when creating a user', async () => {
+    const admin = await seedAdmin('audit-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'audited@example.com' });
+    // Scope by detail (the target email), not just action, since storage is
+    // shared across `it()` blocks and other tests also write user.create rows.
+    const row = await env.DB.prepare(
+      'SELECT * FROM audit_log WHERE action = ? AND detail = ?',
+    ).bind('user.create', 'audited@example.com').first();
+    expect(row.actor_email).toBe(admin);
+    expect(row.detail).toContain('audited@example.com');
+  });
+});

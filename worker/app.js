@@ -1,12 +1,14 @@
 import { Hono } from 'hono';
 import { requireAuth } from './auth/middleware.js';
 import me from './routes/me.js';
+import users from './routes/users.js';
 
 const app = new Hono();
 
 // Every admin API route is authenticated. Mount before the 404 catch-all.
 app.use('/api/admin/*', requireAuth);
 app.route('/api/admin/me', me);
+app.route('/api/admin/users', users);
 
 app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
 
