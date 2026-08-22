@@ -5,19 +5,6 @@ Vite + React Router, deployed to Cloudflare Workers static assets.
 
 **Live:** https://bmxc.camp · `npm run deploy` (or push to `main` — CI deploys)
 
-## Content is sourced, not invented
-
-Every fact comes from bluemountainxccamp.com. Do not write plausible-sounding
-camp details, prices, or product names — they will be wrong. If a fact isn't
-on their site, say so rather than filling the gap.
-
-The camp publishes a **$15-40 range** for merch, never per-item prices. An
-earlier version invented per-item figures and a "Top of the range" label; both
-were removed. Don't reintroduce them.
-
-Source pages: `/faq.html` (44 Qs), `/apparel.html` (real product photos — not
-in their nav), `/registration.html`, `/staff.html`, `/guest-speakers.html`.
-
 ## Voice
 
 Theirs is plain and direct: *"Your best finish starts with us!"*,

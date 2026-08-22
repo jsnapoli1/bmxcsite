@@ -28,7 +28,7 @@ push. It is kept working via a conditional Vite `base` path
 
 ```
 src/
-├── data/        all user-facing copy, sourced from bluemountainxccamp.com
+├── data/        all user-facing copy, separated from components
 ├── pages/       one component + stylesheet per route
 ├── components/  hero, layout, motion, ui
 ├── styles/      design tokens and global styles
@@ -37,6 +37,5 @@ src/
 
 ## Contributing
 
-Read `CLAUDE.md` first. Content is sourced rather than written — do not invent
-camp facts, prices, or product names. Design and voice constraints are
-documented there and in `src/data/` and `src/styles/`.
+Read `CLAUDE.md` first. Voice and design constraints are documented there,
+with directory-specific notes in `src/data/` and `src/styles/`.

@@ -1,27 +1,29 @@
 # Data modules
 
 All user-facing copy lives here so content edits never touch components.
-Every fact is sourced from bluemountainxccamp.com — see root CLAUDE.md.
 
-| File | Source |
+| File | Holds |
 |---|---|
-| `camp.js` | Home page + `/location.html` |
-| `faq.js` | `/faq.html` (44 questions, 7 categories) |
-| `registration.js` | `/registration.html` (real prices) |
-| `staff.js` | `/staff.html`, `/guest-speakers.html` |
-| `packing.js` | `/packing-list.html` |
-| `merch.js` | `/apparel.html` (3 real products) |
-| `playlists.js` | Camp's Spotify (BMXC23-26) |
-| `videos.js` | Camp's YouTube (15 videos, 2007-2023) |
+| `camp.js` | Camp facts, stats, pillars, daily schedule |
+| `faq.js` | 44 questions across 7 categories + mail addresses |
+| `registration.js` | Price tiers, bus routes, deposit, fine print |
+| `staff.js` | Roster, credentials, guest speakers |
+| `packing.js` | Packing list by category |
+| `merch.js` | 3 apparel items, facts, caveats, included shirts |
+| `playlists.js` | Spotify playlists (BMXC23-26) |
+| `videos.js` | YouTube videos (15, spanning 2007-2023) |
 
-## Rules
+## Notes
 
-**No invented facts.** Prices, product names, dates, staff, and policies must
-trace to a real source. `merch.js` once carried three products that did not
-exist and per-item prices the camp never published.
+**FAQ answers are quoted verbatim** from the camp. Their phrasing — including
+the em-dashes — is intentional. Don't restyle it.
 
-**Quoted FAQ answers stay verbatim.** Don't restyle the camp's own sentences.
+**Prices:** the camp publishes a `$15-40` range for merch, not per-item
+figures. `merch.js` deliberately carries no per-item prices.
 
-**Playlists/videos parse IDs from URLs.** Paste any standard share link into
-`url`; `getSpotifyEmbedId` / `getYouTubeId` extract the ID. Only `videos.js`
-descriptions are written rather than sourced — flagged, unreviewed.
+**Playlists and videos parse IDs from URLs.** Paste any standard share link
+into `url`; `getSpotifyEmbedId` / `getYouTubeId` extract the ID, so no separate
+ID field is needed.
+
+**`videos.js` descriptions are written, not from the channel** — they describe
+footage that was never watched. Unverified.
