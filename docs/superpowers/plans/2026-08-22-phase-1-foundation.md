@@ -111,7 +111,7 @@ Expected: FAIL — cannot resolve `../../worker/app.js`.
 ```js
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
-import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-plugin/config';
+import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-plugin';
 
 export default defineConfig({
   plugins: [
@@ -140,8 +140,7 @@ export default defineConfig({
 
 ```js
 import { beforeEach } from 'vitest';
-import { env } from 'cloudflare:test';
-import { applyD1Migrations } from 'cloudflare:test';
+import { env, applyD1Migrations } from 'cloudflare:test';
 
 // Each test file gets isolated storage; re-apply migrations before every test
 // so no test can observe rows written by another.
