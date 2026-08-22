@@ -67,16 +67,27 @@ users.post('/', async (c) => {
   }
 
   const flags = toFlags(body.permissions, body.isAdmin);
-  await c.env.DB.prepare(
-    `INSERT INTO users
-       (email, name, can_blog, can_media, can_merch, can_campinfo, is_admin)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).bind(
-    email,
-    typeof body.name === 'string' && body.name.trim() ? body.name.trim() : null,
-    flags.can_blog, flags.can_media, flags.can_merch,
-    flags.can_campinfo, flags.is_admin,
-  ).run();
+  try {
+    await c.env.DB.prepare(
+      `INSERT INTO users
+         (email, name, can_blog, can_media, can_merch, can_campinfo, is_admin)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(
+      email,
+      typeof body.name === 'string' && body.name.trim() ? body.name.trim() : null,
+      flags.can_blog, flags.can_media, flags.can_merch,
+      flags.can_campinfo, flags.is_admin,
+    ).run();
+  } catch (error) {
+    // The pre-check above is read-then-write, not atomic: a concurrent POST
+    // for the same email can pass it too. Catch the UNIQUE-constraint
+    // failure here and answer with the same 409 the pre-check returns,
+    // rather than letting the raw D1 error surface as a 500.
+    if (String(error?.message ?? error).includes('UNIQUE constraint failed')) {
+      return c.json({ error: 'That person already has access' }, 409);
+    }
+    throw error;
+  }
 
   await audit(c.env.DB, c.get('email'), 'user.create', email);
 
@@ -98,11 +109,15 @@ users.patch('/:email', async (c) => {
     return c.json({ error: 'You cannot remove your own admin access' }, 400);
   }
 
-  const permissions = body.permissions ?? {
+  // Merge, never replace: a partial `{ blog: true }` must leave the other
+  // three areas untouched. Only an explicit `false` in the body clears one —
+  // silence should never revoke access.
+  const permissions = {
     blog: existing.can_blog === 1,
     media: existing.can_media === 1,
     merch: existing.can_merch === 1,
     campinfo: existing.can_campinfo === 1,
+    ...body.permissions,
   };
   const isAdmin = body.isAdmin ?? existing.is_admin === 1;
   const flags = toFlags(permissions, isAdmin);

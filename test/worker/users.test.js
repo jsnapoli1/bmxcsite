@@ -37,6 +37,21 @@ describe('users API authorisation', () => {
       { email: 'x@example.com' })).status).toBe(403);
   });
 
+  it('denies a non-admin on PATCH and DELETE against a real target', async () => {
+    await env.DB.prepare(
+      'INSERT INTO users (email, can_blog) VALUES (?, 1)',
+    ).bind('target@example.com').run();
+    await env.DB.prepare(
+      'INSERT INTO users (email, can_blog) VALUES (?, 1)',
+    ).bind('editor@example.com').run();
+    asUser('editor@example.com');
+
+    expect((await call('PATCH', '/api/admin/users/target@example.com',
+      { isAdmin: true })).status).toBe(403);
+    expect((await call('DELETE', '/api/admin/users/target@example.com'))
+      .status).toBe(403);
+  });
+
   it('denies an unregistered but verified email', async () => {
     asUser('stranger@example.com');
     expect((await call('GET', '/api/admin/users')).status).toBe(403);
@@ -50,10 +65,8 @@ describe('users API', () => {
     const res = await call('GET', '/api/admin/users');
     expect(res.status).toBe(200);
     const { users } = await res.json();
-    // Storage in this test file is shared across `it()` blocks (not reset
-    // per test), so assert this admin is present rather than asserting an
-    // exact row count that earlier tests in the file would inflate.
-    expect(users.map((u) => u.email)).toContain(admin);
+    expect(users).toHaveLength(1);
+    expect(users[0].email).toBe(admin);
   });
 
   it('creates a user with the requested permissions', async () => {
@@ -99,6 +112,60 @@ describe('users API', () => {
     expect(user.permissions.media).toBe(true);
   });
 
+  it('leaves omitted permissions untouched on a partial PATCH', async () => {
+    const admin = await seedAdmin('partial-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', {
+      email: 'full@example.com',
+      permissions: { blog: true, media: true, merch: true, campinfo: true },
+    });
+
+    const res = await call('PATCH', '/api/admin/users/full@example.com', {
+      permissions: { blog: true },
+    });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.permissions).toEqual({
+      blog: true, media: true, merch: true, campinfo: true,
+    });
+  });
+
+  it('clears a permission when it is explicitly set to false', async () => {
+    const admin = await seedAdmin('explicit-false-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', {
+      email: 'clearone@example.com',
+      permissions: { blog: true, media: true, merch: true, campinfo: true },
+    });
+
+    const res = await call('PATCH', '/api/admin/users/clearone@example.com', {
+      permissions: { media: false },
+    });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.permissions).toEqual({
+      blog: true, media: false, merch: true, campinfo: true,
+    });
+  });
+
+  it('still replaces all four permissions when a full object is sent', async () => {
+    const admin = await seedAdmin('full-patch-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', {
+      email: 'replaceall@example.com',
+      permissions: { blog: true, media: true, merch: true, campinfo: true },
+    });
+
+    const res = await call('PATCH', '/api/admin/users/replaceall@example.com', {
+      permissions: { blog: false, media: false, merch: false, campinfo: false },
+    });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.permissions).toEqual({
+      blog: false, media: false, merch: false, campinfo: false,
+    });
+  });
+
   it('deletes a user', async () => {
     const admin = await seedAdmin('delete-admin@example.com');
     asUser(admin);
@@ -141,12 +208,68 @@ describe('users API', () => {
     const admin = await seedAdmin('audit-admin@example.com');
     asUser(admin);
     await call('POST', '/api/admin/users', { email: 'audited@example.com' });
-    // Scope by detail (the target email), not just action, since storage is
-    // shared across `it()` blocks and other tests also write user.create rows.
     const row = await env.DB.prepare(
       'SELECT * FROM audit_log WHERE action = ? AND detail = ?',
     ).bind('user.create', 'audited@example.com').first();
     expect(row.actor_email).toBe(admin);
     expect(row.detail).toContain('audited@example.com');
+  });
+
+  it('writes an audit entry when updating a user', async () => {
+    const admin = await seedAdmin('audit-update-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'audited-update@example.com' });
+    await call('PATCH', '/api/admin/users/audited-update@example.com',
+      { permissions: { blog: true } });
+
+    const row = await env.DB.prepare(
+      'SELECT * FROM audit_log WHERE action = ? AND detail = ?',
+    ).bind('user.update', 'audited-update@example.com').first();
+    expect(row.actor_email).toBe(admin);
+    expect(row.detail).toContain('audited-update@example.com');
+  });
+
+  it('writes an audit entry when deleting a user', async () => {
+    const admin = await seedAdmin('audit-delete-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'audited-delete@example.com' });
+    await call('DELETE', '/api/admin/users/audited-delete@example.com');
+
+    const row = await env.DB.prepare(
+      'SELECT * FROM audit_log WHERE action = ? AND detail = ?',
+    ).bind('user.delete', 'audited-delete@example.com').first();
+    expect(row.actor_email).toBe(admin);
+    expect(row.detail).toContain('audited-delete@example.com');
+  });
+
+  it('returns 409, not 500, when a duplicate slips past the pre-check', async () => {
+    // Simulates the race the pre-check cannot close: the SELECT sees no row
+    // (stubbed to miss, standing in for a concurrent request winning the
+    // race), but the INSERT still hits a real UNIQUE-constraint violation
+    // because the row already exists. The route must translate that D1
+    // error into the same 409 the pre-check returns, not let it surface as
+    // a 500 with a raw database message.
+    const admin = await seedAdmin('race-admin@example.com');
+    asUser(admin);
+
+    await env.DB.prepare('INSERT INTO users (email) VALUES (?)')
+      .bind('raced@example.com').run();
+
+    const realPrepare = env.DB.prepare.bind(env.DB);
+    const prepareSpy = vi.spyOn(env.DB, 'prepare').mockImplementation((sql) => {
+      if (sql.includes('SELECT email FROM users WHERE email = ?')) {
+        return { bind: () => ({ first: async () => null }) };
+      }
+      return realPrepare(sql);
+    });
+
+    try {
+      const res = await call('POST', '/api/admin/users', { email: 'raced@example.com' });
+      expect(res.status).toBe(409);
+      const body = await res.json();
+      expect(body.error).toBe('That person already has access');
+    } finally {
+      prepareSpy.mockRestore();
+    }
   });
 });
