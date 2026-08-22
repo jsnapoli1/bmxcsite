@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "bmxc",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "18788aa1-60db-4026-803c-c556e0b1401e",
       "migrations_dir": "migrations"
     }
   ],
