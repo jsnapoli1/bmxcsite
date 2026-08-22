@@ -82,4 +82,28 @@ describe('verifyAccessJwt', () => {
     await expect(verifyAccessJwt(requestWithToken(token), env))
       .rejects.toBeInstanceOf(AuthError);
   });
+
+  it('rejects a valid token with an object email claim', async () => {
+    const token = await signToken({ email: { evil: true } });
+    await expect(verifyAccessJwt(requestWithToken(token), env))
+      .rejects.toBeInstanceOf(AuthError);
+  });
+
+  it('rejects a valid token with an array email claim', async () => {
+    const token = await signToken({ email: ['a@b.com', 'admin@c.com'] });
+    await expect(verifyAccessJwt(requestWithToken(token), env))
+      .rejects.toBeInstanceOf(AuthError);
+  });
+
+  it('rejects a valid token with a numeric email claim', async () => {
+    const token = await signToken({ email: 12345 });
+    await expect(verifyAccessJwt(requestWithToken(token), env))
+      .rejects.toBeInstanceOf(AuthError);
+  });
+
+  it('rejects a valid token with an empty-string email claim', async () => {
+    const token = await signToken({ email: '' });
+    await expect(verifyAccessJwt(requestWithToken(token), env))
+      .rejects.toBeInstanceOf(AuthError);
+  });
 });

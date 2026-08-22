@@ -48,11 +48,11 @@ export async function verifyAccessJwt(request, env) {
     throw new AuthError('Invalid Access token');
   }
 
-  if (!payload.email) {
+  if (typeof payload.email !== 'string' || !payload.email) {
     throw new AuthError('Access token has no email claim');
   }
 
   // Emails are matched against the users table, so casing must not decide
   // whether someone is an admin.
-  return String(payload.email).toLowerCase();
+  return payload.email.toLowerCase();
 }
