@@ -21,6 +21,10 @@
     "TEAM_DOMAIN": "https://bmxc.cloudflareaccess.com",
     "POLICY_AUD": ""
   },
+
+  // Custom domains. Declared here rather than set in the dashboard so that
+  // CI deploys keep them and the config stays the source of truth.
+  // Cloudflare manages the DNS records and certificates for these.
   "routes": [
     { "pattern": "bmxc.camp", "custom_domain": true },
     { "pattern": "www.bmxc.camp", "custom_domain": true }

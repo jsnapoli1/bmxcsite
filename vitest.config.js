@@ -11,14 +11,6 @@ export default defineConfig({
       return {
         miniflare: {
           d1Databases: ['DB'],
-          modules: true,
-          moduleRules: [
-            {
-              type: 'ESModule',
-              include: ['**/*.js'],
-              fallthrough: true,
-            },
-          ],
           assets: {
             directory: path.join(import.meta.dirname, 'dist'),
             binding: 'ASSETS',
