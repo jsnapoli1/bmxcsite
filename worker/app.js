@@ -1,12 +1,15 @@
 import { Hono } from 'hono';
+import { requireAuth } from './auth/middleware.js';
+import me from './routes/me.js';
 
 const app = new Hono();
 
-// Unknown API routes must answer JSON, not the SPA shell — otherwise a
-// typo'd fetch resolves to HTML and fails somewhere far less obvious.
+// Every admin API route is authenticated. Mount before the 404 catch-all.
+app.use('/api/admin/*', requireAuth);
+app.route('/api/admin/me', me);
+
 app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
 
-// Everything else is the existing static site, served by the assets binding.
 app.all('*', (c) => c.env.ASSETS.fetch(c.req.raw));
 
 export default app;
