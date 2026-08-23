@@ -76,9 +76,12 @@ async function readStaff(db, { publishedOnly }) {
   }
 
   const groups = groupRows
-    .map((group) => ({
-      title: group.title,
-      members: membersByGroup.get(group.id) ?? [],
+    // `group` (not `title`) matches what src/pages/Staff.jsx reads and
+    // uses as its React key. The DB column stays `title`; only this
+    // boundary shape is renamed.
+    .map((row) => ({
+      group: row.title,
+      members: membersByGroup.get(row.id) ?? [],
     }))
     // A published group with no published members has nothing to show.
     // See the nested-status policy comment above for why this is omitted
@@ -97,12 +100,14 @@ function saveStaffStatements(db, payload, editorEmail) {
     db.prepare('DELETE FROM staff_groups'),
   ];
 
+  // Payload key is `group` (the legacy page shape); the DB column is
+  // still `title` — only the repository boundary shape changed.
   groups.forEach((group, groupIndex) => {
     statements.push(
       db.prepare(
         `INSERT INTO staff_groups (id, title, sort_order, status, updated_at, updated_by)
          VALUES (?, ?, ?, 'draft', unixepoch(), ?)`,
-      ).bind(groupIndex + 1, group.title, groupIndex, editorEmail),
+      ).bind(groupIndex + 1, group.group, groupIndex, editorEmail),
     );
 
     (group.members ?? []).forEach((member, memberIndex) => {
@@ -158,13 +163,20 @@ async function readFaq(db, { publishedOnly }) {
   const itemsByCategory = new Map();
   for (const item of itemRows) {
     const list = itemsByCategory.get(item.category_id) ?? [];
-    list.push({ question: item.question, answer: item.answer });
+    // `q`/`a` (not `question`/`answer`) match what src/pages/Faq.jsx reads.
+    // The DB columns stay `question`/`answer`; only this boundary shape
+    // is renamed.
+    list.push({ q: item.question, a: item.answer });
     itemsByCategory.set(item.category_id, list);
   }
 
   const categories = categoryRows
+    // `id` (not `slug`) matches what src/pages/Faq.jsx reads: it selects
+    // the active category and gates the mailing-address block by
+    // `category.id`. The DB column stays `slug`; only this boundary shape
+    // is renamed.
     .map((category) => ({
-      slug: category.slug,
+      id: category.slug,
       label: category.label,
       items: itemsByCategory.get(category.id) ?? [],
     }))
@@ -183,12 +195,15 @@ function saveFaqStatements(db, payload, editorEmail) {
     db.prepare('DELETE FROM faq_categories'),
   ];
 
+  // Payload keys are `id`/`q`/`a` (the legacy page shape); the DB columns
+  // stay `slug`/`question`/`answer` — only the repository boundary shape
+  // changed.
   categories.forEach((category, categoryIndex) => {
     statements.push(
       db.prepare(
         `INSERT INTO faq_categories (id, slug, label, sort_order, status, updated_at, updated_by)
          VALUES (?, ?, ?, ?, 'draft', unixepoch(), ?)`,
-      ).bind(categoryIndex + 1, category.slug ?? null, category.label, categoryIndex, editorEmail),
+      ).bind(categoryIndex + 1, category.id ?? null, category.label, categoryIndex, editorEmail),
     );
 
     (category.items ?? []).forEach((item, itemIndex) => {
@@ -197,7 +212,7 @@ function saveFaqStatements(db, payload, editorEmail) {
           `INSERT INTO faq_items
              (category_id, question, answer, sort_order, status, updated_at, updated_by)
            VALUES (?, ?, ?, ?, 'draft', unixepoch(), ?)`,
-        ).bind(categoryIndex + 1, item.question, item.answer, itemIndex, editorEmail),
+        ).bind(categoryIndex + 1, item.q, item.a, itemIndex, editorEmail),
       );
     });
   });
@@ -427,15 +442,32 @@ export async function publishArea(db, area, editorEmail) {
     // which would make `getVersion` return null after a publish that
     // otherwise succeeded — an upsert makes publishArea correct regardless
     // of whether the seed row survived.
+    //
+    // The insert branch starts at 1 — the same value the migration seeds —
+    // rather than a hardcoded "2". It is not coupled to the bump logic: if
+    // the row is missing, this publish is the one that creates it, so
+    // version 1 is the correct, honest starting point, and the ON CONFLICT
+    // branch is solely responsible for bumping on every publish after that.
+    // A literal "2" here would only be correct by coincidence of the
+    // migration's current seed value, and would go silently wrong if that
+    // seed ever changed.
+    //
+    // RETURNING makes the returned version come from this same batched
+    // statement rather than a follow-up SELECT: two editors publishing the
+    // same area concurrently could otherwise each read the *other's* bump
+    // via a separate getVersion() call after the batch, even though the
+    // stored state itself is correct.
     db.prepare(
-      `INSERT INTO content_version (area, version) VALUES (?, 2)
-       ON CONFLICT (area) DO UPDATE SET version = version + 1`,
+      `INSERT INTO content_version (area, version) VALUES (?, 1)
+       ON CONFLICT (area) DO UPDATE SET version = version + 1
+       RETURNING version`,
     ).bind(area),
   ];
 
-  await db.batch(statements);
+  const results = await db.batch(statements);
+  const versionResult = results.at(-1);
 
-  return getVersion(db, area);
+  return versionResult.results[0].version;
 }
 
 /**
