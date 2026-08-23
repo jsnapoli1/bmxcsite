@@ -9,6 +9,18 @@ function isSameContent(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+/**
+ * Turns a category label into a URL/id-safe slug: lowercase, spaces and
+ * punctuation collapsed to single hyphens, leading/trailing hyphens trimmed.
+ * "Buses & Travel" -> "buses-travel".
+ */
+function slugify(label) {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export default function Faq() {
   const [draft, setDraft] = useState(null);
   const [published, setPublished] = useState(null);
@@ -49,7 +61,15 @@ export default function Faq() {
   }
 
   function addCategory() {
-    updateCategories([...draft.categories, { id: '', label: 'New category', items: [] }]);
+    const existingIds = new Set(draft.categories.map((category) => category.id));
+    const base = slugify('New category') || 'category';
+    let id = base;
+    let suffix = 2;
+    while (existingIds.has(id)) {
+      id = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    updateCategories([...draft.categories, { id, label: 'New category', items: [] }]);
   }
 
   function removeCategory(categoryIndex) {
@@ -190,14 +210,17 @@ export default function Faq() {
                   onChange={(e) => updateCategory(categoryIndex, { label: e.target.value })}
                 />
               </label>
-              <label className="admin-field">
+              <div className="admin-field admin-field--readonly">
                 Category ID
-                <input
-                  type="text"
-                  value={category.id ?? ''}
-                  onChange={(e) => updateCategory(categoryIndex, { id: e.target.value })}
-                />
-              </label>
+                <span className="admin-field__value">{category.id || '(none)'}</span>
+                <span className="admin-field__hint">
+                  Set automatically when a category is added and cannot be
+                  changed here. The &ldquo;Mail &amp; Photos&rdquo; category
+                  uses this to show the camper mailing addresses on the FAQ
+                  page &mdash; if this ID were editable and got changed, those
+                  addresses would silently disappear from the public site.
+                </span>
+              </div>
               <button
                 type="button"
                 className="admin-remove"

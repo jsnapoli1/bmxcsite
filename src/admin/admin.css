@@ -82,6 +82,10 @@
   outline-offset: 1px;
 }
 
+/* No on-primary text-color token exists in tokens.css yet (--color-ink,
+   --color-ink-soft, --color-muted are all for text on the paper surface,
+   not on a solid navy/green fill). #fff here and on .admin-publish below
+   is a deliberate, deferred gap, not an oversight. */
 .admin-invite button {
   border: 1px solid var(--color-primary);
   border-radius: 2px;
@@ -233,6 +237,7 @@
 
 .admin-save:hover { border-color: var(--color-ink); }
 
+/* See the on-primary color-token comment above .admin-invite button. */
 .admin-publish {
   border: 1px solid var(--color-signal);
   background: var(--color-signal);
@@ -268,6 +273,33 @@
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
+}
+
+.admin-field--readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+.admin-field__value {
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.925rem;
+  font-weight: 400;
+  font-family: var(--font-mono);
+  color: var(--color-ink-soft);
+  background: var(--color-surface-sunken);
+}
+
+.admin-field__hint {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-muted);
+  max-width: 42ch;
 }
 
 .admin-field input[type='text'],
