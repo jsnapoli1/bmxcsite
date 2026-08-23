@@ -1,15 +1,41 @@
 import { useState } from 'react';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
+import { useContent } from '../hooks/useContent.js';
 import { FAQ_CATEGORIES, MAIL_ADDRESSES } from '../data/faq.js';
 import './faq.css';
 
 export default function Faq() {
+  const { content } = useContent('faq', { categories: FAQ_CATEGORIES });
+  const categories = content.categories;
+
   const [activeCategory, setActiveCategory] = useState(FAQ_CATEGORIES[0].id);
   const [openQuestion, setOpenQuestion] = useState(null);
 
   const category =
-    FAQ_CATEGORIES.find((entry) => entry.id === activeCategory) ?? FAQ_CATEGORIES[0];
+    categories.find((entry) => entry.id === activeCategory) ?? categories[0];
+
+  // Defense in depth: useContent's isEmpty gate should already keep this
+  // page on the bundled fallback whenever the API has nothing to show, so
+  // `categories` should never be empty here. But this is the page that
+  // white-screened when that guard didn't exist yet, so guard here too
+  // rather than trust a single upstream check for the one page where the
+  // failure mode is a blank screen instead of stale content.
+  if (!category) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Common questions"
+          title="Frequently Asked Questions"
+          lead="If your question is not answered here, email Camp Directors Ken and Sarah."
+        />
+        <section className="section container faq" aria-labelledby="faq-heading">
+          <h2 className="sr-only" id="faq-heading">Frequently asked questions</h2>
+          <p>Nothing to show yet. Check back soon.</p>
+        </section>
+      </>
+    );
+  }
 
   const selectCategory = (id) => {
     setActiveCategory(id);
@@ -31,7 +57,7 @@ export default function Faq() {
           {/* --- Category rail --- */}
           <nav className="faq__rail" aria-label="FAQ categories">
             <ul className="faq__rail-list">
-              {FAQ_CATEGORIES.map((entry) => (
+              {categories.map((entry) => (
                 <li key={entry.id}>
                   <button
                     type="button"
