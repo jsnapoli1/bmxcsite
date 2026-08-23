@@ -46,10 +46,6 @@ function assertKnownArea(area) {
  * state including any inconsistency.
  */
 
-function toCents(value) {
-  return value === null || value === undefined ? null : Number(value);
-}
-
 // ---------------------------------------------------------------------------
 // staff
 // ---------------------------------------------------------------------------
@@ -238,12 +234,23 @@ async function readMerch(db, { publishedOnly }) {
   ]);
 
   return {
+    // `id` here is the page's string slug ('hoodie', 'singlet'), not the
+    // numeric primary key. src/pages/Merch.jsx uses it as a React key and
+    // as the item identifier, so the DB's numeric `id` column is never
+    // exposed through this shape.
     items: itemRows.map((item) => ({
+      id: item.slug,
       name: item.name,
-      detail: item.detail,
-      priceLow: toCents(item.price_low),
-      priceHigh: toCents(item.price_high),
+      fit: item.fit,
+      material: item.material,
+      color: item.color,
+      note: item.note,
       image: item.image,
+      tag: item.tag,
+      // Strict coercion: D1 stores this as INTEGER 0/1. Only `=== 1` counts
+      // as true, so any other stored value (null, unexpected int) reads as
+      // false rather than being truthy-coerced.
+      hero: item.hero === 1,
     })),
     facts: factRows.map((fact) => ({
       title: fact.title,
@@ -266,14 +273,20 @@ function saveMerchStatements(db, payload, editorEmail) {
     statements.push(
       db.prepare(
         `INSERT INTO merch_items
-           (name, detail, price_low, price_high, image, sort_order, status, updated_at, updated_by)
-         VALUES (?, ?, ?, ?, ?, ?, 'draft', unixepoch(), ?)`,
+           (slug, name, fit, material, color, note, image, tag, hero, sort_order, status, updated_at, updated_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', unixepoch(), ?)`,
       ).bind(
+        item.id,
         item.name,
-        item.detail ?? null,
-        item.priceLow ?? null,
-        item.priceHigh ?? null,
+        item.fit ?? null,
+        item.material ?? null,
+        item.color ?? null,
+        item.note ?? null,
         item.image ?? null,
+        item.tag ?? null,
+        // Strict coercion on write too: only literal `true` sets the flag.
+        // Anything else (undefined, a truthy non-boolean) stores 0.
+        item.hero === true ? 1 : 0,
         index,
         editorEmail,
       ),

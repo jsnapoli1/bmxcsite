@@ -16,6 +16,38 @@ const STAFF = {
   ],
 };
 
+// Realistic shape, matching what src/pages/Merch.jsx actually reads —
+// fit/material/color/note/hero, a string slug as `id`, no price fields.
+const MERCH = {
+  items: [
+    {
+      id: 'hoodie',
+      name: 'BMXC Hoodie',
+      fit: 'Unisex',
+      material: '100% cotton',
+      color: 'Royal Blue',
+      note: 'Our most popular item. Sizes go quickly.',
+      image: '/merch/hoodie.jpg',
+      tag: 'Hoodie',
+      hero: true,
+    },
+    {
+      id: 'singlet',
+      name: 'BMXC Singlet',
+      fit: "Unisex and women's",
+      material: '100% polyester wicking knit',
+      color: 'TBD for this year',
+      note: 'Wicking knit singlet with the BMXC logo on the front.',
+      image: '/merch/singlet.jpg',
+      tag: 'Singlet',
+      hero: false,
+    },
+  ],
+  facts: [
+    { title: 'Cash only', body: 'We only accept cash for BMXC merchandise.', tag: 'Payment' },
+  ],
+};
+
 describe('repository', () => {
   it('rejects an unknown area', async () => {
     await expect(getPublished(env.DB, 'billing'))
@@ -68,5 +100,46 @@ describe('repository', () => {
       'SELECT updated_by FROM staff_groups LIMIT 1',
     ).first();
     expect(row.updated_by).toBe('sarah@example.com');
+  });
+
+  it('saves and publishes merch items with the fields the page reads', async () => {
+    await saveArea(env.DB, 'merch', MERCH, 'ken@example.com');
+    await publishArea(env.DB, 'merch', 'ken@example.com');
+
+    const { items, facts } = await getPublished(env.DB, 'merch');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toEqual({
+      id: 'hoodie',
+      name: 'BMXC Hoodie',
+      fit: 'Unisex',
+      material: '100% cotton',
+      color: 'Royal Blue',
+      note: 'Our most popular item. Sizes go quickly.',
+      image: '/merch/hoodie.jpg',
+      tag: 'Hoodie',
+      hero: true,
+    });
+    expect(facts).toHaveLength(1);
+    expect(facts[0].title).toBe('Cash only');
+  });
+
+  it('round-trips hero as a strict boolean, not a truthy value', async () => {
+    await saveArea(env.DB, 'merch', MERCH, 'ken@example.com');
+    await publishArea(env.DB, 'merch', 'ken@example.com');
+
+    const { items } = await getPublished(env.DB, 'merch');
+    const hoodie = items.find((item) => item.id === 'hoodie');
+    const singlet = items.find((item) => item.id === 'singlet');
+
+    expect(hoodie.hero).toBe(true);
+    expect(singlet.hero).toBe(false);
+
+    // The stored column is an INTEGER 0/1, never a JS boolean — assert the
+    // DB representation directly so a regression to truthy coercion (e.g.
+    // storing NULL and reading it as "truthy" via `!!`) would be caught.
+    const row = await env.DB.prepare(
+      'SELECT hero FROM merch_items WHERE slug = ?',
+    ).bind('singlet').first();
+    expect(row.hero).toBe(0);
   });
 });
