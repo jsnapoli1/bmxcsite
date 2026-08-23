@@ -48,13 +48,25 @@ CREATE TABLE faq_items (
   updated_by  TEXT
 );
 
+-- Columns mirror what src/pages/Merch.jsx actually renders. An earlier draft
+-- of this schema invented `detail`, `price_low`, and `price_high`, none of
+-- which the page reads, and omitted `fit`, `material`, `color`, `note`, and
+-- `hero`, all of which it does. Migrating that version would have rendered a
+-- merch page with blank cards.
+--
+-- `slug` holds the string id the page uses ('hoodie', 'singlet'); the numeric
+-- `id` is the database key. They are not the same thing.
 CREATE TABLE merch_items (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug       TEXT NOT NULL,
   name       TEXT NOT NULL,
-  detail     TEXT,
-  price_low  INTEGER,
-  price_high INTEGER,
+  fit        TEXT,
+  material   TEXT,
+  color      TEXT,
+  note       TEXT,
   image      TEXT,
+  tag        TEXT,
+  hero       INTEGER NOT NULL DEFAULT 0,
   sort_order INTEGER NOT NULL DEFAULT 0,
   status     TEXT NOT NULL DEFAULT 'draft',
   updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
