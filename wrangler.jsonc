@@ -25,7 +25,7 @@
   ],
   "vars": {
     "TEAM_DOMAIN": "https://letssimplifai.cloudflareaccess.com",
-    "POLICY_AUD": "81d19335-5f3d-4c31-a565-3b7b64c46d00"
+    "POLICY_AUD": "db4848e077aabcf690adc8aad5b389359a9fe034d9c924109774764e6d850efe"
   },
 
   // Custom domains. Declared here rather than set in the dashboard so that
