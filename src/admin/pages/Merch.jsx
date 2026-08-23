@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
 import { getContent, saveContent, publishContent } from '../lib/api.js';
 import { reorder } from '../lib/reorder.js';
+import { contentMatchesPublished } from '../lib/content-diff.js';
 import OrderedList from '../components/OrderedList.jsx';
 
 const EMPTY_ITEM = {
   id: '', name: '', fit: '', material: '', color: '', note: '', image: '', tag: '', hero: false,
 };
 const EMPTY_FACT = { title: '', body: '', tag: '' };
-
-function isSameContent(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
 
 export default function Merch() {
   const [draft, setDraft] = useState(null);
@@ -39,7 +36,7 @@ export default function Merch() {
 
   useEffect(() => { refresh().catch((err) => setError(err.message)); }, []);
 
-  const hasUnpublishedChanges = draft && published && !isSameContent(draft, published);
+  const hasUnpublishedChanges = draft && published && !contentMatchesPublished('merch', draft, published);
 
   function updateItems(nextItems) {
     setDraft({ ...draft, items: nextItems });

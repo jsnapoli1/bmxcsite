@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getContent, saveContent, publishContent } from '../lib/api.js';
-
-function isSameContent(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
+import { contentMatchesPublished } from '../lib/content-diff.js';
 
 export default function CampInfo() {
   const [draft, setDraft] = useState(null);
@@ -32,7 +29,7 @@ export default function CampInfo() {
 
   useEffect(() => { refresh().catch((err) => setError(err.message)); }, []);
 
-  const hasUnpublishedChanges = draft && published && !isSameContent(draft, published);
+  const hasUnpublishedChanges = draft && published && !contentMatchesPublished('campinfo', draft, published);
 
   function updateField(key, value) {
     setDraft({

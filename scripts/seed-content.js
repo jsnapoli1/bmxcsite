@@ -252,7 +252,21 @@ async function countContentRows(db) {
   return Object.fromEntries(rows);
 }
 
-/** Saves and immediately publishes every area, in one D1 binding session. */
+/**
+ * Saves and immediately publishes every area, in one D1 binding session.
+ *
+ * Each area's save+publish is its own pair of `db.batch()` calls (see
+ * repository.js), not one transaction spanning all four areas. If this
+ * loop fails partway through — network blip, a bad payload for one area —
+ * the areas already processed stay seeded and published, and the rest are
+ * left exactly as they were before this ran (empty, on a fresh migration).
+ * That is understood and accepted here, not overlooked: re-running this
+ * script is idempotent (each area's save does a delete-then-insert), so
+ * the fix for a partial run is just running it again. Areas left empty by
+ * a partial failure degrade to the bundled fallback content on the public
+ * site (see src/hooks/useContent.js's isEmpty gate) rather than a blank
+ * page, so a partial seed is recoverable, not a production incident.
+ */
 async function seed(db) {
   const payload = buildSeedPayload();
 

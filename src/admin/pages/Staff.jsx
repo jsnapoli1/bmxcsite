@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getContent, saveContent, publishContent } from '../lib/api.js';
 import { reorder } from '../lib/reorder.js';
+import { contentMatchesPublished } from '../lib/content-diff.js';
 import OrderedList from '../components/OrderedList.jsx';
 
 const EMPTY_MEMBER = { name: '', role: '', bio: '', since: '' };
-
-function isSameContent(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
 
 export default function Staff() {
   const [draft, setDraft] = useState(null);
@@ -36,7 +33,7 @@ export default function Staff() {
 
   useEffect(() => { refresh().catch((err) => setError(err.message)); }, []);
 
-  const hasUnpublishedChanges = draft && published && !isSameContent(draft, published);
+  const hasUnpublishedChanges = draft && published && !contentMatchesPublished('staff', draft, published);
 
   function updateGroups(nextGroups) {
     setDraft({ ...draft, groups: nextGroups });
@@ -176,6 +173,13 @@ export default function Staff() {
 
       <OrderedList
         items={draft.groups}
+        // Positional key: the payload has no stable per-group id (see
+        // repository.js's saveStaffStatements — groups are keyed by array
+        // position on write, not a persisted identifier), so there is
+        // nothing more stable to key on today. Fine while list items have
+        // no internal focus or transition state; revisit if either is
+        // added, since a reorder would then reattach the wrong item's
+        // state to the wrong row.
         getKey={(group, i) => `group-${i}`}
         onReorder={reorderGroups}
         renderItem={(group, groupIndex) => (
@@ -200,6 +204,8 @@ export default function Staff() {
 
             <OrderedList
               items={group.members ?? []}
+              // Same reasoning as the group-level getKey above: no stable
+              // per-member id exists in this payload shape.
               getKey={(member, i) => `member-${i}`}
               onReorder={(from, to) => reorderMembers(groupIndex, from, to)}
               renderItem={(member, memberIndex) => (

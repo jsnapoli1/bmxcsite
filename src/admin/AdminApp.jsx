@@ -4,18 +4,28 @@ import Users from './pages/Users.jsx';
 import Staff from './pages/Staff.jsx';
 import Faq from './pages/Faq.jsx';
 import Merch from './pages/Merch.jsx';
-import CampInfo from './pages/CampInfo.jsx';
+// CampInfo.jsx is intentionally not imported here — see the PAGES comment
+// below for why the tab stays hidden.
 
 /**
  * Every editor page keyed by nav id, alongside the permission that unlocks
  * it. staff, faq, and campinfo all share the `campinfo` permission — that
  * mapping lives on the server (worker/routes/content.js) and is mirrored
  * here only to decide what to show, never to enforce access.
+ *
+ * `campinfo` is deliberately left out of this list. The editor
+ * (src/admin/pages/CampInfo.jsx) and its API are complete and tested, but
+ * no public page reads the `campinfo` content area yet — Camp.jsx, Home.jsx,
+ * and Contact.jsx still read the static CAMP object from src/data/camp.js.
+ * Showing the tab would let a director publish changes and be told "The
+ * public site now shows this" when it does not, which is worse than the
+ * feature not being there. Add it back once a page actually consumes
+ * `campinfo` (see src/hooks/useContent.js for the pattern staff/faq/merch
+ * already use).
  */
 const PAGES = [
   { id: 'staff', label: 'Staff', permission: 'campinfo', Component: Staff },
   { id: 'faq', label: 'Questions & answers', permission: 'campinfo', Component: Faq },
-  { id: 'campinfo', label: 'Camp info', permission: 'campinfo', Component: CampInfo },
   { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
 ];
 

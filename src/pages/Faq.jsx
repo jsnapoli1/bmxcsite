@@ -15,6 +15,28 @@ export default function Faq() {
   const category =
     categories.find((entry) => entry.id === activeCategory) ?? categories[0];
 
+  // Defense in depth: useContent's isEmpty gate should already keep this
+  // page on the bundled fallback whenever the API has nothing to show, so
+  // `categories` should never be empty here. But this is the page that
+  // white-screened when that guard didn't exist yet, so guard here too
+  // rather than trust a single upstream check for the one page where the
+  // failure mode is a blank screen instead of stale content.
+  if (!category) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Common questions"
+          title="Frequently Asked Questions"
+          lead="If your question is not answered here, email Camp Directors Ken and Sarah."
+        />
+        <section className="section container faq" aria-labelledby="faq-heading">
+          <h2 className="sr-only" id="faq-heading">Frequently asked questions</h2>
+          <p>Nothing to show yet. Check back soon.</p>
+        </section>
+      </>
+    );
+  }
+
   const selectCategory = (id) => {
     setActiveCategory(id);
     setOpenQuestion(null);

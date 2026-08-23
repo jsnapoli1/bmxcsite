@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getContent, saveContent, publishContent } from '../lib/api.js';
 import { reorder } from '../lib/reorder.js';
+import { contentMatchesPublished } from '../lib/content-diff.js';
 import OrderedList from '../components/OrderedList.jsx';
 
 const EMPTY_ITEM = { q: '', a: '' };
-
-function isSameContent(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
 
 /**
  * Turns a category label into a URL/id-safe slug: lowercase, spaces and
@@ -48,7 +45,7 @@ export default function Faq() {
 
   useEffect(() => { refresh().catch((err) => setError(err.message)); }, []);
 
-  const hasUnpublishedChanges = draft && published && !isSameContent(draft, published);
+  const hasUnpublishedChanges = draft && published && !contentMatchesPublished('faq', draft, published);
 
   function updateCategories(nextCategories) {
     setDraft({ ...draft, categories: nextCategories });
