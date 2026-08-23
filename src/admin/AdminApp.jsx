@@ -1,10 +1,28 @@
 import { useEffect, useState } from 'react';
 import { getMe } from './lib/api.js';
 import Users from './pages/Users.jsx';
+import Staff from './pages/Staff.jsx';
+import Faq from './pages/Faq.jsx';
+import Merch from './pages/Merch.jsx';
+import CampInfo from './pages/CampInfo.jsx';
+
+/**
+ * Every editor page keyed by nav id, alongside the permission that unlocks
+ * it. staff, faq, and campinfo all share the `campinfo` permission — that
+ * mapping lives on the server (worker/routes/content.js) and is mirrored
+ * here only to decide what to show, never to enforce access.
+ */
+const PAGES = [
+  { id: 'staff', label: 'Staff', permission: 'campinfo', Component: Staff },
+  { id: 'faq', label: 'Questions & answers', permission: 'campinfo', Component: Faq },
+  { id: 'campinfo', label: 'Camp info', permission: 'campinfo', Component: CampInfo },
+  { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
+];
 
 export default function AdminApp() {
   const [me, setMe] = useState(null);
   const [error, setError] = useState(null);
+  const [activePage, setActivePage] = useState(null);
 
   useEffect(() => {
     getMe().then(setMe).catch((err) => setError(err.message));
@@ -41,6 +59,24 @@ export default function AdminApp() {
     );
   }
 
+  // Only the areas this signed-in person may edit are offered. The server
+  // enforces this independently on every request (worker/routes/content.js
+  // and worker/routes/users.js), so hiding a tab here is a usability
+  // courtesy, not the access control.
+  const availablePages = PAGES.filter(
+    (page) => me.isAdmin || me.permissions[page.permission],
+  );
+  const navItems = [
+    ...(me.isAdmin ? [{ id: 'people', label: 'People' }] : []),
+    ...availablePages.map((page) => ({ id: page.id, label: page.label })),
+  ];
+
+  const selected = activePage && navItems.some((item) => item.id === activePage)
+    ? activePage
+    : navItems[0]?.id ?? null;
+
+  const activeContentPage = availablePages.find((page) => page.id === selected);
+
   return (
     <main className="admin-shell">
       <header className="admin-header">
@@ -51,11 +87,33 @@ export default function AdminApp() {
         </p>
       </header>
 
-      {me.isAdmin
-        ? <Users currentEmail={me.email} />
-        : <p className="admin-notice">
-            Content editing arrives in the next phase.
-          </p>}
+      {navItems.length > 1 && (
+        <nav className="admin-nav" aria-label="Admin sections">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={
+                item.id === selected ? 'admin-nav__link admin-nav__link--active' : 'admin-nav__link'
+              }
+              aria-current={item.id === selected ? 'page' : undefined}
+              onClick={() => setActivePage(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {!selected && (
+        <p className="admin-notice">
+          You have not been given anything to edit yet. Ask a camp director
+          to add you to an area.
+        </p>
+      )}
+
+      {selected === 'people' && me.isAdmin && <Users currentEmail={me.email} />}
+      {activeContentPage && <activeContentPage.Component key={activeContentPage.id} />}
     </main>
   );
 }
