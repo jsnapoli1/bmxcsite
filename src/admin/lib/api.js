@@ -42,3 +42,11 @@ export const updateUser = (email, input) =>
 
 export const deleteUser = (email) =>
   request(`/users/${encodeURIComponent(email)}`, { method: 'DELETE' });
+
+export const getContent = (area) => request(`/content/${area}`);
+
+export const saveContent = (area, body) =>
+  request(`/content/${area}`, { method: 'PUT', body: JSON.stringify(body) });
+
+export const publishContent = (area) =>
+  request(`/content/${area}/publish`, { method: 'POST' });
