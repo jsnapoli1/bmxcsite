@@ -18,6 +18,24 @@ export default function Users({ currentEmail }) {
   const [name, setName] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  // In-flight mutation keys, so a rapid second click on the same control is
+  // ignored instead of firing an overlapping request whose refresh() can
+  // resolve out of order and leave the UI showing stale state. Keyed per
+  // row+area (or per row for Remove), not globally, so unrelated controls
+  // stay usable while one mutation is in flight.
+  const [pending, setPending] = useState(() => new Set());
+
+  function markPending(key) {
+    setPending((prev) => new Set(prev).add(key));
+  }
+
+  function clearPending(key) {
+    setPending((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  }
 
   async function refresh() {
     const { users: list } = await listUsers();
@@ -43,23 +61,35 @@ export default function Users({ currentEmail }) {
   }
 
   async function togglePermission(user, area) {
+    const key = `${user.email}:${area}`;
+    if (pending.has(key)) return;
+
     setError(null);
+    markPending(key);
     const permissions = { ...user.permissions, [area]: !user.permissions[area] };
     try {
       await updateUser(user.email, { permissions });
       await refresh();
     } catch (err) {
       setError(err.message);
+    } finally {
+      clearPending(key);
     }
   }
 
   async function handleRemove(user) {
+    const key = `remove:${user.email}`;
+    if (pending.has(key)) return;
+
     setError(null);
+    markPending(key);
     try {
       await deleteUser(user.email);
       await refresh();
     } catch (err) {
       setError(err.message);
+    } finally {
+      clearPending(key);
     }
   }
 
@@ -115,23 +145,30 @@ export default function Users({ currentEmail }) {
                   <span className="admin-person-email">{user.email}</span>
                 )}
               </th>
-              {AREAS.map((area) => (
-                <td key={area.key}>
-                  <input
-                    type="checkbox"
-                    checked={user.isAdmin || user.permissions[area.key]}
-                    disabled={user.isAdmin}
-                    aria-label={`${area.label} for ${user.email}`}
-                    onChange={() => togglePermission(user, area.key)}
-                  />
-                </td>
-              ))}
+              {AREAS.map((area) => {
+                const key = `${user.email}:${area.key}`;
+                const isPending = pending.has(key);
+                return (
+                  <td key={area.key}>
+                    <input
+                      type="checkbox"
+                      checked={user.isAdmin || user.permissions[area.key]}
+                      disabled={user.isAdmin || isPending}
+                      aria-label={`${area.label} for ${user.email}`}
+                      aria-busy={isPending}
+                      onChange={() => togglePermission(user, area.key)}
+                    />
+                  </td>
+                );
+              })}
               <td>{user.isAdmin ? 'Administrator' : 'Editor'}</td>
               <td>
                 {user.email !== currentEmail && (
                   <button
                     type="button"
                     className="admin-remove"
+                    disabled={pending.has(`remove:${user.email}`)}
+                    aria-busy={pending.has(`remove:${user.email}`)}
                     onClick={() => handleRemove(user)}
                   >
                     Remove
