@@ -22,11 +22,30 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      # Migrations run before the deploy so new code never meets an old
+      # schema.
+      #
+      # continue-on-error because CLOUDFLARE_API_TOKEN currently lacks the
+      # D1:Edit permission and fails with "account is not authorized"
+      # (code 7403). Blocking the deploy on that would leave the pipeline
+      # permanently red over a step that has nothing to apply. Grant the
+      # token D1:Edit and remove continue-on-error — until then, a schema
+      # change must be applied by hand with `npm run migrate:remote`.
       - name: Apply D1 migrations
+        id: migrations
+        continue-on-error: true
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: d1 migrations apply bmxc --remote
+
+      - name: Warn if migrations did not run
+        if: steps.migrations.outcome == 'failure'
+        run: |
+          echo "::warning title=D1 migrations skipped::The migration step \
+          failed (most likely CLOUDFLARE_API_TOKEN lacks D1:Edit). The \
+          deploy continued. If this release contains a migration, apply it \
+          manually with 'npm run migrate:remote'."
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:
