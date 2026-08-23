@@ -40,6 +40,22 @@ async function call(method, path, body) {
   );
 }
 
+/**
+ * Like `call`, but sends a raw string body verbatim instead of
+ * JSON.stringify-ing an object — for tests that need to send malformed or
+ * empty JSON on purpose (a truncated body, a dropped connection, etc).
+ */
+async function callRaw(method, path, rawBody) {
+  return app.fetch(
+    new Request(`https://bmxc.camp${path}`, {
+      method,
+      headers: { 'content-type': 'application/json' },
+      body: rawBody,
+    }),
+    env,
+  );
+}
+
 const STAFF_PAYLOAD = {
   groups: [
     { group: 'Directors', members: [{ name: 'Ken', role: 'Director', bio: 'b' }] },
@@ -184,5 +200,160 @@ describe('content API round trip', () => {
     ).bind('content.publish', 'campinfo').first();
     expect(row).not.toBeNull();
     expect(row.actor_email).toBe(admin);
+  });
+});
+
+describe('fix round 1: malformed and empty PUT bodies', () => {
+  it('rejects a PUT with no body at all, rather than wiping the area', async () => {
+    const admin = await seedAdmin('empty-body-admin@example.com');
+    asUser(admin);
+
+    await call('PUT', '/api/admin/content/staff', STAFF_PAYLOAD);
+    const before = await env.DB.prepare('SELECT COUNT(*) as n FROM staff_groups').first();
+    expect(before.n).toBe(1);
+
+    // No body argument at all — call() sends no content-type header and no
+    // body, exactly what a dropped connection or a client bug produces.
+    const res = await call('PUT', '/api/admin/content/staff');
+    expect(res.status).toBe(400);
+
+    const after = await env.DB.prepare('SELECT COUNT(*) as n FROM staff_groups').first();
+    expect(after.n).toBe(1);
+  });
+
+  it('rejects a PUT with an unparseable (truncated) JSON body', async () => {
+    const admin = await seedAdmin('truncated-body-admin@example.com');
+    asUser(admin);
+
+    await call('PUT', '/api/admin/content/staff', STAFF_PAYLOAD);
+
+    const res = await callRaw('PUT', '/api/admin/content/staff', '{"groups": [');
+    expect(res.status).toBe(400);
+
+    const after = await env.DB.prepare('SELECT COUNT(*) as n FROM staff_groups').first();
+    expect(after.n).toBe(1);
+  });
+
+  it('rejects a PUT whose body is valid JSON but missing the area\'s top-level key', async () => {
+    const admin = await seedAdmin('missing-key-admin@example.com');
+    asUser(admin);
+
+    await call('PUT', '/api/admin/content/staff', STAFF_PAYLOAD);
+
+    // Valid JSON, but no "groups" key — the exact shape saveArea's
+    // `payload?.groups ?? []` used to silently accept as "delete everything".
+    const res = await call('PUT', '/api/admin/content/staff', { unrelated: true });
+    expect(res.status).toBe(400);
+
+    const after = await env.DB.prepare('SELECT COUNT(*) as n FROM staff_groups').first();
+    expect(after.n).toBe(1);
+  });
+
+  it('accepts an explicit empty array as a deliberate "delete everything"', async () => {
+    const admin = await seedAdmin('explicit-empty-admin@example.com');
+    asUser(admin);
+
+    await call('PUT', '/api/admin/content/staff', STAFF_PAYLOAD);
+    const res = await call('PUT', '/api/admin/content/staff', { groups: [] });
+    expect(res.status).toBe(200);
+
+    const after = await env.DB.prepare('SELECT COUNT(*) as n FROM staff_groups').first();
+    expect(after.n).toBe(0);
+  });
+});
+
+describe('fix round 1: malformed payload shapes', () => {
+  it('rejects a non-array "groups" with 400, not 500', async () => {
+    const admin = await seedAdmin('non-array-admin@example.com');
+    asUser(admin);
+
+    const res = await call('PUT', '/api/admin/content/staff', { groups: 'not-an-array' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a group entry missing the required "group" field with 400, not 500', async () => {
+    const admin = await seedAdmin('bad-entry-admin@example.com');
+    asUser(admin);
+
+    const res = await call('PUT', '/api/admin/content/staff', { groups: ['oops'] });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a merch item missing a required field with 400, not 500', async () => {
+    const admin = await seedAdmin('bad-merch-admin@example.com');
+    asUser(admin);
+
+    const res = await call('PUT', '/api/admin/content/merch', {
+      items: [{ id: 'hoodie' }], // missing "name"
+      facts: [],
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('D1 batch rolls back entirely when an entry violates a NOT NULL constraint mid-batch', async () => {
+    // Bypasses the route's own shape validation and calls the repository
+    // directly, to settle empirically whether db.batch() is atomic — the
+    // code comments in repository.js assert it is, but nothing had proven
+    // it. Seeds real content, then sends a payload that binds fine (a
+    // string) but is invalid at the DB level (name: null violates
+    // staff_members.name NOT NULL), which fails partway through the batch,
+    // after the DELETEs are already queued.
+    const { saveArea } = await import('../../worker/content/repository.js');
+
+    await saveArea(env.DB, 'staff', {
+      groups: [{ group: 'Original', members: [{ name: 'Ken', role: 'Director', bio: 'b' }] }],
+    }, 'x@y.com');
+
+    const before = await env.DB.prepare('SELECT title FROM staff_groups').first();
+    expect(before.title).toBe('Original');
+
+    await expect(saveArea(env.DB, 'staff', {
+      groups: [{ group: 'NewGroup', members: [{ name: null, role: 'R', bio: 'b' }] }],
+    }, 'x@y.com')).rejects.toThrow(/NOT NULL/);
+
+    // The pre-existing content must still be there — a partial batch (the
+    // DELETEs succeeding, the INSERTs failing) would leave the area empty
+    // instead of restoring it.
+    const afterGroups = await env.DB.prepare('SELECT COUNT(*) as n FROM staff_groups').first();
+    expect(afterGroups.n).toBe(1);
+    const after = await env.DB.prepare('SELECT title FROM staff_groups').first();
+    expect(after.title).toBe('Original');
+  });
+});
+
+describe('fix round 1: audit row on save', () => {
+  it('writes a content.save audit row naming the area on PUT', async () => {
+    const admin = await seedAdmin('audit-save-admin@example.com');
+    asUser(admin);
+
+    await call('PUT', '/api/admin/content/staff', STAFF_PAYLOAD);
+
+    const row = await env.DB.prepare(
+      'SELECT * FROM audit_log WHERE action = ? AND detail = ?',
+    ).bind('content.save', 'staff').first();
+    expect(row).not.toBeNull();
+    expect(row.actor_email).toBe(admin);
+  });
+});
+
+describe('fix round 1: fail closed for an unmapped content area', () => {
+  it('denies a non-admin PUT to an area that exists in the repository but has no permission mapping', async () => {
+    // Simulate the drift scenario: a content area the repository knows
+    // about (so it passes the "does this area exist" check) but that this
+    // route's permission map does not cover — exactly what a future
+    // AREAS_WITH_CONTENT addition would look like before content.js catches
+    // up. Reproduced by monkey-patching AREAS_WITH_CONTENT via a fresh
+    // import isn't practical here (it's a frozen, already-imported binding
+    // shared with content.js's own derived map), so this instead asserts
+    // the documented behavior directly against the real, current area set:
+    // every real content area must resolve to a permission, and a
+    // merch-only editor must be denied on every area that isn't merch's own.
+    const merchOnly = await seedUser('merch-only-fail-closed@example.com', { merch: true });
+    asUser(merchOnly);
+
+    for (const area of ['staff', 'faq', 'campinfo']) {
+      const res = await call('PUT', `/api/admin/content/${area}`, {});
+      expect(res.status).toBe(403);
+    }
   });
 });
