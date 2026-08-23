@@ -20,6 +20,9 @@
   "kv_namespaces": [
     { "binding": "CONTENT", "id": "e2441d00da964c31802c92de3e627a1b" }
   ],
+  "r2_buckets": [
+    { "binding": "MEDIA", "bucket_name": "bmxc-media" }
+  ],
   "vars": {
     "TEAM_DOMAIN": "https://letssimplifai.cloudflareaccess.com",
     "POLICY_AUD": "81d19335-5f3d-4c31-a565-3b7b64c46d00"

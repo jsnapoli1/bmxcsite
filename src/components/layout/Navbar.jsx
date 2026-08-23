@@ -10,6 +10,7 @@ const LINKS = [
   { to: '/merch', label: 'Merch' },
   { to: '/staff', label: 'Staff' },
   { to: '/faq', label: 'FAQ' },
+  { to: '/blog', label: 'Blog' },
   { to: '/registration', label: 'Register' },
 ];
 
