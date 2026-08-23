@@ -85,6 +85,11 @@ media.patch('/:key', async (c) => {
     return c.json({ error: `No media row found for key "${key}".` }, 404);
   }
 
+  // Alt text is a publish precondition (see publishMedia in
+  // worker/media/repository.js), so an edit to it is worth attributing —
+  // matches the audit row every other write in this file already gets.
+  await audit(c.env.DB, c.get('email'), 'media.update', key);
+
   return c.json({ media: row });
 });
 

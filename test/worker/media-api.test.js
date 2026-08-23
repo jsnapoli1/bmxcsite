@@ -329,6 +329,23 @@ describe('media alt text', () => {
     expect(res.status).toBe(403);
   });
 
+  // Alt text is a publish precondition, so an edit to it is worth
+  // attributing — matches the audit row every other media write already
+  // gets (publish/unpublish/delete). See worker/routes/media.js.
+  it('editing alt text writes an audit row', async () => {
+    const editorEmail = 'audit-update@example.com';
+    const media = await uploadAsMediaEditor(editorEmail);
+
+    const res = await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Campers at dinner.' });
+    expect(res.status).toBe(200);
+
+    const row = await env.DB.prepare(
+      'SELECT * FROM audit_log WHERE action = ? AND detail = ?',
+    ).bind('media.update', media.key).first();
+    expect(row).not.toBeNull();
+    expect(row.actor_email).toBe(editorEmail);
+  });
+
   it('publishing without alt text is refused with a clear reason, and the photo stays private', async () => {
     const media = await uploadAsMediaEditor('publish-no-alt@example.com');
 

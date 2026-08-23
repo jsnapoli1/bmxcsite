@@ -130,8 +130,9 @@ export default function Media() {
     if (pending.has(key)) return;
 
     const confirmed = window.confirm(
-      `Unpublish "${item.filename}"? It will stop being visible to the public immediately. `
-      + 'Anyone with the direct image link will also lose access.',
+      `Unpublish "${item.filename}"? The site will stop serving it right away. A copy someone `
+      + 'already loaded in their browser may still stick around for a while, the way any web '
+      + 'image can.',
     );
     if (!confirmed) return;
 

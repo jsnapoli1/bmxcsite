@@ -72,7 +72,7 @@ export default function Blog() {
                     <img
                       className="blog-list__thumb"
                       src={`/media/${post.hero_media_key}`}
-                      alt=""
+                      alt={post.hero_media_alt || ''}
                       width="96"
                       height="96"
                       loading="lazy"

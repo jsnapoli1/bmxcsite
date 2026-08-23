@@ -129,6 +129,15 @@ export default blog;
  * not a filter applied here, is what makes a draft impossible to reach:
  * see worker/content/blog.js's getPost/listPosts for the strict status
  * check.
+ *
+ * `listPosts`/`getPost` run `SELECT *`, which includes columns a reader has
+ * no business seeing — `author_email` (a staff member's address),
+ * `id`, `status`, `created_at`, and `updated_at` (internal bookkeeping).
+ * The admin routes above return those rows verbatim on purpose: an editor
+ * legitimately needs the full row. The public routes below never do —
+ * every response here is built through `toPublicPost`, an explicit
+ * allowlist projection, rather than trusting the repository to already
+ * have the right shape for an anonymous caller.
  */
 export const publicBlog = new Hono();
 
@@ -139,9 +148,53 @@ export const publicBlog = new Hono();
 // promising bytes never change.
 const PUBLIC_CACHE_CONTROL = 'public, max-age=60';
 
+/**
+ * Looks up `alt_text` for a hero image. Returns `null` for a post with no
+ * hero image, or if the media row is somehow missing — the caller must
+ * not break just because alt text isn't available.
+ */
+async function getHeroAltText(db, heroMediaKey) {
+  if (heroMediaKey === null) return null;
+  const row = await db.prepare('SELECT alt_text FROM media WHERE key = ?')
+    .bind(heroMediaKey).first();
+  return row?.alt_text ?? null;
+}
+
+/**
+ * Projects a `blog_posts` row down to exactly what an anonymous reader
+ * needs. This is an explicit allowlist, not a blocklist — new columns
+ * added to the table in the future are excluded by default rather than
+ * silently exposed.
+ *
+ * Named here so intent survives a refactor: this drops `author_email`
+ * (a staff member's personal address — the leak this projection exists to
+ * close), plus `id`, `status`, `created_at`, and `updated_at`, none of
+ * which a reader needs.
+ *
+ * `heroAltText` is passed in rather than looked up here so callers can
+ * batch or share lookups (e.g. across a whole index) instead of the
+ * projection making its own DB round trip per post. `includeBody` is
+ * false for the index (a reader doesn't need every post's full body just
+ * to see the list) and true for a single post.
+ */
+function toPublicPost(row, heroAltText, includeBody) {
+  const base = {
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt,
+    published_at: row.published_at,
+    hero_media_key: row.hero_media_key,
+    hero_media_alt: heroAltText,
+  };
+  return includeBody ? { ...base, body_markdown: row.body_markdown } : base;
+}
+
 publicBlog.get('/', async (c) => {
   const posts = await listPosts(c.env.DB, { publishedOnly: true });
-  return c.json({ posts }, 200, { 'cache-control': PUBLIC_CACHE_CONTROL });
+  const publicPosts = await Promise.all(
+    posts.map(async (post) => toPublicPost(post, await getHeroAltText(c.env.DB, post.hero_media_key), false)),
+  );
+  return c.json({ posts: publicPosts }, 200, { 'cache-control': PUBLIC_CACHE_CONTROL });
 });
 
 publicBlog.get('/:slug', async (c) => {
@@ -150,5 +203,6 @@ publicBlog.get('/:slug', async (c) => {
   if (post === null) {
     return c.json({ error: 'Not found' }, 404, { 'cache-control': 'no-store' });
   }
-  return c.json({ post }, 200, { 'cache-control': PUBLIC_CACHE_CONTROL });
+  const heroAltText = await getHeroAltText(c.env.DB, post.hero_media_key);
+  return c.json({ post: toPublicPost(post, heroAltText, true) }, 200, { 'cache-control': PUBLIC_CACHE_CONTROL });
 });

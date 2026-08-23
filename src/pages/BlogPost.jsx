@@ -87,7 +87,7 @@ export default function BlogPost() {
           <Reveal className="blog-post__hero">
             <img
               src={`/media/${post.hero_media_key}`}
-              alt=""
+              alt={post.hero_media_alt || ''}
               width="1200"
               height="675"
               loading="lazy"
