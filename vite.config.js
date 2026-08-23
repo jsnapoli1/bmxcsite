@@ -3,10 +3,7 @@ import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // Cloudflare Workers serves from the root; GitHub Pages serves from /bmxcsite/.
-  // Set DEPLOY_TARGET=gh-pages to build for the Pages subpath. (The gh-pages
-  // workflow is still live until Task 8 removes it — keep this until then.)
-  base: process.env.DEPLOY_TARGET === 'gh-pages' ? '/bmxcsite/' : '/',
+  base: '/',
   plugins: [react()],
   // Deliberately a single-input build (index.html only). Adding admin.html
   // as a second rollupOptions.input here would let Rollup dedupe shared

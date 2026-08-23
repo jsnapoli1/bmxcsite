@@ -22,6 +22,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: d1 migrations apply bmxc --remote
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:
