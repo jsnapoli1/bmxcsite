@@ -161,8 +161,16 @@ export async function storeUpload(env, {
   } catch (error) {
     // The insert failed (e.g. a UUID collision) — the object we just wrote
     // is now unreferenced by any row. Delete it rather than leave an
-    // orphan nobody knows about, then rethrow the original error.
-    await env.MEDIA.delete(`${PRIVATE_PREFIX}${key}`);
+    // orphan nobody knows about. The cleanup delete is best-effort: if it
+    // also fails (a transient R2 error), that failure is logged but never
+    // allowed to replace `error` — a caller needs to see the insert
+    // failure that actually caused this, not an opaque R2 error with no
+    // hint a database write was ever attempted.
+    try {
+      await env.MEDIA.delete(`${PRIVATE_PREFIX}${key}`);
+    } catch (cleanupError) {
+      console.error(`Failed to clean up orphaned upload ${key}: ${cleanupError.message}`);
+    }
     throw error;
   }
 }
@@ -171,7 +179,16 @@ export async function storeUpload(env, {
 // listMedia
 // ---------------------------------------------------------------------------
 
-/** Rows for a given status ('private' or 'public'), newest upload first. */
+/**
+ * Rows for a given status ('private' or 'public'), newest upload first.
+ * `status` has no default: omitting it binds SQL NULL, and
+ * `WHERE status = NULL` matches zero rows under SQLite's three-valued
+ * logic (NULL is never equal to anything, including itself) — this fails
+ * closed rather than silently returning every row regardless of status,
+ * but it is easy to misread an empty result as "there is no media" rather
+ * than "no status was given". Callers must always pass an explicit
+ * 'private' or 'public'.
+ */
 export async function listMedia(db, { status }) {
   const { results } = await db.prepare(
     'SELECT * FROM media WHERE status = ? ORDER BY uploaded_at DESC',
@@ -199,14 +216,30 @@ export async function publishMedia(env, key, editorEmail) {
     httpMetadata: object.httpMetadata,
   });
 
-  const row = await env.DB.prepare(
-    `UPDATE media
-     SET status = 'public', published_at = unixepoch(), published_by = ?
-     WHERE key = ?
-     RETURNING *`,
-  ).bind(editorEmail, key).first();
+  try {
+    const row = await env.DB.prepare(
+      `UPDATE media
+       SET status = 'public', published_at = unixepoch(), published_by = ?
+       WHERE key = ?
+       RETURNING *`,
+    ).bind(editorEmail, key).first();
 
-  return row;
+    return row;
+  } catch (error) {
+    // The UPDATE failed after the public object was already written —
+    // without cleanup this leaves an object at public/<key> with the row
+    // still saying 'private'. That is not an exposure (getPublicObject
+    // reads the row first and would still deny it), but it is an
+    // unbounded, invisible storage leak. Best-effort delete the object we
+    // just wrote, log if that also fails, and always rethrow the original
+    // error — never mask the UPDATE failure with a cleanup failure.
+    try {
+      await env.MEDIA.delete(`${PUBLIC_PREFIX}${key}`);
+    } catch (cleanupError) {
+      console.error(`Failed to clean up orphaned public object ${key}: ${cleanupError.message}`);
+    }
+    throw error;
+  }
 }
 
 /**

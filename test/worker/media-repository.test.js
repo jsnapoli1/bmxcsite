@@ -293,4 +293,121 @@ describe('media repository', () => {
     expect(stillOne).toHaveLength(1);
     expect(stillOne[0].filename).toBe('preexisting.jpg');
   });
+
+  // ---------------------------------------------------------------------
+  // Fix round 1: the original error must surface even when best-effort
+  // cleanup itself fails. Overrides env.MEDIA.delete on a copied env
+  // object, the same pattern test/worker/cache-resilience.test.js uses
+  // for env.CONTENT.
+  // ---------------------------------------------------------------------
+
+  it('surfaces the original insert error, not a cleanup failure, when the orphan delete also fails', async () => {
+    // Force the INSERT to fail (duplicate key), same setup as the earlier
+    // rollback test, but this time env.MEDIA.delete also throws — the
+    // cleanup attempt itself fails.
+    const fixedUuid = '22222222-2222-4222-8222-222222222222';
+    const collidingKey = `${fixedUuid}.jpg`;
+
+    await env.DB.prepare(
+      `INSERT INTO media (key, filename, content_type, size_bytes, uploaded_by)
+       VALUES (?, ?, ?, ?, ?)`,
+    ).bind(collidingKey, 'preexisting.jpg', 'image/jpeg', 1, UPLOADER).run();
+
+    const originalRandomUUID = crypto.randomUUID;
+    crypto.randomUUID = () => fixedUuid;
+
+    // R2Bucket methods live on the binding's prototype, not as own
+    // enumerable properties, so `{ ...env.MEDIA }` silently drops them
+    // (e.g. `put` disappears). Bind the real methods explicitly instead
+    // of spreading, and override only `delete`.
+    const originalDelete = env.MEDIA.delete.bind(env.MEDIA);
+    const brokenMediaEnv = {
+      ...env,
+      MEDIA: {
+        put: env.MEDIA.put.bind(env.MEDIA),
+        get: env.MEDIA.get.bind(env.MEDIA),
+        head: env.MEDIA.head.bind(env.MEDIA),
+        delete: async () => { throw new Error('R2 delete transiently down'); },
+      },
+    };
+
+    try {
+      await expect(
+        storeUpload(brokenMediaEnv, {
+          bytes: jpegBytes(),
+          filename: 'second.jpg',
+          contentType: 'image/jpeg',
+          uploaderEmail: UPLOADER,
+        }),
+      // The surfaced error must be the D1 UNIQUE-constraint failure, not
+      // "R2 delete transiently down" — the cleanup failure must never
+      // replace the error that actually caused this.
+      ).rejects.toThrow(/unique|constraint/i);
+    } finally {
+      crypto.randomUUID = originalRandomUUID;
+      // Clean up for real so this test doesn't leak an orphan of its own.
+      await originalDelete(`private/${collidingKey}`);
+    }
+  });
+
+  it('surfaces the original UPDATE error from publishMedia, not a cleanup failure', async () => {
+    const row = await storeUpload(env, {
+      bytes: jpegBytes(),
+      filename: 'group.jpg',
+      contentType: 'image/jpeg',
+      uploaderEmail: UPLOADER,
+    });
+
+    const dbError = new Error('D1 UPDATE transiently down');
+    const brokenDbEnv = {
+      ...env,
+      DB: {
+        ...env.DB,
+        prepare: () => ({
+          bind: () => ({
+            first: async () => { throw dbError; },
+          }),
+        }),
+      },
+    };
+
+    // The public R2 delete used for rollback must still work normally —
+    // only the DB UPDATE is broken — so the surfaced error is clearly the
+    // UPDATE failure, not a masked R2 error.
+    await expect(publishMedia(brokenDbEnv, row.key, EDITOR)).rejects.toBe(dbError);
+  });
+
+  it('after a failed publishMedia UPDATE, nothing is readable via getPublicObject', async () => {
+    const row = await storeUpload(env, {
+      bytes: jpegBytes(),
+      filename: 'group.jpg',
+      contentType: 'image/jpeg',
+      uploaderEmail: UPLOADER,
+    });
+
+    const brokenDbEnv = {
+      ...env,
+      DB: {
+        ...env.DB,
+        prepare: () => ({
+          bind: () => ({
+            first: async () => { throw new Error('D1 UPDATE transiently down'); },
+          }),
+        }),
+      },
+    };
+
+    await expect(publishMedia(brokenDbEnv, row.key, EDITOR)).rejects.toThrow();
+
+    // The row was never flipped to 'public' (the UPDATE never committed),
+    // so the database-first gate in getPublicObject must still deny —
+    // regardless of whatever became of the public/ R2 object.
+    const result = await getPublicObject(env, row.key);
+    expect(result).toBeNull();
+
+    // And the rollback should have removed the object publishMedia wrote
+    // before the UPDATE failed, so there's no leaked object either.
+    const publicObject = await env.MEDIA.get(`public/${row.key}`);
+    expect(publicObject).toBeNull();
+  });
 });
