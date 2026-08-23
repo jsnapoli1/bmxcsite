@@ -5,6 +5,12 @@ import users from './routes/users.js';
 
 const app = new Hono();
 
+app.onError((err, c) => {
+  // Operators need the stack; callers get nothing that describes our internals.
+  console.error(`Unhandled error: ${err?.stack ?? err}`);
+  return c.json({ error: 'Something went wrong' }, 500);
+});
+
 // Every admin API route is authenticated. Mount before the 404 catch-all.
 app.use('/api/admin/*', requireAuth);
 app.route('/api/admin/me', me);
@@ -13,6 +19,12 @@ app.route('/api/admin/users', users);
 app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
 
 // SPA fallback would otherwise serve the public index.html here.
+//
+// These two look duplicated but aren't safely collapsible on this Hono
+// version (4.13.3): app.get(['/admin', '/admin/*'], handler) was tried and
+// broke the wildcard match — /admin/anything fell through to the static
+// asset handler below and 404'd. Left as two explicit registrations rather
+// than risk that regressing silently.
 app.get('/admin', (c) =>
   c.env.ASSETS.fetch(new Request(new URL('/admin.html', c.req.url), c.req.raw)));
 app.get('/admin/*', (c) =>

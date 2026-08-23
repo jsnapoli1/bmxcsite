@@ -42,7 +42,7 @@ export default function Users({ currentEmail }) {
     setUsers(list);
   }
 
-  useEffect(() => { refresh().catch(setError); }, []);
+  useEffect(() => { refresh().catch((err) => setError(err.message)); }, []);
 
   async function handleInvite(event) {
     event.preventDefault();

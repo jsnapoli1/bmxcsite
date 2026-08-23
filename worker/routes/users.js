@@ -7,21 +7,35 @@ const users = new Hono();
 users.use('*', requireAdmin);
 
 // Deliberately permissive: real addresses vary more than most patterns allow.
-// This rejects obvious mistakes, not exotic-but-valid addresses.
+// This rejects obvious mistakes, not exotic-but-valid addresses. Bounded to
+// 254 chars total, the RFC 5321 practical maximum, so an unbounded
+// local-part can't be used to bloat the database or the request.
+const EMAIL_MAX_LENGTH = 254;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(value) {
+  return value.length <= EMAIL_MAX_LENGTH && EMAIL_PATTERN.test(value);
+}
 
 function normaliseEmail(value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
 
-/** Map an API permissions object to the five database columns. */
+/**
+ * Map an API permissions object to the five database columns.
+ *
+ * Strict: only a literal `true` sets a flag. Truthy-but-not-boolean input
+ * (a non-empty string, an array, an object) must never grant a permission
+ * or admin — coercion here previously let `isAdmin: "false"` grant admin.
+ */
 function toFlags(permissions = {}, isAdmin = false) {
+  const on = (value) => (value === true ? 1 : 0);
   return {
-    can_blog: permissions.blog ? 1 : 0,
-    can_media: permissions.media ? 1 : 0,
-    can_merch: permissions.merch ? 1 : 0,
-    can_campinfo: permissions.campinfo ? 1 : 0,
-    is_admin: isAdmin ? 1 : 0,
+    can_blog: on(permissions.blog),
+    can_media: on(permissions.media),
+    can_merch: on(permissions.merch),
+    can_campinfo: on(permissions.campinfo),
+    is_admin: on(isAdmin),
   };
 }
 
@@ -56,7 +70,7 @@ users.post('/', async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const email = normaliseEmail(body.email);
 
-  if (!EMAIL_PATTERN.test(email)) {
+  if (!isValidEmail(email)) {
     return c.json({ error: 'A valid email address is required' }, 400);
   }
 
@@ -104,8 +118,16 @@ users.patch('/:email', async (c) => {
     return c.json({ error: 'No such user' }, 404);
   }
 
-  // Locking yourself out of user management is unrecoverable from the panel.
-  if (target === c.get('email') && body.isAdmin === false) {
+  // Locking yourself out of user management is unrecoverable from the
+  // panel. Refuse ANY self-demotion attempt, not just a literal `false` —
+  // toFlags() is strict, so anything that isn't literal `true` would
+  // otherwise coerce to is_admin = 0 and lock the sole admin out with no
+  // path back short of a direct database edit.
+  if (
+    target === c.get('email')
+    && body.isAdmin !== undefined
+    && body.isAdmin !== true
+  ) {
     return c.json({ error: 'You cannot remove your own admin access' }, 400);
   }
 
@@ -134,7 +156,11 @@ users.patch('/:email', async (c) => {
     flags.can_campinfo, flags.is_admin, target,
   ).run();
 
-  await audit(c.env.DB, c.get('email'), 'user.update', target);
+  // Record the resulting state, not just that a change happened — a grant,
+  // a revocation, an admin promotion, and a name edit must be
+  // distinguishable later from a CLI query against audit_log.
+  const detail = `${target} ${JSON.stringify({ permissions, isAdmin: flags.is_admin === 1 })}`;
+  await audit(c.env.DB, c.get('email'), 'user.update', detail);
 
   return c.json({ user: await loadUser(c.env.DB, target) });
 });

@@ -7,7 +7,7 @@ export default function AdminApp() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    getMe().then(setMe).catch(setError);
+    getMe().then(setMe).catch((err) => setError(err.message));
   }, []);
 
   if (error) {

@@ -91,6 +91,28 @@ describe('users API', () => {
     expect(res.status).toBe(400);
   });
 
+  it('rejects an email exceeding the RFC 5321 254-char practical maximum', async () => {
+    const admin = await seedAdmin('long-email-admin@example.com');
+    asUser(admin);
+    const hugeLocalPart = 'a'.repeat(5000);
+    const res = await call('POST', '/api/admin/users',
+      { email: `${hugeLocalPart}@example.com` });
+    expect(res.status).toBe(400);
+  });
+
+  it('accepts an email right at the 254-char boundary', async () => {
+    const admin = await seedAdmin('boundary-email-admin@example.com');
+    asUser(admin);
+    // 254 chars total: local part sized so local + '@' + domain = 254.
+    const domain = '@example.com';
+    const localPart = 'a'.repeat(254 - domain.length);
+    const email = `${localPart}${domain}`;
+    expect(email).toHaveLength(254);
+
+    const res = await call('POST', '/api/admin/users', { email });
+    expect(res.status).toBe(201);
+  });
+
   it('rejects a duplicate email', async () => {
     const admin = await seedAdmin('dupe-admin@example.com');
     asUser(admin);
@@ -185,6 +207,83 @@ describe('users API', () => {
     expect(res.status).toBe(400);
   });
 
+  describe('self-demotion guard rejects any non-true isAdmin, not just false', () => {
+    const cases = [
+      ['isAdmin: 0', 0],
+      ['isAdmin: "false" (truthy string)', 'false'],
+      ['isAdmin: [] (truthy array)', []],
+      ['isAdmin: {} (truthy object)', {}],
+      ['isAdmin: null', null],
+    ];
+
+    for (const [label, value] of cases) {
+      it(`refuses self-PATCH with ${label}`, async () => {
+        const admin = await seedAdmin(`selfguard-${Math.random().toString(36).slice(2)}@example.com`);
+        asUser(admin);
+        const res = await call('PATCH', `/api/admin/users/${admin}`,
+          { isAdmin: value });
+        expect(res.status).toBe(400);
+
+        // The account must still be admin afterward — the guard is the
+        // only thing standing between a truthy-junk payload and a
+        // permanent lockout.
+        const row = await env.DB.prepare(
+          'SELECT is_admin FROM users WHERE email = ?',
+        ).bind(admin).first();
+        expect(row.is_admin).toBe(1);
+      });
+    }
+  });
+
+  it('does not grant admin from a truthy non-boolean isAdmin on another user', async () => {
+    const admin = await seedAdmin('grant-guard-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'grant-target@example.com' });
+
+    const res = await call('PATCH', '/api/admin/users/grant-target@example.com',
+      { isAdmin: 'false' });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.isAdmin).toBe(false);
+  });
+
+  it('does not grant a permission from truthy non-boolean values on another user', async () => {
+    const admin = await seedAdmin('grant-perm-guard-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'grant-perm-target@example.com' });
+
+    const res = await call('PATCH', '/api/admin/users/grant-perm-target@example.com', {
+      permissions: { blog: 'false', media: [], merch: {}, campinfo: 1 },
+    });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.permissions).toEqual({
+      blog: false, media: false, merch: false, campinfo: false,
+    });
+  });
+
+  it('preserves existing isAdmin=true when a self-PATCH omits isAdmin', async () => {
+    const admin = await seedAdmin('preserve-admin-true@example.com');
+    asUser(admin);
+    const res = await call('PATCH', `/api/admin/users/${admin}`,
+      { name: 'Renamed' });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.isAdmin).toBe(true);
+  });
+
+  it('preserves existing isAdmin=false when a PATCH omits isAdmin', async () => {
+    const admin = await seedAdmin('preserve-nonadmin-owner@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'nonadmin-target@example.com' });
+
+    const res = await call('PATCH', '/api/admin/users/nonadmin-target@example.com',
+      { permissions: { blog: true } });
+    expect(res.status).toBe(200);
+    const { user } = await res.json();
+    expect(user.isAdmin).toBe(false);
+  });
+
   it('refuses to let an admin delete themselves', async () => {
     const admin = await seedAdmin('selfdelete-admin@example.com');
     asUser(admin);
@@ -223,10 +322,32 @@ describe('users API', () => {
       { permissions: { blog: true } });
 
     const row = await env.DB.prepare(
-      'SELECT * FROM audit_log WHERE action = ? AND detail = ?',
-    ).bind('user.update', 'audited-update@example.com').first();
+      'SELECT * FROM audit_log WHERE action = ? AND detail LIKE ?',
+    ).bind('user.update', 'audited-update@example.com%').first();
     expect(row.actor_email).toBe(admin);
     expect(row.detail).toContain('audited-update@example.com');
+  });
+
+  it('records the resulting permissions and admin state in the update audit detail', async () => {
+    const admin = await seedAdmin('audit-detail-admin@example.com');
+    asUser(admin);
+    await call('POST', '/api/admin/users', { email: 'audit-detail@example.com' });
+    await call('PATCH', '/api/admin/users/audit-detail@example.com', {
+      permissions: { blog: true, media: false, merch: false, campinfo: false },
+      isAdmin: false,
+    });
+
+    const row = await env.DB.prepare(
+      'SELECT * FROM audit_log WHERE action = ? AND detail LIKE ?',
+    ).bind('user.update', 'audit-detail@example.com%').first();
+    expect(row.detail).toContain('audit-detail@example.com');
+
+    const [, jsonPart] = row.detail.split(/ (.+)/s);
+    const parsed = JSON.parse(jsonPart);
+    expect(parsed).toEqual({
+      permissions: { blog: true, media: false, merch: false, campinfo: false },
+      isAdmin: false,
+    });
   });
 
   it('writes an audit entry when deleting a user', async () => {
