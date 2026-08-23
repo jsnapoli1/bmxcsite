@@ -4,6 +4,7 @@ import me from './routes/me.js';
 import users from './routes/users.js';
 import content from './routes/content.js';
 import publicContent from './routes/public.js';
+import media, { publicMedia } from './routes/media.js';
 
 const app = new Hono();
 
@@ -18,10 +19,12 @@ app.use('/api/admin/*', requireAuth);
 app.route('/api/admin/me', me);
 app.route('/api/admin/users', users);
 app.route('/api/admin/content', content);
+app.route('/api/admin/media', media);
 
 // Deliberately a different prefix, NOT under /api/admin/*: the public site
-// must be able to read published content with no Access token at all.
+// must be able to read published content/media with no Access token at all.
 app.route('/api/content', publicContent);
+app.route('/media', publicMedia);
 
 app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
 
