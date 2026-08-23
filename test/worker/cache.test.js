@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { env } from 'cloudflare:test';
 import { cachedContent, purge } from '../../worker/content/cache.js';
+import { saveArea, publishArea } from '../../worker/content/repository.js';
 import * as repo from '../../worker/content/repository.js';
 
 describe('cache', () => {
@@ -21,15 +22,29 @@ describe('cache', () => {
   });
 
   it('misses after a version bump, without needing a purge', async () => {
-    vi.spyOn(repo, 'getPublished')
-      .mockResolvedValueOnce({ groups: [{ title: 'v1', members: [] }] })
-      .mockResolvedValueOnce({ groups: [{ title: 'v2', members: [] }] });
-    vi.spyOn(repo, 'getVersion')
-      .mockResolvedValueOnce(1).mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(2);
+    // Uses the real repository and a real version bump rather than a mocked
+    // call sequence. An earlier version of this test chained
+    // mockResolvedValueOnce to a fixed call count, which forced the
+    // implementation to call getVersion twice per cache hit purely to
+    // consume the mock — a wasted D1 query per request to satisfy a test.
+    await saveArea(env.DB, 'staff', {
+      groups: [{ group: 'v1', members: [{ name: 'Ken', role: 'Director', bio: 'b' }] }],
+    }, 'x@y.com');
+    await publishArea(env.DB, 'staff', 'x@y.com');
 
-    expect((await cachedContent(env, 'staff')).groups[0].title).toBe('v1');
-    expect((await cachedContent(env, 'staff')).groups[0].title).toBe('v2');
+    const first = await cachedContent(env, 'staff');
+    expect(first.groups[0].group).toBe('v1');
+
+    // Warm the cache, then publish new content. No purge.
+    await cachedContent(env, 'staff');
+    await saveArea(env.DB, 'staff', {
+      groups: [{ group: 'v2', members: [{ name: 'Ken', role: 'Director', bio: 'b' }] }],
+    }, 'x@y.com');
+    await publishArea(env.DB, 'staff', 'x@y.com');
+
+    // The version bump alone must be enough to serve the new content.
+    const after = await cachedContent(env, 'staff');
+    expect(after.groups[0].group).toBe('v2');
   });
 
   it('purge does not throw when the key is absent', async () => {

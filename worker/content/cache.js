@@ -55,12 +55,6 @@ export async function cachedContent(env, area) {
     return readThrough(env, area, version);
   }
 
-  // Re-check freshness before trusting the hit — see the module comment.
-  const currentVersion = await getVersion(env.DB, area);
-  if (currentVersion !== version) {
-    return readThrough(env, area, currentVersion);
-  }
-
   return JSON.parse(cached);
 }
 
