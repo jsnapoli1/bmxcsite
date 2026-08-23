@@ -18,8 +18,8 @@
     }
   ],
   "vars": {
-    "TEAM_DOMAIN": "https://bmxc.cloudflareaccess.com",
-    "POLICY_AUD": ""
+    "TEAM_DOMAIN": "https://letssimplifai.cloudflareaccess.com",
+    "POLICY_AUD": "81d19335-5f3d-4c31-a565-3b7b64c46d00"
   },
 
   // Custom domains. Declared here rather than set in the dashboard so that
