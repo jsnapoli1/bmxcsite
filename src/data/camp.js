@@ -20,7 +20,7 @@ export const CAMP = {
     accreditation: 'ACA-accredited',
   },
   contact: {
-    email: 'directors@bluemountainxccamp.com',
+    email: 'info@bmxc.camp',
     phone: '585-694-5069',
     directors: 'Ken and Sarah',
     mailing: { line1: 'BMXC', line2: '207 Richmond Ave', line3: 'Buffalo, NY 14222' },
