@@ -59,13 +59,28 @@ async function readThrough(env, area, version) {
  */
 export async function cachedContent(env, area) {
   const version = await getVersion(env.DB, area);
-  const cached = await env.CONTENT.get(cacheKey(area, version));
+
+  // Every KV interaction here is optional. The cache exists to keep D1 off
+  // the public read path; it must never be able to break the page it speeds
+  // up. A failed read, or an entry that will not parse, degrades to reading
+  // through to D1 — slower, still correct.
+  let cached = null;
+  try {
+    cached = await env.CONTENT.get(cacheKey(area, version));
+  } catch (error) {
+    console.error(`Cache read failed for ${area}: ${error?.message ?? error}`);
+  }
 
   if (cached === null) {
     return readThrough(env, area, version);
   }
 
-  return JSON.parse(cached);
+  try {
+    return JSON.parse(cached);
+  } catch (error) {
+    console.error(`Cache entry for ${area} did not parse: ${error?.message ?? error}`);
+    return readThrough(env, area, version);
+  }
 }
 
 /**
