@@ -1,11 +1,25 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "bmxcsite",
+  "main": "./worker/index.js",
   "compatibility_date": "2026-08-18",
   "account_id": "9569781c361a80bd0b96dedbac0aca6d",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bmxc",
+      "database_id": "18788aa1-60db-4026-803c-c556e0b1401e",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "TEAM_DOMAIN": "https://bmxc.cloudflareaccess.com",
+    "POLICY_AUD": ""
   },
 
   // Custom domains. Declared here rather than set in the dashboard so that
