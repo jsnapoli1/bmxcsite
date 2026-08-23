@@ -5,6 +5,7 @@ import users from './routes/users.js';
 import content from './routes/content.js';
 import publicContent from './routes/public.js';
 import media, { publicMedia } from './routes/media.js';
+import blog, { publicBlog } from './routes/blog.js';
 
 const app = new Hono();
 
@@ -20,9 +21,17 @@ app.route('/api/admin/me', me);
 app.route('/api/admin/users', users);
 app.route('/api/admin/content', content);
 app.route('/api/admin/media', media);
+app.route('/api/admin/blog', blog);
 
 // Deliberately a different prefix, NOT under /api/admin/*: the public site
-// must be able to read published content/media with no Access token at all.
+// must be able to read published content/media/blog with no Access token
+// at all.
+//
+// publicBlog MUST be routed before publicContent: publicContent registers
+// `GET /:area` at `/api/content`, which would otherwise swallow
+// `/api/content/blog` as area = "blog" (a genuinely unknown content area,
+// answering 404) before Hono ever tries the more specific blog routes.
+app.route('/api/content/blog', publicBlog);
 app.route('/api/content', publicContent);
 app.route('/media', publicMedia);
 

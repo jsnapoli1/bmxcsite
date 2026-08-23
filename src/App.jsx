@@ -14,6 +14,8 @@ const Staff = lazy(() => import('./pages/Staff.jsx'));
 const Faq = lazy(() => import('./pages/Faq.jsx'));
 const Registration = lazy(() => import('./pages/Registration.jsx'));
 const Contact = lazy(() => import('./pages/Contact.jsx'));
+const Blog = lazy(() => import('./pages/Blog.jsx'));
+const BlogPost = lazy(() => import('./pages/BlogPost.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
 
 /** Client-side navigation should start each page at the top. */
@@ -47,6 +49,8 @@ export default function App() {
             <Route path="/merch" element={<Merch />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/faq" element={<Faq />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/registration" element={<Registration />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
