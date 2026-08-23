@@ -26,5 +26,10 @@ export default defineConfig({
   ],
   test: {
     setupFiles: ['./test/setup.js'],
+    // Git worktrees live under .worktrees/ and contain a full copy of the
+    // tree, tests included. Without this, every test runs twice — once from
+    // here and once from each worktree — which doubles the reported count
+    // and makes the suite depend on whether a worktree happens to exist.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.worktrees/**'],
   },
 });
