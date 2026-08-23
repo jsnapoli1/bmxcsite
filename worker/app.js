@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 import { requireAuth } from './auth/middleware.js';
 import me from './routes/me.js';
 import users from './routes/users.js';
+import content from './routes/content.js';
+import publicContent from './routes/public.js';
 
 const app = new Hono();
 
@@ -15,6 +17,11 @@ app.onError((err, c) => {
 app.use('/api/admin/*', requireAuth);
 app.route('/api/admin/me', me);
 app.route('/api/admin/users', users);
+app.route('/api/admin/content', content);
+
+// Deliberately a different prefix, NOT under /api/admin/*: the public site
+// must be able to read published content with no Access token at all.
+app.route('/api/content', publicContent);
 
 app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
 
