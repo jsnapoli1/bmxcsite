@@ -30,6 +30,10 @@
  * only ever runs under plain Node) is unaffected.
  */
 
+import { readFile, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { stripJsonComments } from './jsonc.js';
 import { saveArea, publishArea } from '../worker/content/repository.js';
 import { STAFF_GROUPS } from '../src/data/staff.js';
 import { FAQ_CATEGORIES } from '../src/data/faq.js';
@@ -291,10 +295,36 @@ async function main() {
   }
 
   const { getPlatformProxy } = await import('wrangler');
+
+  // `remoteBindings: true` alone is NOT enough to reach production. Each
+  // binding must ALSO carry `remote: true`, or the proxy
+  // silently falls back to local state — the same `env.DB` name, quietly
+  // pointing somewhere else. That silence is the hazard: an earlier version
+  // of this script counted rows in the LOCAL database while reporting on
+  // production, and its safety guard refused a seed that should have run.
+  //
+  // The flag is written into a temporary config rather than wrangler.jsonc
+  // because a permanent `remote: true` would point `wrangler dev` at
+  // the live database too. Nobody should be one stray command away from
+  // editing production while developing.
+  let configPath;
+  let tempConfigPath;
+  if (isRemote) {
+    const baseConfig = JSON.parse(
+      stripJsonComments(await readFile('wrangler.jsonc', 'utf8')),
+    );
+    baseConfig.d1_databases = (baseConfig.d1_databases ?? []).map((binding) => ({
+      ...binding,
+      remote: true,
+    }));
+    tempConfigPath = join(tmpdir(), `bmxc-seed-remote-${process.pid}.json`);
+    await writeFile(tempConfigPath, JSON.stringify(baseConfig, null, 2));
+    configPath = tempConfigPath;
+  }
+
   const proxy = await getPlatformProxy({
-    // Local D1 state (used by `wrangler dev` and `--local` migrations)
-    // unless --remote asks for the live production database instead.
     remoteBindings: isRemote,
+    ...(configPath ? { configPath } : {}),
   });
 
   try {
@@ -317,6 +347,9 @@ async function main() {
     console.log('Seed complete.');
   } finally {
     await proxy.dispose();
+    if (tempConfigPath) {
+      await rm(tempConfigPath, { force: true });
+    }
   }
 }
 
