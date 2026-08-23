@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { env } from 'cloudflare:test';
 import { saveArea, publishArea, getPublished } from '../../worker/content/repository.js';
-import { buildSeedPayload } from '../../scripts/seed-content.js';
+import { buildSeedPayload, evaluateRemoteGuard, CONTENT_TABLES } from '../../scripts/seed-content.js';
 import { STAFF_GROUPS } from '../../src/data/staff.js';
 import { FAQ_CATEGORIES } from '../../src/data/faq.js';
 import { MERCH_ITEMS, MERCH_FACTS } from '../../src/data/merch.js';
@@ -206,5 +206,96 @@ describe('buildSeedPayload — shape', () => {
     const first = buildSeedPayload();
     const second = buildSeedPayload();
     expect(first).toEqual(second);
+  });
+});
+
+describe('evaluateRemoteGuard — the --remote clobber guard', () => {
+  /**
+   * `evaluateRemoteGuard` is the pure "should this abort?" decision the
+   * guard is built on, extracted specifically so it's testable without a
+   * live database — see its own doc comment in scripts/seed-content.js.
+   * The wrangler-proxy path that reads real row counts and calls this
+   * (main()'s `if (isRemote) { ... }` block) is not covered here: it
+   * requires a live D1 binding reachable only via getPlatformProxy, which
+   * is out of reach for a unit test and out of scope for this suite.
+   */
+
+  function zeroCounts() {
+    return Object.fromEntries(CONTENT_TABLES.map((table) => [table, 0]));
+  }
+
+  it('does not abort when every content table is empty', () => {
+    const decision = evaluateRemoteGuard({ counts: zeroCounts(), force: false });
+    expect(decision.abort).toBe(false);
+  });
+
+  it('aborts when any single content table has rows, without --force', () => {
+    const counts = { ...zeroCounts(), staff_groups: 3 };
+    const decision = evaluateRemoteGuard({ counts, force: false });
+    expect(decision.abort).toBe(true);
+  });
+
+  it('aborts on partial content — one populated table among otherwise-empty ones', () => {
+    // Content can be partially present (e.g. campinfo published, staff
+    // still empty). The guard must not treat "not every table" as "safe".
+    const counts = { ...zeroCounts(), camp_fields: 5 };
+    const decision = evaluateRemoteGuard({ counts, force: false });
+    expect(decision.abort).toBe(true);
+  });
+
+  it('aborts when rows are spread across multiple tables', () => {
+    const counts = {
+      ...zeroCounts(), staff_groups: 4, staff_members: 10, faq_categories: 7,
+    };
+    const decision = evaluateRemoteGuard({ counts, force: false });
+    expect(decision.abort).toBe(true);
+  });
+
+  it('does not abort when rows exist but --force is passed', () => {
+    const counts = { ...zeroCounts(), merch_items: 3, merch_facts: 4 };
+    const decision = evaluateRemoteGuard({ counts, force: true });
+    expect(decision.abort).toBe(false);
+  });
+
+  it('--force has no effect when there is nothing to protect', () => {
+    const decision = evaluateRemoteGuard({ counts: zeroCounts(), force: true });
+    expect(decision.abort).toBe(false);
+  });
+
+  it('the abort message names every non-empty table and its row count', () => {
+    const counts = { ...zeroCounts(), staff_groups: 4, faq_items: 44 };
+    const { message } = evaluateRemoteGuard({ counts, force: false });
+
+    expect(message).toContain('staff_groups (4 rows)');
+    expect(message).toContain('faq_items (44 rows)');
+    // Empty tables should not be listed as if they were part of the problem.
+    expect(message).not.toContain('merch_items');
+  });
+
+  it('the abort message uses singular "row" for a count of exactly one', () => {
+    const counts = { ...zeroCounts(), camp_fields: 1 };
+    const { message } = evaluateRemoteGuard({ counts, force: false });
+
+    expect(message).toContain('camp_fields (1 row)');
+    expect(message).not.toContain('camp_fields (1 rows)');
+  });
+
+  it('the abort message states what would be destroyed', () => {
+    const counts = { ...zeroCounts(), staff_groups: 1 };
+    const { message } = evaluateRemoteGuard({ counts, force: false });
+
+    expect(message).toMatch(/overwrite|destroy/i);
+  });
+
+  it('the abort message names --force as the way to override', () => {
+    const counts = { ...zeroCounts(), staff_groups: 1 };
+    const { message } = evaluateRemoteGuard({ counts, force: false });
+
+    expect(message).toContain('--force');
+  });
+
+  it('a successful (non-abort) decision carries no message', () => {
+    const decision = evaluateRemoteGuard({ counts: zeroCounts(), force: false });
+    expect(decision.message).toBeUndefined();
   });
 });

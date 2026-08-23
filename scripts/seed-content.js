@@ -39,6 +39,80 @@ import { CAMP } from '../src/data/camp.js';
 const SEED_EDITOR_EMAIL = 'seed@bmxc.camp';
 
 /**
+ * The seven tables that hold editor-authored content (not
+ * `content_version`, which is metadata the migration itself seeds to `1`
+ * for every area — a fresh, genuinely empty content database still has
+ * four rows there, and counting it would make the guard below fire on a
+ * database that has never been seeded at all).
+ */
+export const CONTENT_TABLES = Object.freeze([
+  'staff_groups',
+  'staff_members',
+  'faq_categories',
+  'faq_items',
+  'merch_items',
+  'merch_facts',
+  'camp_fields',
+]);
+
+/**
+ * Decides whether a `--remote` seed run should be aborted before it writes
+ * anything, given row counts already read from the live database and
+ * whether `--force` was passed.
+ *
+ * Pure and synchronous on purpose: `saveArea` is documented as an
+ * unconditional delete-then-insert (see repository.js), which is correct
+ * for a seed run, but the seed script is the one place that contract meets
+ * an unattended write to production. Once camp directors start editing
+ * content through the panel, a second `--remote` run — out of habit, or to
+ * pick up a `src/data` correction — would otherwise silently wipe their
+ * edits with no warning.
+ *
+ * `counts` is `{ [tableName]: number }` for every table in
+ * `CONTENT_TABLES`; content is considered present if the sum across all
+ * seven tables is nonzero, not just any single one — content can be
+ * partially present (e.g. campinfo published but staff still empty), and
+ * checking only one table would let a partial-content database through
+ * unguarded.
+ *
+ * Kept as a standalone pure function (no D1 binding, no process access) so
+ * it's testable without a live database — `test/worker/seed.test.js`
+ * exercises this directly. The wrangler-proxy path that actually reads
+ * counts and calls this is not covered by tests; see the seed-guard tests'
+ * own comment for why.
+ */
+export function evaluateRemoteGuard({ counts, force }) {
+  const totalRows = CONTENT_TABLES.reduce((sum, table) => sum + (counts[table] ?? 0), 0);
+
+  if (totalRows === 0) {
+    return { abort: false };
+  }
+
+  if (force === true) {
+    return { abort: false };
+  }
+
+  const nonEmpty = CONTENT_TABLES
+    .filter((table) => (counts[table] ?? 0) > 0)
+    .map((table) => `${table} (${counts[table]} row${counts[table] === 1 ? '' : 's'})`);
+
+  const message = [
+    'ABORTED: --remote seed would overwrite existing content.',
+    '',
+    `Found ${totalRows} existing row${totalRows === 1 ? '' : 's'} across content tables:`,
+    ...nonEmpty.map((line) => `  - ${line}`),
+    '',
+    'saveArea() replaces an area\'s rows unconditionally (delete-then-insert),',
+    'so running this seed now would destroy whatever is in those tables —',
+    'including any edits made through the admin panel.',
+    '',
+    'If you are certain you want to overwrite this content, re-run with --force.',
+  ].join('\n');
+
+  return { abort: true, message };
+}
+
+/**
  * Maps `STAFF_GROUPS` (src/data/staff.js) onto the `saveArea('staff', ...)`
  * payload shape. The repository's payload key is `group` (not `title` —
  * see repository.js's own comment on why: it matches what
@@ -162,6 +236,22 @@ export function buildSeedPayload() {
   };
 }
 
+/**
+ * Reads a `{ [tableName]: number }` row count for every table in
+ * `CONTENT_TABLES`, in parallel. Used only by the `--remote` guard — local
+ * seeding never calls this (see main(), and CONTENT_TABLES's own comment
+ * on why `content_version` is excluded from the count).
+ */
+async function countContentRows(db) {
+  const rows = await Promise.all(
+    CONTENT_TABLES.map(async (table) => {
+      const row = await db.prepare(`SELECT COUNT(*) as n FROM ${table}`).first();
+      return [table, row.n];
+    }),
+  );
+  return Object.fromEntries(rows);
+}
+
 /** Saves and immediately publishes every area, in one D1 binding session. */
 async function seed(db) {
   const payload = buildSeedPayload();
@@ -177,9 +267,10 @@ async function main() {
   const args = process.argv.slice(2);
   const isLocal = args.includes('--local');
   const isRemote = args.includes('--remote');
+  const force = args.includes('--force');
 
   if (isLocal === isRemote) {
-    console.error('Usage: node scripts/seed-content.js --local | --remote');
+    console.error('Usage: node scripts/seed-content.js --local | --remote [--force]');
     console.error('Pass exactly one of --local or --remote.');
     process.exitCode = 1;
     return;
@@ -193,6 +284,20 @@ async function main() {
   });
 
   try {
+    // The clobber guard applies to --remote only. Local seeding is a
+    // development convenience that must stay frictionless — re-running it
+    // against a throwaway local database is expected, routine, and has no
+    // director's real edits to protect.
+    if (isRemote) {
+      const counts = await countContentRows(proxy.env.DB);
+      const decision = evaluateRemoteGuard({ counts, force });
+      if (decision.abort) {
+        console.error(decision.message);
+        process.exitCode = 1;
+        return;
+      }
+    }
+
     console.log(`Seeding ${isRemote ? 'REMOTE (production)' : 'local'} D1...`);
     await seed(proxy.env.DB);
     console.log('Seed complete.');
