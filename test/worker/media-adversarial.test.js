@@ -12,6 +12,14 @@ async function upload(over = {}) {
   });
 }
 
+// publishMedia refuses a row with no alt_text — see the comment above it in
+// worker/media/repository.js. Set directly via SQL so this file's tests stay
+// focused on the exposure properties they exist to check.
+async function setAltText(key, altText = 'A photo from camp.') {
+  await env.DB.prepare('UPDATE media SET alt_text = ? WHERE key = ?')
+    .bind(altText, key).run();
+}
+
 /**
  * This site is about children, and CLAUDE.md notes some camp photos show
  * individually identifiable minors. These are the checks that make an
@@ -60,6 +68,7 @@ describe('adversarial media checks', () => {
 
   it('publish then unpublish makes it unreachable again', async () => {
     const row = await upload();
+    await setAltText(row.key);
     await publishMedia(env, row.key, 'ken@bmxc.camp');
     expect(await getPublicObject(env, row.key)).not.toBeNull();
     await unpublishMedia(env, row.key, 'ken@bmxc.camp');

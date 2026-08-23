@@ -7,6 +7,13 @@ const JPEG = new Uint8Array([0xFF,0xD8,0xFF,0xE0, ...new Array(64).fill(0x41)]);
 const upload = () => storeUpload(env, { bytes: JPEG, filename:'kid.jpg',
   contentType:'image/jpeg', uploaderEmail:'k@x.com' });
 
+// publishMedia refuses a row with no alt_text — see the comment above it in
+// worker/media/repository.js.
+async function setAltText(key, altText = 'A photo from camp.') {
+  await env.DB.prepare('UPDATE media SET alt_text = ? WHERE key = ?')
+    .bind(altText, key).run();
+}
+
 /**
  * The blog is a second route by which an uploaded photo could reach the
  * public: a post's hero image. Since some camp photos show identifiable
@@ -32,6 +39,7 @@ describe('blog cannot leak a private photo', () => {
 
   it('publishing succeeds once the hero image is published', async () => {
     const media = await upload();
+    await setAltText(media.key);
     await publishMedia(env, media.key, 'k@x.com');
     const post = await savePost(env.DB, {
       title: 'Second Recap', bodyMarkdown: 'Text.', heroMediaKey: media.key,

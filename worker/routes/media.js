@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { requireArea } from '../auth/middleware.js';
 import {
-  storeUpload, listMedia, publishMedia, unpublishMedia, getPublicObject, UploadError,
+  storeUpload, listMedia, updateMediaMetadata, publishMedia, unpublishMedia, getPublicObject,
+  UploadError,
 } from '../media/repository.js';
 
 /**
@@ -59,6 +60,32 @@ media.get('/', async (c) => {
     listMedia(c.env.DB, { status: 'public' }),
   ]);
   return c.json({ media: [...publicRows, ...privateRows] });
+});
+
+// Sets alt text and/or caption on an existing row. This is the only place
+// that can set alt_text — publishMedia (worker/media/repository.js) refuses
+// to publish a row that has none, so this route is a prerequisite for
+// publishing, not a nice-to-have.
+media.patch('/:key', async (c) => {
+  const key = c.req.param('key');
+
+  let body;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Request body must be valid JSON' }, 400);
+  }
+
+  const row = await updateMediaMetadata(c.env.DB, key, {
+    altText: typeof body.altText === 'string' ? body.altText : undefined,
+    caption: typeof body.caption === 'string' ? body.caption : undefined,
+  });
+
+  if (row === null) {
+    return c.json({ error: `No media row found for key "${key}".` }, 404);
+  }
+
+  return c.json({ media: row });
 });
 
 media.post('/:key/publish', async (c) => {

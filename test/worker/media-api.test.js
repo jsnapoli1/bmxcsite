@@ -166,6 +166,7 @@ describe('media publish / unpublish / delete', () => {
     asUser(editorEmail);
     const uploadRes = await callUpload(jpegFormData());
     const { media } = await uploadRes.json();
+    await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Campers at the lake.' });
 
     const publishRes = await call('POST', `/api/admin/media/${media.key}/publish`);
     expect(publishRes.status).toBe(200);
@@ -183,6 +184,7 @@ describe('media publish / unpublish / delete', () => {
     asUser(editorEmail);
     const uploadRes = await callUpload(jpegFormData());
     const { media } = await uploadRes.json();
+    await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Campers at the lake.' });
     await call('POST', `/api/admin/media/${media.key}/publish`);
 
     const unpublishRes = await call('POST', `/api/admin/media/${media.key}/unpublish`);
@@ -218,6 +220,7 @@ describe('media publish / unpublish / delete', () => {
     asUser(editorEmail);
     const uploadRes = await callUpload(jpegFormData());
     const { media } = await uploadRes.json();
+    await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Campers at the lake.' });
 
     await call('POST', `/api/admin/media/${media.key}/publish`);
 
@@ -244,6 +247,7 @@ describe('public media route', () => {
     asUser(editorEmail);
     const uploadRes = await callUpload(jpegFormData());
     const { media } = await uploadRes.json();
+    await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Campers at the lake.' });
     await call('POST', `/api/admin/media/${media.key}/publish`);
 
     // No mock active for the public fetch either — the public route must
@@ -269,6 +273,7 @@ describe('public media route', () => {
     const uploadRes = await callUpload(jpegFormData());
     const { media } = await uploadRes.json();
     expect(media.content_type).toBe('image/jpeg');
+    await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Campers at the lake.' });
     await call('POST', `/api/admin/media/${media.key}/publish`);
 
     const res = await app.fetch(
@@ -294,6 +299,56 @@ describe('media list', () => {
     asUser(admin);
 
     const res = await call('GET', '/api/admin/media');
+    expect(res.status).toBe(200);
+  });
+});
+
+describe('media alt text', () => {
+  it('sets alt text via PATCH', async () => {
+    const media = await uploadAsMediaEditor('alt-text-set@example.com');
+
+    const res = await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Two campers by the lake.' });
+    expect(res.status).toBe(200);
+    const { media: updated } = await res.json();
+    expect(updated.alt_text).toBe('Two campers by the lake.');
+  });
+
+  it('PATCH on an unknown key is a 404, not a 500', async () => {
+    await seedUser('alt-text-unknown@example.com', { media: true });
+    asUser('alt-text-unknown@example.com');
+
+    const res = await call('PATCH', '/api/admin/media/no-such-key.jpg', { altText: 'x' });
+    expect(res.status).toBe(404);
+  });
+
+  it('denies PATCH to a user without the media permission', async () => {
+    await seedUser('alt-text-no-perm@example.com', { blog: true });
+    asUser('alt-text-no-perm@example.com');
+
+    const res = await call('PATCH', '/api/admin/media/some-key.jpg', { altText: 'x' });
+    expect(res.status).toBe(403);
+  });
+
+  it('publishing without alt text is refused with a clear reason, and the photo stays private', async () => {
+    const media = await uploadAsMediaEditor('publish-no-alt@example.com');
+
+    const res = await call('POST', `/api/admin/media/${media.key}/publish`);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toMatch(/alt text/i);
+
+    const publicRes = await app.fetch(
+      new Request(`https://bmxc.camp/media/${media.key}`),
+      env,
+    );
+    expect(publicRes.status).toBe(404);
+  });
+
+  it('publishing succeeds once alt text is set', async () => {
+    const media = await uploadAsMediaEditor('publish-with-alt@example.com');
+    await call('PATCH', `/api/admin/media/${media.key}`, { altText: 'Campers on the trail.' });
+
+    const res = await call('POST', `/api/admin/media/${media.key}/publish`);
     expect(res.status).toBe(200);
   });
 });

@@ -11,6 +11,13 @@ async function uploaded() {
   return storeUpload(env, { bytes: JPEG, filename:'kid.jpg', contentType:'image/jpeg', uploaderEmail:'k@x.com' });
 }
 
+// publishMedia refuses a row with no alt_text — see the comment above it in
+// worker/media/repository.js.
+async function setAltText(key, altText = 'A photo from camp.') {
+  await env.DB.prepare('UPDATE media SET alt_text = ? WHERE key = ?')
+    .bind(altText, key).run();
+}
+
 /**
  * `/media/:key` is the one publicly-reachable route that serves uploaded
  * bytes, and it sits outside Cloudflare Access by necessity — the public
@@ -54,6 +61,7 @@ describe('public media route cannot leak a private photo', () => {
 
   it('a published photo IS served, with immutable caching', async () => {
     const row = await uploaded();
+    await setAltText(row.key);
     await publishMedia(env, row.key, 'k@x.com');
     const res = await anon('GET', `/media/${row.key}`);
     expect(res.status).toBe(200);

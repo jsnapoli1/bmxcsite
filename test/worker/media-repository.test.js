@@ -11,6 +11,16 @@ import {
   getPublicObject,
 } from '../../worker/media/repository.js';
 
+// publishMedia refuses to publish a row with no alt_text (see the comment
+// above it in worker/media/repository.js) — every test here that publishes
+// a row must set one first. Written directly via SQL rather than through
+// updateMediaMetadata so these tests stay focused on publish/unpublish
+// behaviour rather than exercising the metadata-update path too.
+async function setAltText(key, altText = 'A photo from camp.') {
+  await env.DB.prepare('UPDATE media SET alt_text = ? WHERE key = ?')
+    .bind(altText, key).run();
+}
+
 // Minimal-but-valid magic-byte prefixes for each allowed type, padded with
 // filler bytes so size-limit tests can control the total length precisely.
 function jpegBytes(length = 32) {
@@ -133,6 +143,7 @@ describe('media repository', () => {
       contentType: 'image/png',
       uploaderEmail: UPLOADER,
     });
+    await setAltText(row.key);
 
     const published = await publishMedia(env, row.key, EDITOR);
 
@@ -151,6 +162,7 @@ describe('media repository', () => {
       contentType: 'image/webp',
       uploaderEmail: UPLOADER,
     });
+    await setAltText(row.key);
     await publishMedia(env, row.key, EDITOR);
 
     const result = await getPublicObject(env, row.key);
@@ -164,6 +176,7 @@ describe('media repository', () => {
       contentType: 'image/jpeg',
       uploaderEmail: UPLOADER,
     });
+    await setAltText(row.key);
     await publishMedia(env, row.key, EDITOR);
 
     const unpublished = await unpublishMedia(env, row.key, EDITOR);
@@ -181,6 +194,7 @@ describe('media repository', () => {
       contentType: 'image/jpeg',
       uploaderEmail: UPLOADER,
     });
+    await setAltText(row.key);
     await publishMedia(env, row.key, EDITOR);
     await unpublishMedia(env, row.key, EDITOR);
 
@@ -238,6 +252,7 @@ describe('media repository', () => {
       contentType: 'image/png',
       uploaderEmail: UPLOADER,
     });
+    await setAltText(a.key);
     await publishMedia(env, a.key, EDITOR);
 
     const publicRows = await listMedia(env.DB, { status: 'public' });

@@ -25,8 +25,16 @@ async function createPrivateMedia() {
   });
 }
 
+// publishMedia refuses a row with no alt_text — see the comment above it in
+// worker/media/repository.js.
+async function setAltText(key, altText = 'A photo from camp.') {
+  await env.DB.prepare('UPDATE media SET alt_text = ? WHERE key = ?')
+    .bind(altText, key).run();
+}
+
 async function createPublicMedia() {
   const row = await createPrivateMedia();
+  await setAltText(row.key);
   return publishMedia(env, row.key, EDITOR);
 }
 

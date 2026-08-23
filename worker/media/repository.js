@@ -197,6 +197,31 @@ export async function listMedia(db, { status }) {
 }
 
 // ---------------------------------------------------------------------------
+// updateMediaMetadata — alt text / caption only, never status
+// ---------------------------------------------------------------------------
+
+/**
+ * Updates `alt_text` and/or `caption` on an existing row. Deliberately
+ * cannot touch `status`, `key`, or any other column — this is the only
+ * write path for editable metadata, and it must stay incapable of doing
+ * what `publishMedia`/`unpublishMedia` do, so a metadata edit can never
+ * become a second, accidental way to change what is publicly reachable.
+ * Returns `null` if the key does not exist, rather than throwing — an
+ * unknown key here is a caller error the route layer turns into a 404, not
+ * an operator-facing fault.
+ */
+export async function updateMediaMetadata(db, key, { altText, caption }) {
+  const row = await db.prepare(
+    `UPDATE media
+     SET alt_text = COALESCE(?, alt_text), caption = COALESCE(?, caption)
+     WHERE key = ?
+     RETURNING *`,
+  ).bind(altText ?? null, caption ?? null, key).first();
+
+  return row ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // publish / unpublish — the only path from private to public
 // ---------------------------------------------------------------------------
 
@@ -205,8 +230,26 @@ export async function listMedia(db, { status }) {
  * `status = 'public'`, recording who did it and when. This is the only
  * function in this module that can make an object publicly reachable —
  * `storeUpload` never does.
+ *
+ * Refuses (`UploadError`, 400) when the row has no `alt_text`. This is
+ * server-side defense in depth for a requirement the admin UI also
+ * enforces by disabling the publish control — see src/admin/pages/Media.jsx.
+ * A photo becoming visible to anyone on the internet without a moment's
+ * attention paid to what it shows is exactly the mistake this whole
+ * feature exists to prevent; the check belongs here too, not only in a
+ * disabled button that a stale client or a direct API call could bypass.
  */
 export async function publishMedia(env, key, editorEmail) {
+  const existing = await env.DB.prepare(
+    'SELECT alt_text FROM media WHERE key = ?',
+  ).bind(key).first();
+  if (existing === null) {
+    throw new UploadError(`No media row found for key "${key}".`, 400);
+  }
+  if (!existing.alt_text || existing.alt_text.trim() === '') {
+    throw new UploadError('Add alt text before publishing this photo.', 400);
+  }
+
   const object = await env.MEDIA.get(`${PRIVATE_PREFIX}${key}`);
   if (object === null) {
     throw new UploadError(`No private object found for key "${key}".`, 400);

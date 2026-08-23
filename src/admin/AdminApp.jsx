@@ -4,6 +4,8 @@ import Users from './pages/Users.jsx';
 import Staff from './pages/Staff.jsx';
 import Faq from './pages/Faq.jsx';
 import Merch from './pages/Merch.jsx';
+import Media from './pages/Media.jsx';
+import Blog from './pages/Blog.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
 // below for why the tab stays hidden.
 
@@ -27,6 +29,8 @@ const PAGES = [
   { id: 'staff', label: 'Staff', permission: 'campinfo', Component: Staff },
   { id: 'faq', label: 'Questions & answers', permission: 'campinfo', Component: Faq },
   { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
+  { id: 'media', label: 'Photos & videos', permission: 'media', Component: Media },
+  { id: 'blog', label: 'Blog', permission: 'blog', Component: Blog },
 ];
 
 export default function AdminApp() {
