@@ -13,18 +13,16 @@
  * delete-on-publish would trade that guarantee for a cosmetic tidy: a
  * dropped or failed delete would then serve stale content indefinitely.
  *
- * Cost of the design: `getVersion` runs at least one small D1 query on
- * every call, even on a cache hit. That's expected and intentional — it's
- * cheap compared to the full content query it replaces.
- *
- * A hit is re-verified against the version, not trusted outright. The
- * version can only ever move forward, and it can move between the first
- * `getVersion` call and the KV read (a publish racing a request). Trusting
- * a stale hit in that window would serve content that was true a moment
- * ago but is no longer published. So on a hit, `getVersion` is called
- * again: if it still matches, the hit is genuine; if it moved, this call
- * refetches under the new key instead of returning what's now stale data
- * that merely happened to still be sitting under the old key.
+ * `getVersion` runs exactly once per `cachedContent` call, including on a
+ * hit. One check is sufficient because the version is part of the key,
+ * not a separate freshness check on the side: a hit against a key built
+ * from version N is, by construction, content that was published at
+ * version N. There is nothing to re-verify — if the version had already
+ * moved past N, the key for N+1 (or whatever the new version is) is what
+ * this call would have looked up instead, and that lookup would miss and
+ * read through. The single `getVersion` call is still a small D1 query
+ * (cheap compared to the full content query it replaces), but there is no
+ * second one to pay for.
  */
 
 import { getPublished, getVersion } from './repository.js';
@@ -37,9 +35,21 @@ function cacheKey(area, version) {
 
 async function readThrough(env, area, version) {
   const content = await getPublished(env.DB, area);
-  await env.CONTENT.put(cacheKey(area, version), JSON.stringify(content), {
-    expirationTtl: CACHE_TTL_SECONDS,
-  });
+
+  // The cache write is an optimisation, not part of the contract this
+  // function exists to fulfil: returning the content that was already
+  // successfully read from D1. A KV outage must not turn into a 500 for a
+  // page that D1 was perfectly able to serve. If the write fails, the
+  // next request simply reads through again — the same degradation as any
+  // other cache miss.
+  try {
+    await env.CONTENT.put(cacheKey(area, version), JSON.stringify(content), {
+      expirationTtl: CACHE_TTL_SECONDS,
+    });
+  } catch (error) {
+    console.error(`Content cache write failed for ${area}: ${error.message}`);
+  }
+
   return content;
 }
 

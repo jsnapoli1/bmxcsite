@@ -50,4 +50,22 @@ describe('cache', () => {
   it('purge does not throw when the key is absent', async () => {
     await expect(purge(env, 'merch')).resolves.toBeUndefined();
   });
+
+  it('still returns content when the KV write fails on a miss', async () => {
+    vi.spyOn(repo, 'getPublished')
+      .mockResolvedValue({ groups: [{ title: 'Unwritable', members: [] }] });
+
+    const brokenEnv = {
+      ...env,
+      CONTENT: {
+        get: env.CONTENT.get.bind(env.CONTENT),
+        delete: env.CONTENT.delete.bind(env.CONTENT),
+        list: env.CONTENT.list.bind(env.CONTENT),
+        put: vi.fn().mockRejectedValue(new Error('KV unavailable')),
+      },
+    };
+
+    const content = await cachedContent(brokenEnv, 'staff');
+    expect(content.groups[0].title).toBe('Unwritable');
+  });
 });
