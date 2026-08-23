@@ -12,6 +12,7 @@ export default defineConfig({
         miniflare: {
           d1Databases: ['DB'],
           kvNamespaces: ['CONTENT'],
+          r2Buckets: ['MEDIA'],
           assets: {
             directory: path.join(import.meta.dirname, 'dist'),
             binding: 'ASSETS',
