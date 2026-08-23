@@ -11,6 +11,7 @@ export default defineConfig({
       return {
         miniflare: {
           d1Databases: ['DB'],
+          kvNamespaces: ['CONTENT'],
           assets: {
             directory: path.join(import.meta.dirname, 'dist'),
             binding: 'ASSETS',
@@ -25,7 +26,18 @@ export default defineConfig({
     }),
   ],
   test: {
-    setupFiles: ['./test/setup.js'],
+    setupFiles: ['./test/setup.js', './test/setup-kv.js'],
+    // Vitest does not restore vi.spyOn mocks between tests by default —
+    // a spy created with vi.spyOn(obj, 'fn') in one test keeps its call
+    // history and implementation for every later test in the same file
+    // unless something resets it. test/worker/cache.test.js re-spies
+    // repo.getPublished/getVersion in several `it` blocks without its own
+    // afterEach, and without this, the second test in that file inherits
+    // the first test's call count on the same underlying spy — a mock
+    // asserted to have been "called once" would actually already start
+    // at one. restoreMocks fully restores the original implementation
+    // after each test, so every vi.spyOn call starts clean.
+    restoreMocks: true,
     // Git worktrees live under .worktrees/ and contain a full copy of the
     // tree, tests included. Without this, every test runs twice — once from
     // here and once from each worktree — which doubles the reported count
