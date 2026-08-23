@@ -1,6 +1,7 @@
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
+import { useContent } from '../hooks/useContent.js';
 import { STAFF_GROUPS, STAFF_CREDENTIALS, GUEST_SPEAKERS } from '../data/staff.js';
 import './staff.css';
 
@@ -15,6 +16,8 @@ function initialsOf(name) {
 }
 
 export default function Staff() {
+  const { content } = useContent('staff', { groups: STAFF_GROUPS });
+
   return (
     <>
       <PageHeader
@@ -26,7 +29,7 @@ export default function Staff() {
       <section className="section container" aria-labelledby="staff-heading">
         <h2 className="sr-only" id="staff-heading">Camp staff</h2>
 
-        {STAFF_GROUPS.map((group, groupIndex) => (
+        {content.groups.map((group, groupIndex) => (
           <div className="staff-group" key={group.group}>
             <Reveal variant="fade" className="staff-group__label">
               <h3>{group.group}</h3>
