@@ -17,6 +17,7 @@
   "dependencies": {
     "hono": "^4.13.3",
     "jose": "^6.2.10",
+    "markdown-it": "^15.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.8.2"
