@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
@@ -21,6 +22,7 @@ export default function Staff() {
   return (
     <>
       <PageHeader
+        id="staff.header"
         eyebrow="Our staff"
         title="The Staff"
         lead="Many of our staff have been coming back to BMXC for decades. Some have been with us since the 1980s and 1990s."
@@ -45,12 +47,29 @@ export default function Staff() {
                     {initialsOf(member.name)}
                   </span>
                   <div className="staff-card__body">
-                    <h4 className="staff-card__name">{member.name}</h4>
+                    {/* Keyed on the member's name — the only stable handle a
+                        staff row has (there is no id in the content shape).
+                        Renaming someone therefore orphans their override,
+                        which is the right failure: a renamed person is
+                        usually a different person. */}
+                    <Editable
+                      id={`staff.member.${member.name}.name`}
+                      as="h4"
+                      className="staff-card__name"
+                    >
+                      {member.name}
+                    </Editable>
                     <p className="staff-card__role">
                       {member.role}
                       {member.since ? <span className="staff-card__since"> · since {member.since}</span> : null}
                     </p>
-                    <p className="staff-card__bio">{member.bio}</p>
+                    <Editable
+                      id={`staff.member.${member.name}.bio`}
+                      as="p"
+                      className="staff-card__bio"
+                    >
+                      {member.bio}
+                    </Editable>
                   </div>
                 </Reveal>
               ))}
@@ -63,6 +82,7 @@ export default function Staff() {
       <section className="section staff-credentials" aria-labelledby="credentials-heading">
         <div className="container">
           <SectionHeading
+            id="staff.also"
             eyebrow="Every week"
             title="Also on staff"
             tone="light"
@@ -84,6 +104,7 @@ export default function Staff() {
       {/* --- Guest speakers --- */}
       <section className="section container" aria-labelledby="speakers-heading">
         <SectionHeading
+          id="staff.speakers"
           eyebrow="Guest speakers"
           title="Guest Speakers"
           lead="We bring the best athletes, coaches, and educators to spend time with the campers. Some are former BMXC campers who went on to run professionally."

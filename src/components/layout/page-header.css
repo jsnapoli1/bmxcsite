@@ -41,3 +41,9 @@
   line-height: var(--leading-relaxed);
   color: var(--color-night-muted);
 }
+
+/* See section-heading.css: the editor's title wrapper must not participate
+   in layout, so SplitText stays exactly where it was. */
+.page-header__title-slot {
+  display: contents;
+}

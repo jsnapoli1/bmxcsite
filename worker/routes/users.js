@@ -35,6 +35,7 @@ function toFlags(permissions = {}, isAdmin = false) {
     can_media: on(permissions.media),
     can_merch: on(permissions.merch),
     can_campinfo: on(permissions.campinfo),
+    can_design: on(permissions.design),
     is_admin: on(isAdmin),
   };
 }
@@ -59,6 +60,7 @@ users.get('/', async (c) => {
         media: row.can_media === 1,
         merch: row.can_merch === 1,
         campinfo: row.can_campinfo === 1,
+        design: row.can_design === 1,
       },
       isAdmin: row.is_admin === 1,
       createdAt: row.created_at,
@@ -84,13 +86,14 @@ users.post('/', async (c) => {
   try {
     await c.env.DB.prepare(
       `INSERT INTO users
-         (email, name, can_blog, can_media, can_merch, can_campinfo, is_admin)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (email, name, can_blog, can_media, can_merch, can_campinfo,
+          can_design, is_admin)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       email,
       typeof body.name === 'string' && body.name.trim() ? body.name.trim() : null,
       flags.can_blog, flags.can_media, flags.can_merch,
-      flags.can_campinfo, flags.is_admin,
+      flags.can_campinfo, flags.can_design, flags.is_admin,
     ).run();
   } catch (error) {
     // The pre-check above is read-then-write, not atomic: a concurrent POST
@@ -139,6 +142,7 @@ users.patch('/:email', async (c) => {
     media: existing.can_media === 1,
     merch: existing.can_merch === 1,
     campinfo: existing.can_campinfo === 1,
+    design: existing.can_design === 1,
     ...body.permissions,
   };
   const isAdmin = body.isAdmin ?? existing.is_admin === 1;
@@ -149,11 +153,11 @@ users.patch('/:email', async (c) => {
 
   await c.env.DB.prepare(
     `UPDATE users SET name = ?, can_blog = ?, can_media = ?, can_merch = ?,
-       can_campinfo = ?, is_admin = ?, updated_at = unixepoch()
+       can_campinfo = ?, can_design = ?, is_admin = ?, updated_at = unixepoch()
      WHERE email = ?`,
   ).bind(
     name, flags.can_blog, flags.can_media, flags.can_merch,
-    flags.can_campinfo, flags.is_admin, target,
+    flags.can_campinfo, flags.can_design, flags.is_admin, target,
   ).run();
 
   // Record the resulting state, not just that a change happened — a grant,

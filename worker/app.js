@@ -6,6 +6,7 @@ import content from './routes/content.js';
 import publicContent from './routes/public.js';
 import media, { publicMedia } from './routes/media.js';
 import blog, { publicBlog } from './routes/blog.js';
+import vedit, { publicVedit } from './routes/vedit.js';
 
 const app = new Hono();
 
@@ -22,6 +23,7 @@ app.route('/api/admin/users', users);
 app.route('/api/admin/content', content);
 app.route('/api/admin/media', media);
 app.route('/api/admin/blog', blog);
+app.route('/api/admin/vedit', vedit);
 
 // Deliberately a different prefix, NOT under /api/admin/*: the public site
 // must be able to read published content/media/blog with no Access token
@@ -32,6 +34,7 @@ app.route('/api/admin/blog', blog);
 // `/api/content/blog` as area = "blog" (a genuinely unknown content area,
 // answering 404) before Hono ever tries the more specific blog routes.
 app.route('/api/content/blog', publicBlog);
+app.route('/api/vedit', publicVedit);
 app.route('/api/content', publicContent);
 app.route('/media', publicMedia);
 

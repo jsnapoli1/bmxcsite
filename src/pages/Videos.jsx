@@ -28,6 +28,7 @@ export default function Videos() {
   return (
     <>
       <PageHeader
+        id="videos.header"
         eyebrow="Watch"
         title="Camp Videos"
         lead={CHANNEL.description}

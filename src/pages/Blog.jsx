@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import './blog.css';
@@ -39,6 +40,7 @@ export default function Blog() {
   return (
     <>
       <PageHeader
+        id="blog.header"
         eyebrow="From camp"
         title="Blog"
         lead="Notes, recaps, and updates from Blue Mountain XC Camp."
@@ -65,7 +67,15 @@ export default function Blog() {
                     <time className="blog-list__date" dateTime={new Date(post.published_at * 1000).toISOString()}>
                       {formatPublishedAt(post.published_at)}
                     </time>
-                    <h3 className="blog-list__title">{post.title}</h3>
+                    {/* Keyed on the slug — stable across edits and
+                        reordering, and already this list's React key. */}
+                    <Editable
+                      id={`blog.post.${post.slug}.title`}
+                      as="h3"
+                      className="blog-list__title"
+                    >
+                      {post.title}
+                    </Editable>
                     {post.excerpt ? <p className="blog-list__excerpt">{post.excerpt}</p> : null}
                   </div>
                   {post.hero_media_key ? (

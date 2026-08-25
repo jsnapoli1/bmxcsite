@@ -6,6 +6,7 @@ export default function NotFound() {
   return (
     <>
       <PageHeader
+        id="notfound.header"
         eyebrow="Error 404"
         title="Page not found"
         lead="That page does not exist. Try the home page or the FAQ."

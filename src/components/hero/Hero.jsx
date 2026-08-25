@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import { CAMP, STATS } from '../../data/camp.js';
 import Button from '../ui/Button.jsx';
 import Reveal from '../motion/Reveal.jsx';
@@ -22,7 +23,9 @@ export default function Hero() {
         {/* The founding year set as a masthead rule, the way a handbook
             or field guide states its edition. */}
         <Reveal variant="fade" className="hero__masthead">
-          <span className="hero__est">Established 1969</span>
+          <Editable id="home.hero.established" as="span" className="hero__est">
+            Established 1969
+          </Editable>
           <span className="hero__rule" aria-hidden="true" />
           <span className="hero__place">{CAMP.venue.town}</span>
         </Reveal>
@@ -39,7 +42,7 @@ export default function Hero() {
         </h1>
 
         <Reveal delay={300} className="hero__lead">
-          <p>{CAMP.tagline}</p>
+          <Editable id="home.hero.tagline" as="p">{CAMP.tagline}</Editable>
         </Reveal>
 
         <Reveal delay={380} className="hero__actions">
@@ -63,9 +66,13 @@ export default function Hero() {
       <div className="hero__stats container-wide">
         {STATS.map((stat, index) => (
           <Reveal key={stat.label} delay={520 + Math.min(index, 3) * 55} className="hero__stat">
-            <span className="hero__stat-value">{stat.value}</span>
+            <Editable id={`home.hero.stat.${stat.label}.value`} as="span" className="hero__stat-value">
+              {stat.value}
+            </Editable>
             <span className="hero__stat-label">{stat.label}</span>
-            <span className="hero__stat-detail">{stat.detail}</span>
+            <Editable id={`home.hero.stat.${stat.label}.detail`} as="span" className="hero__stat-detail">
+              {stat.detail}
+            </Editable>
           </Reveal>
         ))}
       </div>

@@ -27,3 +27,12 @@
 
 .section-heading--light .section-heading__title { color: var(--color-night-text); }
 .section-heading--light .section-heading__lead { color: var(--color-night-muted); }
+
+/* The visual editor wraps the title in an element it can target, so the
+   wrapper has to be invisible to layout. `display: contents` removes it
+   from the flex formatting context entirely: the SplitText inside stays a
+   direct flex item, keeping the column gap and the `--center` alignment
+   exactly as they are without it. */
+.section-heading__title-slot {
+  display: contents;
+}

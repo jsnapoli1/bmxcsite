@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import Button from '../components/ui/Button.jsx';
@@ -35,6 +36,7 @@ export default function Contact() {
   return (
     <>
       <PageHeader
+        id="contact.header"
         eyebrow="Say hello"
         title="Contact Us"
         lead={`Questions? Email Camp Directors ${CAMP.contact.directors}, or give us a call.`}
@@ -64,10 +66,12 @@ export default function Contact() {
 
         <div className="contact__addresses">
           <Reveal delay={120} className="contact-address">
-            <h3 className="contact-address__title">Mailing address</h3>
-            <p className="contact-address__note">
+            <Editable id="contact.mailing.title" as="h3" className="contact-address__title">
+              Mailing address
+            </Editable>
+            <Editable id="contact.mailing.note" as="p" className="contact-address__note">
               For checks and paperwork. This is not the camp location.
-            </p>
+            </Editable>
             <address>
               <span>{CAMP.contact.mailing.line1}</span>
               <span>{CAMP.contact.mailing.line2}</span>
@@ -76,11 +80,13 @@ export default function Contact() {
           </Reveal>
 
           <Reveal delay={200} className="contact-address">
-            <h3 className="contact-address__title">Camp location</h3>
-            <p className="contact-address__note">
+            <Editable id="contact.location.title" as="h3" className="contact-address__title">
+              Camp location
+            </Editable>
+            <Editable id="contact.location.note" as="p" className="contact-address__note">
               {CAMP.venue.name}, an {CAMP.venue.accreditation} facility in the{' '}
               {CAMP.venue.region}. The driving address differs from the mailing address.
-            </p>
+            </Editable>
             <address>
               <span>{CAMP.venue.name}</span>
               <span>{CAMP.venue.town}</span>

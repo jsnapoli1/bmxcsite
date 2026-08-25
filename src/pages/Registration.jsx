@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
@@ -17,6 +18,7 @@ export default function Registration() {
   return (
     <>
       <PageHeader
+        id="registration.header"
         eyebrow={`${CAMP.session.year} session`}
         title="Registration"
         lead={`${CAMP.session.start} – ${CAMP.session.end}. Registration opens January 1st at 12:01am, and we are usually 80% full by early May.`}
@@ -25,6 +27,7 @@ export default function Registration() {
       {/* --- Pricing tiers --- */}
       <section className="section container" aria-labelledby="pricing-heading">
         <SectionHeading
+          id="registration.tuition"
           eyebrow="Tuition"
           title="One price for everyone — teams and individuals alike"
           lead="Register earlier and pay less. There are no team discounts, because everyone gets the same low price regardless of team status."
@@ -60,10 +63,10 @@ export default function Registration() {
             <span className="deposit__amount">${DEPOSIT}</span>
             <span className="deposit__label">Non-refundable deposit</span>
           </div>
-          <p className="deposit__body">
+          <Editable id="registration.deposit.body" as="p" className="deposit__body">
             Your deposit guarantees your spot at BMXC. Sibling discounts take $50 off the
             2nd sibling and every sibling after that, applied at checkout.
-          </p>
+          </Editable>
         </Reveal>
       </section>
 
@@ -71,6 +74,7 @@ export default function Registration() {
       <section className="section registration-buses" aria-labelledby="buses-heading">
         <div className="container">
           <SectionHeading
+            id="registration.buses"
             eyebrow="Getting there"
             title="Bus routes"
             lead="Round trip only — buses fill even faster than camp does, usually 80% full by early April."
@@ -83,7 +87,13 @@ export default function Registration() {
               <Reveal as="li" key={route.region} delay={Math.min(index, 5) * 50} className="bus-route">
                 <div className="bus-route__body">
                   <h3 className="bus-route__region">{route.region}</h3>
-                  <p className="bus-route__stops">{route.stops}</p>
+                  <Editable
+                    id={`registration.bus.${route.region}.stops`}
+                    as="p"
+                    className="bus-route__stops"
+                  >
+                    {route.stops}
+                  </Editable>
                 </div>
                 <span className="bus-route__price">${route.price}</span>
               </Reveal>
@@ -127,10 +137,10 @@ export default function Registration() {
         </Reveal>
 
         <Reveal delay={260} className="registration-cta">
-          <p>
+          <Editable id="registration.cta.body" as="p">
             Registration is handled on the official camp site. Questions before you sign up?
             Email the directors — they answer everything.
-          </p>
+          </Editable>
           <div className="registration-cta__actions">
             <Button href="https://bluemountainxccamp.com/registration.html" variant="primary" size="lg">
               Register at bluemountainxccamp.com

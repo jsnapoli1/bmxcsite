@@ -1,22 +1,32 @@
 /**
- * vedit (https://github.com/jsnapoli1/vedit) wired in for local design work.
+ * vedit (https://github.com/jsnapoli1/vedit) — the visual editor.
  *
- * Dev only, deliberately. `import.meta.env.DEV` is a compile-time constant, so
- * a production `vite build` folds this to `children` and drops the library from
- * the bundle — the site ships no editor code and no extra bytes. Edits are held
- * in localStorage; nothing is written to KV or D1. Making these edits real means
- * pointing the provider at an `httpAdapter` and gating it behind the same
- * Cloudflare Access check the admin panel uses.
+ * There are two paths through this file, and the distinction matters:
  *
- * Press Cmd+E (Ctrl+E) on `npm run dev` to open it.
+ * - **Visitors** get a provider that renders published overrides but cannot
+ *   open the editor. This is not optional: `<Editable>` throws outside a
+ *   provider, and overrides are applied by the provider, so a page rendered
+ *   without one is a blank screen rather than a slightly-plainer page.
+ * - **Designers** (admins holding the `design` permission, and anyone in
+ *   development) get the editor itself on top, on Cmd+E.
+ *
+ * The reader is imported statically and the editor lazily. That asymmetry
+ * is deliberate. An earlier version lazy-loaded both and rendered
+ * `children` as the Suspense fallback, which put every `<Editable>` in the
+ * Navbar and Footer on screen for one paint with no provider above them —
+ * the whole site rendered blank with "Vedit components must be rendered
+ * inside <VeditProvider>". A provider a visitor always needs cannot be
+ * behind a boundary that renders without it.
+ *
+ * `enabled` decides whether the editor UI opens. It protects nothing on its
+ * own — a determined visitor can flip a client-side flag. The real
+ * guarantee is `requireArea('design')` plus the `authorize` callback in
+ * worker/routes/vedit.js, which is what rejects a write.
  */
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import VeditReader from './visual-editor-reader.jsx';
 
-// Lazy so the library is fetched only when the dev server actually renders it,
-// and so the bare `vedit` specifier never appears in a production module graph.
-const VeditRoot = import.meta.env.DEV
-  ? lazy(() => import('./visual-editor-dev.jsx'))
-  : null;
+const VeditEditor = lazy(() => import('./visual-editor-provider.jsx'));
 
 /** Every route the editor offers as an artboard on its canvas. */
 export const EDITABLE_PAGES = [
@@ -32,11 +42,56 @@ export const EDITABLE_PAGES = [
   { path: '/contact', label: 'Contact' },
 ];
 
+/**
+ * Whether this visitor may open the editor.
+ *
+ * The check is skipped entirely in development — asking /api/admin/me
+ * against a local wrangler with no Access session in front of it would
+ * answer 403 and lock the editor out of the environment it is most used in.
+ *
+ * In production it runs once and fails closed: any failure (403, offline,
+ * expired session, the HTML login page Access serves on an expired
+ * session) leaves the editor shut. A visitor who cannot be confirmed as a
+ * designer is treated as not one.
+ */
+function useDesignAccess() {
+  const [allowed, setAllowed] = useState(import.meta.env.DEV);
+
+  useEffect(() => {
+    if (import.meta.env.DEV) return undefined;
+
+    // Guards against setting state after unmount.
+    let active = true;
+
+    fetch('/api/admin/me', { headers: { accept: 'application/json' } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (active && body?.permissions?.design === true) setAllowed(true);
+      })
+      .catch(() => {
+        // Deliberately silent. A visitor is not an editor, and reporting a
+        // failed permission probe on every page load is noise on a site
+        // mostly read by parents and athletes.
+      });
+
+    return () => { active = false; };
+  }, []);
+
+  return allowed;
+}
+
 export default function VisualEditor({ children }) {
-  if (!VeditRoot) return children;
+  const allowed = useDesignAccess();
+
+  if (!allowed) return <VeditReader>{children}</VeditReader>;
+
+  // The reader is the fallback, not `children`: it keeps a provider above
+  // the tree for the paint or two before the editor chunk lands, so the
+  // page shows its published design throughout rather than flashing or
+  // throwing.
   return (
-    <Suspense fallback={children}>
-      <VeditRoot>{children}</VeditRoot>
+    <Suspense fallback={<VeditReader>{children}</VeditReader>}>
+      <VeditEditor>{children}</VeditEditor>
     </Suspense>
   );
 }

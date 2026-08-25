@@ -75,7 +75,9 @@ describe('users API', () => {
     const res = await call('POST', '/api/admin/users', {
       email: 'New@Example.com',
       name: 'New Person',
-      permissions: { blog: true, media: false, merch: false, campinfo: false },
+      permissions: {
+        blog: true, media: false, merch: false, campinfo: false, design: false,
+      },
     });
     expect(res.status).toBe(201);
     const { user } = await res.json();
@@ -139,7 +141,9 @@ describe('users API', () => {
     asUser(admin);
     await call('POST', '/api/admin/users', {
       email: 'full@example.com',
-      permissions: { blog: true, media: true, merch: true, campinfo: true },
+      permissions: {
+        blog: true, media: true, merch: true, campinfo: true, design: true,
+      },
     });
 
     const res = await call('PATCH', '/api/admin/users/full@example.com', {
@@ -148,7 +152,7 @@ describe('users API', () => {
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: true, media: true, merch: true, campinfo: true,
+      blog: true, media: true, merch: true, campinfo: true, design: true,
     });
   });
 
@@ -157,7 +161,9 @@ describe('users API', () => {
     asUser(admin);
     await call('POST', '/api/admin/users', {
       email: 'clearone@example.com',
-      permissions: { blog: true, media: true, merch: true, campinfo: true },
+      permissions: {
+        blog: true, media: true, merch: true, campinfo: true, design: true,
+      },
     });
 
     const res = await call('PATCH', '/api/admin/users/clearone@example.com', {
@@ -166,25 +172,29 @@ describe('users API', () => {
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: true, media: false, merch: true, campinfo: true,
+      blog: true, media: false, merch: true, campinfo: true, design: true,
     });
   });
 
-  it('still replaces all four permissions when a full object is sent', async () => {
+  it('still replaces every permission when a full object is sent', async () => {
     const admin = await seedAdmin('full-patch-admin@example.com');
     asUser(admin);
     await call('POST', '/api/admin/users', {
       email: 'replaceall@example.com',
-      permissions: { blog: true, media: true, merch: true, campinfo: true },
+      permissions: {
+        blog: true, media: true, merch: true, campinfo: true, design: true,
+      },
     });
 
     const res = await call('PATCH', '/api/admin/users/replaceall@example.com', {
-      permissions: { blog: false, media: false, merch: false, campinfo: false },
+      permissions: {
+        blog: false, media: false, merch: false, campinfo: false, design: false,
+      },
     });
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: false, media: false, merch: false, campinfo: false,
+      blog: false, media: false, merch: false, campinfo: false, design: false,
     });
   });
 
@@ -258,7 +268,7 @@ describe('users API', () => {
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: false, media: false, merch: false, campinfo: false,
+      blog: false, media: false, merch: false, campinfo: false, design: false,
     });
   });
 
@@ -333,7 +343,9 @@ describe('users API', () => {
     asUser(admin);
     await call('POST', '/api/admin/users', { email: 'audit-detail@example.com' });
     await call('PATCH', '/api/admin/users/audit-detail@example.com', {
-      permissions: { blog: true, media: false, merch: false, campinfo: false },
+      permissions: {
+        blog: true, media: false, merch: false, campinfo: false, design: false,
+      },
       isAdmin: false,
     });
 
@@ -345,7 +357,9 @@ describe('users API', () => {
     const [, jsonPart] = row.detail.split(/ (.+)/s);
     const parsed = JSON.parse(jsonPart);
     expect(parsed).toEqual({
-      permissions: { blog: true, media: false, merch: false, campinfo: false },
+      permissions: {
+        blog: true, media: false, merch: false, campinfo: false, design: false,
+      },
       isAdmin: false,
     });
   });

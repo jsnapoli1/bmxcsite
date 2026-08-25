@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { Editable } from 'vedit';
 import './navbar.css';
 
 const LINKS = [
@@ -68,8 +69,12 @@ export default function Navbar() {
             aria-hidden="true"
           />
           <span className="navbar__wordmark">
-            <span className="navbar__wordmark-main">BMXC</span>
-            <span className="navbar__wordmark-sub">Est. 1969</span>
+            <Editable id="chrome.navbar.wordmark" as="span" className="navbar__wordmark-main">
+              BMXC
+            </Editable>
+            <Editable id="chrome.navbar.established" as="span" className="navbar__wordmark-sub">
+              Est. 1969
+            </Editable>
           </span>
         </NavLink>
 
@@ -82,7 +87,13 @@ export default function Navbar() {
                   end={link.to === '/'}
                   className={({ isActive }) => `navbar__link${isActive ? ' is-active' : ''}`}
                 >
-                  <span className="navbar__link-text">{link.label}</span>
+                  <Editable
+                    id={`chrome.navbar.link.${link.to}.label`}
+                    as="span"
+                    className="navbar__link-text"
+                  >
+                    {link.label}
+                  </Editable>
                   <span className="navbar__link-lane" aria-hidden="true" />
                 </NavLink>
               </li>
@@ -113,7 +124,9 @@ export default function Navbar() {
                 className={({ isActive }) => `navbar__drawer-link${isActive ? ' is-active' : ''}`}
               >
                 <span className="navbar__drawer-index">{String(index + 1).padStart(2, '0')}</span>
-                {link.label}
+                <Editable id={`chrome.navbar.drawer.${link.to}.label`} as="span">
+                  {link.label}
+                </Editable>
               </NavLink>
             </li>
           ))}

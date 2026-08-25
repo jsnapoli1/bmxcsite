@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
@@ -10,6 +11,7 @@ export default function Camp() {
   return (
     <>
       <PageHeader
+        id="camp.header"
         eyebrow="2026 session"
         title="The Week at Camp"
         lead={`${CAMP.session.start} – ${CAMP.session.end}, ${CAMP.session.year}. Seven days at ${CAMP.venue.name} in ${CAMP.venue.town}.`}
@@ -18,6 +20,7 @@ export default function Camp() {
       {/* --- Schedule as a vertical track --- */}
       <section className="section container" aria-labelledby="schedule-heading">
         <SectionHeading
+          id="camp.fullday"
           eyebrow="Full day example"
           title="A full day at camp"
           lead="Here is what a full day at BMXC looks like."
@@ -33,7 +36,13 @@ export default function Camp() {
               </div>
               <div className="schedule__content">
                 <h3 className="schedule__title">{slot.title}</h3>
-                <p className="schedule__body">{slot.body}</p>
+                <Editable
+                  id={`camp.schedule.${slot.time}-${slot.title}.body`}
+                  as="p"
+                  className="schedule__body"
+                >
+                  {slot.body}
+                </Editable>
               </div>
             </Reveal>
           ))}
@@ -44,6 +53,7 @@ export default function Camp() {
       <section className="section camp-packing" aria-labelledby="packing-heading">
         <div className="container">
           <SectionHeading
+            id="camp.packing"
             eyebrow="Before you go"
             title="What to pack"
             lead="There are 12 exercise sessions during the week, so bring at least 7 running outfits."
@@ -64,12 +74,12 @@ export default function Camp() {
           </div>
 
           <Reveal delay={200} className="packing__note">
-            <h3>Please leave at home</h3>
-            <p>
+            <Editable id="camp.packing.leave.heading" as="h3">Please leave at home</Editable>
+            <Editable id="camp.packing.leave.body" as="p">
               XC spikes (we do not wear them for any run or workout) and packs of bottled water.
               There is no locked storage and no laundry, so if an item must be safeguarded,
               consider leaving it at home.
-            </p>
+            </Editable>
             <Button to="/faq" variant="ghost">More in the FAQ →</Button>
           </Reveal>
         </div>

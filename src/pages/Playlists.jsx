@@ -19,6 +19,7 @@ export default function Playlists() {
   return (
     <>
       <PageHeader
+        id="playlists.header"
         eyebrow="Sound"
         title="Camp Playlists"
         lead="A playlist for each year of camp, put together by campers."

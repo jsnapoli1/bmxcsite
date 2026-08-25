@@ -60,7 +60,12 @@ export default function BlogPost() {
   if (status === 'error' || !post) {
     return (
       <>
-        <PageHeader eyebrow="Blog" title="Something went wrong" lead="The post could not be loaded. Try again in a moment." />
+        <PageHeader
+          id="blogpost.error"
+          eyebrow="Blog"
+          title="Something went wrong"
+          lead="The post could not be loaded. Try again in a moment."
+        />
       </>
     );
   }
@@ -76,7 +81,11 @@ export default function BlogPost() {
 
   return (
     <>
+      {/* Keyed per post, on the slug: the masthead is this post's own
+          title and excerpt, so one shared id would let an edit on one post
+          bleed onto every other. */}
       <PageHeader
+        id={`blogpost.${post.slug}.header`}
         eyebrow={formatPublishedAt(post.published_at)}
         title={post.title}
         lead={post.excerpt || undefined}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import { useContent } from '../hooks/useContent.js';
@@ -25,6 +26,7 @@ export default function Faq() {
     return (
       <>
         <PageHeader
+          id="faq.header"
           eyebrow="Common questions"
           title="Frequently Asked Questions"
           lead="If your question is not answered here, email Camp Directors Ken and Sarah."
@@ -45,6 +47,7 @@ export default function Faq() {
   return (
     <>
       <PageHeader
+        id="faq.header"
         eyebrow="Common questions"
         title="Frequently Asked Questions"
         lead="If your question is not answered here, email Camp Directors Ken and Sarah."
@@ -65,7 +68,13 @@ export default function Faq() {
                     onClick={() => selectCategory(entry.id)}
                     aria-current={entry.id === activeCategory}
                   >
-                    <span className="faq__rail-label">{entry.label}</span>
+                    <Editable
+                      id={`faq.category.${entry.id}.label`}
+                      as="span"
+                      className="faq__rail-label"
+                    >
+                      {entry.label}
+                    </Editable>
                     <span className="faq__rail-count">{entry.items.length}</span>
                   </button>
                 </li>
@@ -76,6 +85,16 @@ export default function Faq() {
           {/* --- Questions --- */}
           <div className="faq__panel">
             <ul className="faq__list">
+              {/* The questions themselves are deliberately NOT wrapped in
+                  <Editable>. A FAQ item's only handle is its position
+                  (`${category.id}-${index}`), so an explicit id built from
+                  it would look stable while silently reattaching an
+                  override to a different question the moment someone
+                  reorders or inserts one in /admin — worse than the
+                  scanner's ids, which at least advertise their fragility.
+
+                  These answers are also the camp's own sentences (see
+                  CLAUDE.md); /admin is where they should be edited. */}
               {category.items.map((item, index) => {
                 const key = `${category.id}-${index}`;
                 const isOpen = openQuestion === key;

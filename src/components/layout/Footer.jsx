@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Editable } from 'vedit';
 import { CAMP } from '../../data/camp.js';
 import './footer.css';
 
@@ -23,26 +24,38 @@ export default function Footer() {
 
       <div className="footer__inner container-wide">
         <div className="footer__brand">
-          <p className="footer__wordmark">BMXC</p>
-          <p className="footer__tagline">{CAMP.tagline}</p>
+          <Editable id="chrome.footer.wordmark" as="p" className="footer__wordmark">
+            BMXC
+          </Editable>
+          <Editable id="chrome.footer.tagline" as="p" className="footer__tagline">
+            {CAMP.tagline}
+          </Editable>
           <p className="footer__est">
             Est. {CAMP.founded} · {CAMP.venue.town}
           </p>
         </div>
 
         <nav className="footer__nav" aria-label="Footer navigation">
-          <h2 className="footer__heading">Explore</h2>
+          <Editable id="chrome.footer.explore.heading" as="h2" className="footer__heading">
+            Explore
+          </Editable>
           <ul className="footer__list">
             {SITEMAP.map((item) => (
               <li key={item.to}>
-                <Link to={item.to} className="footer__link">{item.label}</Link>
+                <Link to={item.to} className="footer__link">
+                  <Editable id={`chrome.footer.sitemap.${item.to}.label`} as="span">
+                    {item.label}
+                  </Editable>
+                </Link>
               </li>
             ))}
           </ul>
         </nav>
 
         <div className="footer__contact">
-          <h2 className="footer__heading">Get in touch</h2>
+          <Editable id="chrome.footer.contact.heading" as="h2" className="footer__heading">
+            Get in touch
+          </Editable>
           <ul className="footer__list">
             <li>
               <a href={`mailto:${CAMP.contact.email}`} className="footer__link">
@@ -70,7 +83,9 @@ export default function Footer() {
 
       <div className="footer__base container-wide">
         <p>© {CAMP.founded}–present {CAMP.name}.</p>
-        <p className="footer__base-note">The oldest and longest running XC summer camp in the Northeast.</p>
+        <Editable id="chrome.footer.note" as="p" className="footer__base-note">
+          The oldest and longest running XC summer camp in the Northeast.
+        </Editable>
       </div>
     </footer>
   );

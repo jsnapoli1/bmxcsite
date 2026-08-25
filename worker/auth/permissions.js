@@ -1,5 +1,12 @@
-/** The four independently grantable content areas. */
-export const AREAS = Object.freeze(['blog', 'media', 'merch', 'campinfo']);
+/**
+ * The five independently grantable content areas.
+ *
+ * `design` gates the visual editor (vedit). It is its own area rather than
+ * a reuse of `campinfo` because vedit can restyle and rewrite any element
+ * on any page — granting it through campinfo would silently extend that
+ * editor's reach across merch and blog pages too.
+ */
+export const AREAS = Object.freeze(['blog', 'media', 'merch', 'campinfo', 'design']);
 
 /**
  * Load an admin user by email.
@@ -24,6 +31,7 @@ export async function loadUser(db, email) {
       media: row.can_media === 1,
       merch: row.can_merch === 1,
       campinfo: row.can_campinfo === 1,
+      design: row.can_design === 1,
     },
     isAdmin: row.is_admin === 1,
   };

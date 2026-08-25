@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import Hero from '../components/hero/Hero.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Button from '../components/ui/Button.jsx';
@@ -14,14 +15,17 @@ export default function Home() {
       <section className="section container" aria-labelledby="intro-heading">
         <div className="home-intro">
           <SectionHeading
+            id="home.intro"
             eyebrow="Since 1969"
             title="The oldest and longest running XC summer camp in the Northeast"
             as="h2"
             className="home-intro__heading"
           />
           <Reveal delay={140} className="home-intro__body">
-            <p className="home-intro__lead">{CAMP.intro}</p>
-            <p>{CAMP.reach}</p>
+            <Editable id="home.intro.lead" as="p" className="home-intro__lead">
+              {CAMP.intro}
+            </Editable>
+            <Editable id="home.intro.reach" as="p">{CAMP.reach}</Editable>
             <Button to="/camp" variant="ghost">What a week looks like →</Button>
           </Reveal>
         </div>
@@ -31,6 +35,7 @@ export default function Home() {
       <section className="section home-pillars" aria-labelledby="pillars-heading">
         <div className="container">
           <SectionHeading
+            id="home.pillars"
             eyebrow="About camp"
             title="What makes BMXC different"
             lead="Around 300 campers and about 70 teams attend each summer."
@@ -46,7 +51,9 @@ export default function Home() {
               >
                 <span className="pillar-card__tag">{pillar.tag}</span>
                 <h3 className="pillar-card__title">{pillar.title}</h3>
-                <p className="pillar-card__body">{pillar.body}</p>
+                <Editable id={`home.pillar.${pillar.title}.body`} as="p" className="pillar-card__body">
+                  {pillar.body}
+                </Editable>
                 <span className="pillar-card__index" aria-hidden="true">
                   {String(index + 1).padStart(2, '0')}
                 </span>
@@ -60,6 +67,7 @@ export default function Home() {
       <section className="section home-location" aria-labelledby="location-heading">
         <div className="container home-location__inner">
           <SectionHeading
+            id="home.location"
             eyebrow="Location"
             title="Camp Westmont, in the Pocono Mountains"
             tone="light"
@@ -91,10 +99,10 @@ export default function Home() {
           <h2 className="home-cta__title" id="cta-heading">
             {CAMP.session.start} – {CAMP.session.end}
           </h2>
-          <p className="home-cta__body">
+          <Editable id="home.cta.body" as="p" className="home-cta__body">
             Registration opens January 1st at 12:01am. We are usually 80% full by early May,
             and buses fill even sooner.
-          </p>
+          </Editable>
           <div className="home-cta__actions">
             <Button to="/registration" variant="primary" size="lg">Registration & pricing</Button>
             <Button to="/faq" variant="outline" size="lg">Read the FAQ</Button>

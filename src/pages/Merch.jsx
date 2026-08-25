@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
@@ -20,6 +21,7 @@ export default function Merch() {
   return (
     <>
       <PageHeader
+        id="merch.header"
         eyebrow="BMXC merchandise"
         title="Apparel"
         lead="Show your BMXC pride with the items below, available during the week of camp. Cash only, and availability is limited."
@@ -56,6 +58,7 @@ export default function Merch() {
       <section className="section merch-lineup" aria-labelledby="lineup-heading">
         <div className="container">
           <SectionHeading
+            id="merch.catalog"
             eyebrow={`Items are $${MERCH.priceRange.min}-${MERCH.priceRange.max} each`}
             title="What we sell"
             lead="Offerings may vary from what is shown without notice, including styles, color, size, and price."
@@ -81,8 +84,20 @@ export default function Merch() {
                 </div>
 
                 <div className="merch-item__body">
-                  <h3 className="merch-item__name">{item.name}</h3>
-                  <p className="merch-item__note">{item.note}</p>
+                  {/* Keyed on the database id, never the loop index: an
+                      admin reordering the catalogue must not slide one
+                      item's design override onto a different product.
+
+                      Name and note come from D1 via the admin panel, so a
+                      vedit override here layers on top of the CMS value and
+                      wins. Edit copy in /admin; reach for the editor when
+                      the *presentation* is what needs changing. */}
+                  <Editable id={`merch.item.${item.id}.name`} as="h3" className="merch-item__name">
+                    {item.name}
+                  </Editable>
+                  <Editable id={`merch.item.${item.id}.note`} as="p" className="merch-item__note">
+                    {item.note}
+                  </Editable>
 
                   <dl className="merch-item__specs">
                     <div>
@@ -117,6 +132,7 @@ export default function Merch() {
       {/* --- Shirts you don't pay for --- */}
       <section className="section container" aria-labelledby="included-heading">
         <SectionHeading
+          id="merch.included"
           eyebrow="Included with camp"
           title="T-shirts you do not buy"
           as="h2"
@@ -140,6 +156,7 @@ export default function Merch() {
       <section className="section container" aria-labelledby="giveaways-heading">
         <div className="merch-giveaways">
           <SectionHeading
+            id="merch.giveaways"
             eyebrow="Prizes"
             title="Giveaways during the week"
             as="h2"
