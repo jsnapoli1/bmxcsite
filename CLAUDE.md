@@ -79,6 +79,11 @@ editor when the presentation is what needs changing.
 `requireArea('design')` plus the `authorize` callback in worker/routes/vedit.js
 are what reject a write. Writes are recorded in `audit_log`; reads are not.
 
+Pinned to `v0.4.0` in devDependencies, not tracking the default branch — a
+deploy must not pick up an unreviewed editor. Since 0.4.0 `createVeditHandler`
+throws without `authorize`; a test asserts that, so dropping the callback in a
+refactor fails loudly instead of quietly opening the endpoint.
+
 ## Gotchas
 
 - **Verify in a browser.** Most bugs here were invisible to a passing build:

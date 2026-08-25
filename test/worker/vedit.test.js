@@ -3,6 +3,7 @@ import { env } from 'cloudflare:test';
 import app from '../../worker/app.js';
 import * as jwt from '../../worker/auth/jwt.js';
 import { AuthError } from '../../worker/auth/jwt.js';
+import { createVeditHandler } from 'vedit/server';
 import { d1Store, UnknownStageError } from '../../worker/vedit/store.js';
 
 function asUser(email) {
@@ -303,5 +304,23 @@ describe('draft -> publish, end to end', () => {
     const visitorAfter = await call('GET', `/api/vedit?key=${KEY}`);
     const body = await visitorAfter.json();
     expect(body.document.nodes['home.hero.tagline'].text).toBe('PUBLISHED COPY');
+  });
+});
+
+describe('handler construction', () => {
+  it('refuses to build a handler with no authorize callback', () => {
+    // vedit 0.4.0 made `authorize` required precisely because leaving it off
+    // made the open configuration the default one. This test is here so a
+    // future refactor that drops the callback from worker/routes/vedit.js
+    // fails loudly rather than quietly serving an endpoint any request can
+    // write to.
+    const store = d1Store(env.DB);
+    expect(() => createVeditHandler({ store })).toThrow(TypeError);
+  });
+
+  it('builds when authorize is supplied', () => {
+    const store = d1Store(env.DB);
+    expect(() => createVeditHandler({ store, authorize: () => true }))
+      .not.toThrow();
   });
 });
