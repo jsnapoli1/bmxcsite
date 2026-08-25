@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { VeditProvider, httpAdapter, useVeditEditing } from 'vedit';
 import { EDITABLE_PAGES } from './visual-editor.jsx';
+import './edit-page-button.css';
 
 /**
  * Talks to worker/routes/vedit.js.
@@ -31,26 +32,40 @@ const adapter = httpAdapter({
 });
 
 /**
- * Opens the editor on ⌘⇧E (Ctrl+⇧E), and on arrival with `?vedit=1`.
+ * The way into the editor: a button, plus `?vedit=1` on arrival.
  *
- * vedit binds ⌘E itself and offers no prop to change it, but Chromium
- * browsers take ⌘E for the extensions menu — so the library's own shortcut
- * never reaches the page in the browser most people here use. Adding Shift
- * clears that binding (and Safari's, and Firefox's) while keeping the "E
- * for editor" mnemonic one modifier from what the vedit docs describe.
+ * A button rather than a keyboard shortcut, because no chord turned out to
+ * be safe. vedit binds ⌘E and offers no prop to change it; Chromium takes
+ * ⌘E for the extensions menu; Arc takes both ⌘⇧E and ⌃⇧E for Easel. Each
+ * one is swallowed by the browser before the page sees it, and a shortcut
+ * the browser eats is indistinguishable from a broken feature.
  *
- * This is additive: ⌘E still works wherever the browser leaves it alone.
+ * Worth recording why that took two tries to find: driving keystrokes
+ * through the DevTools protocol injects them straight into the page and
+ * bypasses browser-level bindings entirely, so a reserved chord tests clean
+ * and fails in someone's hands. A visible control has no such gap between
+ * what the test exercises and what a person does.
+ *
+ * ⌘⇧E is still bound below. It costs nothing, works in browsers that leave
+ * it alone, and is no longer the only way in if a browser doesn't.
+ *
  * Toggling through `useVeditEditing` is the library's own documented hook
  * for driving the editor from your own chrome, so nothing here reaches past
  * the public API or has to be revisited when vedit updates.
  */
-function EditorShortcut() {
+function EditorLauncher() {
   const [editing, setEditing] = useVeditEditing();
 
   // Open straight away when someone arrives asking for the editor. They
-  // said what they came for in the URL; making them press a key as well is
-  // a step with no decision in it.
+  // said what they came for in the URL; making them press a button as well
+  // is a step with no decision in it.
+  //
+  // Top window only. The canvas loads artboards at their own paths, so a
+  // frame should never see `?vedit=1` — but if one ever did, it would open
+  // an editor inside an artboard of the editor, which is a confusing state
+  // to debug and cheap to rule out here.
   useEffect(() => {
+    if (window.top !== window.self) return;
     if (new URLSearchParams(window.location.search).has('vedit')) {
       setEditing(true);
     }
@@ -110,7 +125,22 @@ function EditorShortcut() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [editing, setEditing]);
 
-  return null;
+  // Inside an artboard frame this component is a relay and nothing more —
+  // rendering a second button into every framed copy would put ten of them
+  // on the canvas.
+  if (window.top !== window.self) return null;
+
+  return (
+    <button
+      type="button"
+      className="edit-page-button"
+      data-editing={editing ? 'true' : 'false'}
+      onClick={() => setEditing(true)}
+    >
+      <span className="edit-page-button__dot" aria-hidden="true" />
+      Edit page
+    </button>
+  );
 }
 
 export default function VeditRoot({ children }) {
@@ -127,7 +157,7 @@ export default function VeditRoot({ children }) {
       adapter={adapter}
       pages={EDITABLE_PAGES}
     >
-      <EditorShortcut />
+      <EditorLauncher />
       {children}
     </VeditProvider>
   );

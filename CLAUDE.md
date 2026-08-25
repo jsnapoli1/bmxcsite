@@ -40,16 +40,24 @@ documentary.
 ## Visual editor (vedit)
 
 [vedit](https://github.com/jsnapoli1/vedit) is wired in as the design surface.
-Press **`⌘⇧E`** (`Ctrl⇧E`) to open it: every route becomes an artboard on a
-zoomable canvas, and clicking an element lets you rewrite copy or restyle it.
+Click **Edit page** (bottom-right, visible only with the `design` permission)
+to open it: every route becomes an artboard on a zoomable canvas, and
+clicking an element lets you rewrite copy or restyle it.
 
-The library binds `⌘E`, but Chromium takes that for the extensions menu and
-offers no prop to rebind it — so `src/lib/visual-editor-provider.jsx` adds
-`⌘⇧E` through `useVeditEditing`, the library's own public hook. The artboards
-are same-origin iframes running this same app, so a keystroke inside one
-never reaches the top window; a framed copy relays the chord upward rather
-than toggling its own tree, which is what lets the shortcut *close* the
-editor and not only open it.
+A button rather than a keyboard shortcut, because no chord was safe. vedit
+binds `⌘E` with no prop to rebind it; Chromium takes `⌘E` for the extensions
+menu; Arc takes both `⌘⇧E` and `⌃⇧E` for Easel. `⌘⇧E` is still bound as a
+convenience for browsers that leave it alone, but it is never the only way in.
+
+**Don't test a keyboard shortcut through the DevTools protocol.** Injected
+keystrokes go straight to the page and bypass browser-level bindings, so a
+chord the browser reserves tests clean and fails in someone's hands. Two
+shortcuts shipped that way before a button replaced them.
+
+The artboards are same-origin iframes running this same app, so a keystroke
+inside one never reaches the top window; a framed copy relays the chord
+upward rather than toggling its own React tree, and renders no button of its
+own.
 
 **Who can open it.** Admins, and anyone holding the `design` permission —
 a fifth grantable area next to blog/media/merch/campinfo, assigned in /admin.
