@@ -87,7 +87,15 @@ function useDesignAccess() {
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((body) => {
-        if (active && body?.permissions?.design === true) setAllowed(true);
+        // `isAdmin ||` mirrors hasPermission() on the server, which
+        // short-circuits on admin before it ever looks at the permission
+        // columns. Checking `permissions.design` alone asks a different
+        // question than the server answers: an admin with can_design = 0
+        // is allowed to write and was shown no way to start.
+        if (!active || !body) return;
+        if (body.isAdmin === true || body.permissions?.design === true) {
+          setAllowed(true);
+        }
       })
       .catch(() => {
         // Deliberately silent. A visitor is not an editor, and reporting a

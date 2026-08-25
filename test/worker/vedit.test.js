@@ -324,3 +324,43 @@ describe('handler construction', () => {
       .not.toThrow();
   });
 });
+
+describe('what /api/admin/me tells the client', () => {
+  // The editor decides whether to show its entry point from this response.
+  // It got that wrong once: it read `permissions.design` alone, while the
+  // server's hasPermission() short-circuits on isAdmin before looking at
+  // any column. An admin with can_design = 0 could write and was shown no
+  // way to start. These pin the two facts the client needs.
+  it('reports isAdmin, which alone is enough to write', async () => {
+    await seed('admin-only@example.com', { is_admin: 1 });
+    asUser('admin-only@example.com');
+
+    const body = await (await call('GET', '/api/admin/me')).json();
+
+    // Exactly the shape that misled the client: admin true, column false.
+    expect(body.isAdmin).toBe(true);
+    expect(body.permissions.design).toBe(false);
+
+    // And the server does let them write, which is why the button must show.
+    expect((await call('GET', '/api/admin/vedit?key=/')).status).toBe(200);
+  });
+
+  it('reports the design permission for a non-admin who holds it', async () => {
+    await seed('designer-only@example.com', { can_design: 1 });
+    asUser('designer-only@example.com');
+
+    const body = await (await call('GET', '/api/admin/me')).json();
+    expect(body.isAdmin).toBe(false);
+    expect(body.permissions.design).toBe(true);
+  });
+
+  it('reports neither for someone who may not edit', async () => {
+    await seed('blogger-only@example.com', { can_blog: 1 });
+    asUser('blogger-only@example.com');
+
+    const body = await (await call('GET', '/api/admin/me')).json();
+    expect(body.isAdmin).toBe(false);
+    expect(body.permissions.design).toBe(false);
+    expect((await call('GET', '/api/admin/vedit?key=/')).status).toBe(403);
+  });
+});
