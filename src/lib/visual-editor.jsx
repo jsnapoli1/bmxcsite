@@ -8,7 +8,9 @@
  *   provider, and overrides are applied by the provider, so a page rendered
  *   without one is a blank screen rather than a slightly-plainer page.
  * - **Designers** (admins holding the `design` permission, and anyone in
- *   development) get the editor itself on top, on Cmd+E.
+ *   development) get the editor itself on top, on Cmd+E. In production,
+ *   open the site once with `?vedit=1` to ask for it; the answer is
+ *   remembered for the tab. Visitors never make that request at all.
  *
  * The reader is imported statically and the editor lazily. That asymmetry
  * is deliberate. An earlier version lazy-loaded both and rendered
@@ -60,18 +62,37 @@ function useDesignAccess() {
   useEffect(() => {
     if (import.meta.env.DEV) return undefined;
 
+    // Don't ask at all unless someone signals they want the editor. The
+    // probe is only useful to the handful of people who can edit, and
+    // running it on every page load spends a request on thousands of
+    // visitors who never will. `?vedit=1` (or a previous opt-in remembered
+    // in sessionStorage) is the signal.
+    const wants = new URLSearchParams(window.location.search).has('vedit')
+      || sessionStorage.getItem('vedit:probe') === '1';
+    if (!wants) return undefined;
+    sessionStorage.setItem('vedit:probe', '1');
+
     // Guards against setting state after unmount.
     let active = true;
 
-    fetch('/api/admin/me', { headers: { accept: 'application/json' } })
+    // `redirect: 'manual'` matters in production. Cloudflare Access answers
+    // an unauthenticated /api/admin/* with a 302 to a login page on
+    // cloudflareaccess.com; following it cross-origin fails CORS and logs
+    // two red errors in every visitor's console. Left manual, the redirect
+    // comes back as an opaque response — not `ok`, so it falls through to
+    // "not a designer" exactly as a 403 would, silently.
+    fetch('/api/admin/me', {
+      headers: { accept: 'application/json' },
+      redirect: 'manual',
+    })
       .then((res) => (res.ok ? res.json() : null))
       .then((body) => {
         if (active && body?.permissions?.design === true) setAllowed(true);
       })
       .catch(() => {
         // Deliberately silent. A visitor is not an editor, and reporting a
-        // failed permission probe on every page load is noise on a site
-        // mostly read by parents and athletes.
+        // failed permission probe is noise on a site mostly read by parents
+        // and athletes.
       });
 
     return () => { active = false; };

@@ -49,6 +49,13 @@ It is its own column rather than a reuse of `campinfo` because vedit reaches
 every page at once; granting it through campinfo would silently widen that
 editor across merch and blog too. Locally it is always on.
 
+In production, load the site once with **`?vedit=1`** to ask for the editor;
+the answer is remembered for the tab. Without that, no permission request is
+made at all — visitors shouldn't spend a round trip on a feature they can't
+open. That request also uses `redirect: 'manual'`, because Access answers an
+unauthenticated `/api/admin/*` with a cross-origin 302 that otherwise fails
+CORS and logs two red errors in every visitor's console.
+
 **Save vs. publish.** Saving writes a `draft`; visitors keep seeing the
 `published` stage until someone presses Publish. Every publish also appends to
 `vedit_versions`, which is what fills the History panel. `/api/vedit` (public,
