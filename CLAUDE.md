@@ -37,6 +37,26 @@ camp photos are better shots but show **individually identifiable minors** —
 not appropriate at hero scale on a site about kids. Keep photography small and
 documentary.
 
+## Visual editor (vedit)
+
+[vedit](https://github.com/jsnapoli1/vedit) is wired in for local design work.
+Run `npm run dev` and press `⌘E` to open it: every route becomes an artboard on
+a zoomable canvas, and clicking an element lets you rewrite copy or restyle it.
+
+It is **dev only and unpinned to any backend**. `src/lib/visual-editor.jsx`
+gates it on `import.meta.env.DEV`, a compile-time constant, so `vite build`
+folds it away and production ships none of the library. Edits go to
+`localStorage` — they are yours alone and never reach KV or D1.
+
+Elements are found by the DOM scanner, so their ids (`auto:#root>section>h1`)
+follow the markup and break when it moves. Wrapping something in `<Editable
+id="home.hero.title">` is what makes an edit survive a refactor — worth doing
+before anyone relies on the edits.
+
+Making them real means an `httpAdapter` pointed at a worker route plus an
+`authorize` check, gated behind the same Cloudflare Access JWT the admin panel
+verifies. `enabled` only hides the UI; it protects nothing on its own.
+
 ## Gotchas
 
 - **Verify in a browser.** Most bugs here were invisible to a passing build:
