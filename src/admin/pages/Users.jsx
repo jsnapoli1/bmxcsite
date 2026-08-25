@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react';
 import { listUsers, createUser, updateUser, deleteUser } from '../lib/api.js';
-
-const AREAS = [
-  { key: 'blog', label: 'Blog posts' },
-  { key: 'media', label: 'Photos & videos' },
-  { key: 'merch', label: 'Merch' },
-  { key: 'campinfo', label: 'Camp info' },
-];
-
-const EMPTY_PERMISSIONS = {
-  blog: false, media: false, merch: false, campinfo: false,
-};
+import { AREAS, EMPTY_PERMISSIONS } from '../lib/permission-areas.js';
 
 export default function Users({ currentEmail }) {
   const [users, setUsers] = useState([]);

@@ -40,8 +40,16 @@ documentary.
 ## Visual editor (vedit)
 
 [vedit](https://github.com/jsnapoli1/vedit) is wired in as the design surface.
-Press `⌘E` to open it: every route becomes an artboard on a zoomable canvas,
-and clicking an element lets you rewrite copy or restyle it.
+Press **`⌘⇧E`** (`Ctrl⇧E`) to open it: every route becomes an artboard on a
+zoomable canvas, and clicking an element lets you rewrite copy or restyle it.
+
+The library binds `⌘E`, but Chromium takes that for the extensions menu and
+offers no prop to rebind it — so `src/lib/visual-editor-provider.jsx` adds
+`⌘⇧E` through `useVeditEditing`, the library's own public hook. The artboards
+are same-origin iframes running this same app, so a keystroke inside one
+never reaches the top window; a framed copy relays the chord upward rather
+than toggling its own tree, which is what lets the shortcut *close* the
+editor and not only open it.
 
 **Who can open it.** Admins, and anyone holding the `design` permission —
 a fifth grantable area next to blog/media/merch/campinfo, assigned in /admin.
@@ -49,8 +57,8 @@ It is its own column rather than a reuse of `campinfo` because vedit reaches
 every page at once; granting it through campinfo would silently widen that
 editor across merch and blog too. Locally it is always on.
 
-In production, load the site once with **`?vedit=1`** to ask for the editor;
-the answer is remembered for the tab. Without that, no permission request is
+In production, load the site with **`?vedit=1`** to ask for the editor — it
+opens on arrival, and the answer is remembered for the tab. Without that, no permission request is
 made at all — visitors shouldn't spend a round trip on a feature they can't
 open. That request also uses `redirect: 'manual'`, because Access answers an
 unauthenticated `/api/admin/*` with a cross-origin 302 that otherwise fails
@@ -81,6 +89,12 @@ reattaching on reorder.
 **Two sources of truth.** On CMS-backed pages (merch, staff, blog) a vedit
 override layers on top of the D1 value and wins. Edit copy in /admin; use the
 editor when the presentation is what needs changing.
+
+**Granting it.** The toggle is "Site design" in /admin → Users. The panel's
+area list lives in `src/admin/lib/permission-areas.js` and is cross-checked
+against the worker's `AREAS` by a test — `design` was once added to the
+server, API and database but not the panel, leaving it grantable over HTTP
+and invisible to the person meant to grant it.
 
 **Security.** `enabled` only decides whether the UI opens — it protects nothing.
 `requireArea('design')` plus the `authorize` callback in worker/routes/vedit.js
