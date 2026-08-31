@@ -119,6 +119,11 @@ export function buildAllDocuments(updatedAt) {
 
 export { PAGE_LAYOUTS, PAGE_SLOTS, MASTHEAD_PAGES };
 
+/** SQL escaping for a single-quoted string literal. */
+function quote(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
 async function main() {
   const remote = process.argv.includes('--remote');
   const local = process.argv.includes('--local');
@@ -127,43 +132,68 @@ async function main() {
     process.exit(1);
   }
 
-  const { getPlatformProxy } = await import('wrangler');
-  const proxy = await getPlatformProxy({
-    configPath: 'wrangler.jsonc',
-    experimental: { remoteBindings: remote },
-  });
+  const updatedAt = new Date().toISOString();
+  const documents = buildAllDocuments(updatedAt);
+
+  // Built as one SQL file and handed to `wrangler d1 execute`, rather than
+  // written through getPlatformProxy's DB binding.
+  //
+  // getPlatformProxy with `experimental.remoteBindings` silently wrote to the
+  // LOCAL database while reporting success — the seed claimed six pages and
+  // production had none of them. A migration that lies about what it did is
+  // worse than one that fails, so this uses the path whose target is not in
+  // question.
+  const statements = [];
+  for (const [path, doc] of Object.entries(documents)) {
+    const json = quote(JSON.stringify(doc));
+    for (const stage of ['published', 'draft']) {
+      statements.push(
+        `INSERT INTO vedit_documents (key, stage, doc, updated_at, updated_by)
+         VALUES (${quote(path)}, '${stage}', ${json}, unixepoch(), 'seed-vedit-pages')
+         ON CONFLICT (key, stage) DO UPDATE SET
+           doc = excluded.doc,
+           updated_at = excluded.updated_at,
+           updated_by = excluded.updated_by;`,
+      );
+    }
+  }
+
+  const { writeFileSync, unlinkSync } = await import('node:fs');
+  const { execFileSync } = await import('node:child_process');
+  const file = `.vedit-seed-${process.pid}.sql`;
+  writeFileSync(file, statements.join('\n'));
 
   try {
-    const updatedAt = new Date().toISOString();
-    const documents = buildAllDocuments(updatedAt);
-
-    for (const [path, doc] of Object.entries(documents)) {
-      const json = JSON.stringify(doc);
-      await proxy.env.DB.prepare(
-        `INSERT INTO vedit_documents (key, stage, doc, updated_at, updated_by)
-         VALUES (?, 'published', ?, unixepoch(), 'seed-vedit-pages')
-         ON CONFLICT (key, stage) DO UPDATE SET
-           doc = excluded.doc,
-           updated_at = excluded.updated_at,
-           updated_by = excluded.updated_by`,
-      ).bind(path, json).run();
-
-      // A draft too, so opening the editor shows the composed page rather
-      // than an empty slot waiting to be built.
-      await proxy.env.DB.prepare(
-        `INSERT INTO vedit_documents (key, stage, doc, updated_at, updated_by)
-         VALUES (?, 'draft', ?, unixepoch(), 'seed-vedit-pages')
-         ON CONFLICT (key, stage) DO UPDATE SET
-           doc = excluded.doc,
-           updated_at = excluded.updated_at,
-           updated_by = excluded.updated_by`,
-      ).bind(path, json).run();
-
-      console.log(`seeded ${path} — ${doc.inserted.length} components`);
-    }
+    execFileSync(
+      'npx',
+      ['wrangler', 'd1', 'execute', 'bmxc', remote ? '--remote' : '--local', '--file', file],
+      { stdio: 'inherit' },
+    );
   } finally {
-    await proxy.dispose();
+    unlinkSync(file);
   }
+
+  for (const [path, doc] of Object.entries(documents)) {
+    console.log(`seeded ${path} — ${doc.inserted.length} components`);
+  }
+
+  // Read back rather than trust the write. This is the check that would have
+  // caught the local/remote mix-up immediately.
+  const verify = execFileSync(
+    'npx',
+    ['wrangler', 'd1', 'execute', 'bmxc', remote ? '--remote' : '--local', '--json',
+     '--command', "SELECT key FROM vedit_documents WHERE updated_by = 'seed-vedit-pages';"],
+    { encoding: 'utf8' },
+  );
+  const seeded = new Set(
+    (JSON.parse(verify)[0]?.results ?? []).map((row) => row.key),
+  );
+  const missing = Object.keys(documents).filter((path) => !seeded.has(path));
+  if (missing.length) {
+    console.error(`\nSeed did not land for: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+  console.log(`\nverified ${seeded.size} pages in the ${remote ? 'remote' : 'local'} database`);
 }
 
 // Only run as a CLI; the test imports the builders above.
