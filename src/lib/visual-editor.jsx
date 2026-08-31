@@ -27,44 +27,18 @@
  */
 import { lazy, Suspense, useEffect, useState } from 'react';
 import VeditReader from './visual-editor-reader.jsx';
+import {
+  VEDIT_SESSION_KEY,
+  VEDIT_OPEN_KEY,
+  EDITABLE_PAGES,
+} from './visual-editor-pages.js';
 
 const VeditEditor = lazy(() => import('./visual-editor-provider.jsx'));
 
-/**
- * Two flags, because the admin panel's link is really saying two things with
- * different lifetimes.
- *
- * `VEDIT_SESSION_KEY` — "this person is here to edit", for the rest of the
- * tab. It is what allows the permission probe to run at all, so it has to
- * outlive the first page: closing the editor and clicking to another route
- * must not lose the button.
- *
- * `VEDIT_OPEN_KEY` — "open the editor now", consumed once. Without the
- * split, opening the editor would either happen on every navigation for the
- * rest of the tab, or clearing it would take the session flag with it and
- * revoke the button after one page.
- *
- * sessionStorage rather than a query string: it survives the hop out of
- * /admin, is scoped to the tab, and leaves no shareable URL that looks like
- * it grants something. Neither flag grants anything on its own — setting
- * them by hand only earns you a permission check you will fail.
- */
-export const VEDIT_SESSION_KEY = 'vedit:session';
-export const VEDIT_OPEN_KEY = 'vedit:open';
-
-/** Every route the editor offers as an artboard on its canvas. */
-export const EDITABLE_PAGES = [
-  { path: '/', label: 'Home' },
-  { path: '/camp', label: 'Camp' },
-  { path: '/playlists', label: 'Playlists' },
-  { path: '/videos', label: 'Videos' },
-  { path: '/merch', label: 'Merch' },
-  { path: '/staff', label: 'Staff' },
-  { path: '/faq', label: 'FAQ' },
-  { path: '/blog', label: 'Blog' },
-  { path: '/registration', label: 'Registration' },
-  { path: '/contact', label: 'Contact' },
-];
+// Constants live in their own module so the admin panel can import them
+// without pulling this file — and the lazy editor import below — into its
+// bundle. Re-exported here so the editor's own modules have one import.
+export { VEDIT_SESSION_KEY, VEDIT_OPEN_KEY, EDITABLE_PAGES };
 
 /**
  * Whether this visitor may open the editor.

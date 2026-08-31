@@ -141,6 +141,16 @@ refactor fails loudly instead of quietly opening the endpoint.
 - Don't add `key` to the Spotify iframe — it remounts and cold-boots the embed.
 - Deploy token is `zone: read` only. DNS and zone settings need the Cloudflare
   dashboard.
+- Every HTML entry point needs a `must-revalidate` rule in `public/_headers`.
+  `/admin` and `/admin.html` were once missing one, so an admin kept running
+  the previous deploy's panel bundle while the public site updated normally —
+  the HTML names the hashed assets, and those are `immutable`, so nothing
+  downstream ever corrects a stale copy.
+- `src/lib/visual-editor-pages.js` exists so the admin panel can import the
+  route list and handoff flags without pulling in the editor. Rollup follows
+  the lazy `import('./visual-editor-provider.jsx')` in visual-editor.jsx even
+  from code that can never reach it, which put an editor chunk in the admin
+  bundle. Keep that module free of React and editor imports.
 - `<Editable>` throws outside a `VeditProvider`. The provider must therefore
   never sit behind a Suspense boundary that renders the page as its fallback —
   doing so blanked the whole site with "Vedit components must be rendered

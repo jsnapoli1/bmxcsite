@@ -2,7 +2,7 @@ import {
   EDITABLE_PAGES,
   VEDIT_SESSION_KEY,
   VEDIT_OPEN_KEY,
-} from '../../lib/visual-editor.jsx';
+} from '../../lib/visual-editor-pages.js';
 
 /**
  * The way into the visual editor.

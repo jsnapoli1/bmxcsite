@@ -7,7 +7,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { VeditProvider, httpAdapter, useVeditEditing } from 'vedit';
-import { EDITABLE_PAGES, VEDIT_OPEN_KEY } from './visual-editor.jsx';
+import { EDITABLE_PAGES, VEDIT_OPEN_KEY } from './visual-editor-pages.js';
 import './edit-page-button.css';
 
 /**

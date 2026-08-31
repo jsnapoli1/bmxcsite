@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { AREAS as SERVER_AREAS } from '../../worker/auth/permissions.js';
 import { AREAS as PANEL_AREAS, EMPTY_PERMISSIONS } from '../../src/admin/lib/permission-areas.js';
-import { EDITABLE_PAGES, VEDIT_SESSION_KEY, VEDIT_OPEN_KEY } from '../../src/lib/visual-editor.jsx';
+import { EDITABLE_PAGES, VEDIT_SESSION_KEY, VEDIT_OPEN_KEY } from '../../src/lib/visual-editor-pages.js';
 
 /**
  * The admin panel keeps its own area list, because labels are a UI concern
