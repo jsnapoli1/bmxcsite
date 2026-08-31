@@ -237,6 +237,16 @@ catalogue behind it. They share the `merch` permission.
 Needs `SHOP_ORIGIN` and `SHOP_ADMIN_PASSWORD`. Until both are set the Store
 tab reports the store is unavailable; nothing else is affected.
 
+**`/merch` redirects to the store only when the store has products** — see
+the handler in `worker/app.js`. While the catalogue is empty it serves the
+existing cash-only page, which is still accurate. Adding the first product
+starts the redirect on its own, within a minute.
+
+**The store cannot be stocked without Stripe.** Creating a product syncs to
+Stripe before writing to KV, so with no `STRIPE_SECRET_KEY` it fails with
+`Neither apiKey nor config.authenticator provided`. That means no products,
+so no redirect, so `/merch` stays as it is until real keys are added.
+
 ## Gotchas
 
 - **Verify in a browser.** Most bugs here were invisible to a passing build:
