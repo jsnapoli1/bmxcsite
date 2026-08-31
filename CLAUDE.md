@@ -142,6 +142,18 @@ against the worker's `AREAS` by a test — `design` was once added to the
 server, API and database but not the panel, leaving it grantable over HTTP
 and invisible to the person meant to grant it.
 
+**`enabled` is required on the editor provider.** vedit renders its editor UI
+only when `isEnabled` is true, and `isEnabled = enabled ?? defaultEnabled()`.
+That fallback is true on localhost, in a `NODE_ENV=development` build, or with
+`?vedit=1` — none of which hold on bmxc.camp. Omitting the prop passed every
+local test and rendered nothing in production, while `useVeditEditing` kept
+reporting `editing = true` because it only writes to the store.
+
+**Test the editor against a non-localhost hostname.** `lvh.me` resolves to
+127.0.0.1 but does not match vedit's `LOCAL_HOSTS`, so it reproduces
+production's `defaultEnabled() === false`. Every earlier test used
+`localhost`, which took the other branch and hid this for several rounds.
+
 **Security.** `enabled` only decides whether the UI opens — it protects nothing.
 `requireArea('design')` plus the `authorize` callback in worker/routes/vedit.js
 are what reject a write. Writes are recorded in `audit_log`; reads are not.

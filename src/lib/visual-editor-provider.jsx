@@ -235,6 +235,19 @@ export default function VeditRoot({ children }) {
       documentKey={pathname}
       adapter={adapter}
       pages={EDITABLE_PAGES}
+      // Required, not optional. Without it vedit falls back to
+      // defaultEnabled(), which is true only on localhost, in a
+      // NODE_ENV=development build, or with `?vedit=1` in the URL — none of
+      // which hold on bmxc.camp. It then renders no EditorHost at all,
+      // while `useVeditEditing` keeps working because it only writes to the
+      // store: `editing` flips to true, the store agrees the editor is
+      // open, and nothing appears. Silent, and invisible on localhost,
+      // where the fallback happens to return true.
+      //
+      // This component is only ever mounted for someone who already passed
+      // the permission check in visual-editor.jsx, so `true` is the whole
+      // condition. The server still authorizes every write independently.
+      enabled
     >
       <EditorLauncher />
       {children}
