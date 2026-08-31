@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { env } from 'cloudflare:test';
-import app from '../../worker/app.js';
+import app, { resetShopStockCache } from '../../worker/app.js';
 import * as jwt from '../../worker/auth/jwt.js';
 import { AuthError } from '../../worker/auth/jwt.js';
 import { resetShopSession } from '../../worker/shop/client.js';
@@ -240,5 +240,52 @@ describe('shop proxy behaviour', () => {
       env, // no SHOP_ORIGIN / SHOP_ADMIN_PASSWORD
     );
     expect(res.status).toBe(503);
+  });
+});
+
+describe('the /merch redirect', () => {
+  /** /merch with a stubbed catalogue; no Access session, as a visitor. */
+  beforeEach(() => { resetShopStockCache(); });
+
+  async function visitMerch(products) {
+    vi.stubGlobal('fetch', async (input) => {
+      const url = typeof input === 'string' ? input : input.url;
+      if (url.endsWith('/api/products')) {
+        return new Response(JSON.stringify(products), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    });
+    return app.fetch(
+      new Request('https://bmxc.camp/merch'),
+      { ...env, SHOP_ORIGIN: 'https://shop.example' },
+    );
+  }
+
+  it('does not redirect while the store is empty', async () => {
+    // The informational page is still accurate — merch is sold at camp, cash
+    // only — and an empty storefront offers nothing in its place.
+    const res = await visitMerch([]);
+    expect(res.status).not.toBe(302);
+  });
+
+  it('redirects once the store has something to sell', async () => {
+    const res = await visitMerch([{ id: 'tee', name: 'BMXC Tee' }]);
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe('https://shop.example');
+  });
+
+  it('serves the page when the store cannot be reached', async () => {
+    // The store being down must not take the merch page with it.
+    vi.stubGlobal('fetch', async () => { throw new Error('offline'); });
+    const res = await app.fetch(
+      new Request('https://bmxc.camp/merch'),
+      { ...env, SHOP_ORIGIN: 'https://shop.example' },
+    );
+    expect(res.status).not.toBe(302);
+  });
+
+  it('serves the page when no store is configured', async () => {
+    const res = await app.fetch(new Request('https://bmxc.camp/merch'), env);
+    expect(res.status).not.toBe(302);
   });
 });

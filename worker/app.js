@@ -51,6 +51,56 @@ app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
 // broke the wildcard match — /admin/anything fell through to the static
 // asset handler below and 404'd. Left as two explicit registrations rather
 // than risk that regressing silently.
+/**
+ * Send /merch to the store, but only once the store has something to sell.
+ *
+ * While the catalogue is empty — which is the state until products are added
+ * and Stripe keys exist — this falls through to the informational merch page,
+ * which is still accurate: merch is sold in person at camp, cash only. A
+ * redirect to an empty storefront would lose that and offer nothing instead.
+ *
+ * Server-side rather than in the React app so there is no flash of the wrong
+ * page, and no redirect at all for a visitor whose JavaScript has not run.
+ *
+ * 302, not 301: this flips based on stock, and a permanently-cached redirect
+ * would strand browsers on the store the first time it ever sold out.
+ */
+let stockedUntil = 0;
+let stocked = false;
+
+/** Only for tests: forget the cached stock check between cases. */
+export function resetShopStockCache() {
+  stockedUntil = 0;
+  stocked = false;
+}
+
+app.get('/merch', async (c, next) => {
+  const origin = c.env.SHOP_ORIGIN;
+  if (!origin) return next();
+
+  // Cached for a minute per isolate. Without it every visit to /merch waits
+  // on a second network round trip before rendering anything — a real cost on
+  // a page most people reach from the nav. A minute is short enough that
+  // adding the first product takes effect while you are still looking.
+  if (Date.now() < stockedUntil) {
+    return stocked ? c.redirect(origin, 302) : next();
+  }
+
+  try {
+    const response = await fetch(`${origin.replace(/\/$/, '')}/api/products`);
+    if (!response.ok) return next();
+    const products = await response.json();
+    stocked = Array.isArray(products) && products.length > 0;
+    stockedUntil = Date.now() + 60_000;
+    if (stocked) return c.redirect(origin, 302);
+  } catch (error) {
+    // The store being unreachable must not take the merch page with it.
+    console.error(`Shop check failed for /merch: ${error?.message ?? error}`);
+  }
+
+  return next();
+});
+
 app.get('/admin', (c) =>
   c.env.ASSETS.fetch(new Request(new URL('/admin.html', c.req.url), c.req.raw)));
 app.get('/admin/*', (c) =>
