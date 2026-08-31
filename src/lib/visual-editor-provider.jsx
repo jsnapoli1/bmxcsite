@@ -74,7 +74,17 @@ function EditorLauncher() {
     const askedByUrl = params.has('edit');
     const askedByFlag = sessionStorage.getItem(VEDIT_OPEN_KEY) === '1';
 
-    if (!askedByUrl && !askedByFlag) return;
+    if (!askedByUrl && !askedByFlag) {
+      // Reached when the editor chunk loads but nothing asked it to open —
+      // e.g. the signal was consumed by an earlier mount, or the page was
+      // reached by ordinary navigation. The button is still there.
+      console.info('[vedit] editor ready — press Edit page to open it');
+      return;
+    }
+
+    console.info(
+      `[vedit] opening (${askedByUrl ? '?edit=1' : 'session flag'})`,
+    );
 
     // Consumed, not cleared wholesale: the session flag that keeps the
     // button available for the rest of the tab is a separate key.
@@ -99,6 +109,13 @@ function EditorLauncher() {
 
     setEditing(true);
   }, [setEditing]);
+
+  // Says whether the editor actually came up, separately from being asked
+  // to. A provider that mounts but never flips to editing looks identical
+  // from outside to one that was never asked.
+  useEffect(() => {
+    console.info(`[vedit] editing = ${editing}`);
+  }, [editing]);
 
   useEffect(() => {
     const onKeyDown = (event) => {

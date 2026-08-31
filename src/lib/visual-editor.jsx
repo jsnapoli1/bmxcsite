@@ -25,7 +25,7 @@
  * guarantee is `requireArea('design')` plus the `authorize` callback in
  * worker/routes/vedit.js, which is what rejects a write.
  */
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Component, lazy, Suspense, useEffect, useState } from 'react';
 import VeditReader from './visual-editor-reader.jsx';
 import {
   VEDIT_SESSION_KEY,
@@ -70,9 +70,18 @@ function reportVeditState(message) {
 }
 
 function useDesignAccess() {
-  const [allowed, setAllowed] = useState(import.meta.env.DEV);
+  // A framed copy is an artboard on someone else's canvas. It renders the
+  // page for the editor to point at and must never become an editor itself:
+  // the editor's own guards already stop the chrome appearing, but without
+  // this each of the ten frames still ran its own permission probe and
+  // mounted the full editor provider — ten redundant /api/admin/me requests
+  // and ten copies of the heavy path, to render ten read-only pages.
+  const framed = typeof window !== 'undefined' && window.top !== window.self;
+
+  const [allowed, setAllowed] = useState(import.meta.env.DEV && !framed);
 
   useEffect(() => {
+    if (framed) return undefined;
     if (import.meta.env.DEV) return undefined;
 
     // Don't ask at all unless someone came here to edit. The probe is only
@@ -159,9 +168,38 @@ function useDesignAccess() {
       });
 
     return () => { active = false; };
-  }, []);
+  }, [framed]);
 
   return allowed;
+}
+
+/**
+ * Catches a failure to load or render the editor chunk and falls back to the
+ * read-only provider, so a broken editor costs the designer their tools
+ * rather than costing every visitor the page.
+ *
+ * A class because React has no hook equivalent. It exists mostly to make the
+ * failure audible: without it, a chunk that fails to load leaves the reader
+ * rendering forever, which looks exactly like a page that simply has no
+ * editor and says nothing about why.
+ */
+class EditorLoadBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { failed: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error) {
+    console.error('[vedit] editor failed to load', error);
+  }
+
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
 }
 
 export default function VisualEditor({ children }) {
@@ -173,9 +211,19 @@ export default function VisualEditor({ children }) {
   // the tree for the paint or two before the editor chunk lands, so the
   // page shows its published design throughout rather than flashing or
   // throwing.
+  // The reader is the fallback, not `children`: it keeps a provider above
+  // the tree for the paint or two before the editor chunk lands, so the
+  // page shows its published design throughout rather than flashing or
+  // throwing.
+  //
+  // The boundary is local rather than vedit's own VeditErrorBoundary,
+  // because importing that here would pull the library into the visitor
+  // bundle — the whole reason the editor sits behind a dynamic import.
   return (
-    <Suspense fallback={<VeditReader>{children}</VeditReader>}>
-      <VeditEditor>{children}</VeditEditor>
-    </Suspense>
+    <EditorLoadBoundary fallback={<VeditReader>{children}</VeditReader>}>
+      <Suspense fallback={<VeditReader>{children}</VeditReader>}>
+        <VeditEditor>{children}</VeditEditor>
+      </Suspense>
+    </EditorLoadBoundary>
   );
 }
