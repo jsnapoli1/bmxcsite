@@ -8,7 +8,10 @@ const CHANNELS = [
     label: 'Email',
     value: CAMP.contact.email,
     href: `mailto:${CAMP.contact.email}`,
-    note: 'The fastest way to reach Ken and Sarah.',
+    // Wording adopted from a published vedit override, so it survives the
+    // move to composed pages — the override targeted a scanner id, which
+    // this page's new structure no longer emits.
+    note: 'The fastest way to reach the admin team at Blue Mountain.',
   },
   {
     label: 'Phone',
@@ -56,8 +59,20 @@ export default function ContactChannels({ id = 'contact.channels', ...rest }) {
                 : {})}
             >
               <span className="contact-card__label">{channel.label}</span>
-              <span className="contact-card__value">{channel.value}</span>
-              <span className="contact-card__note">{channel.note}</span>
+              <Editable
+                id={`${id}.channel.${channel.label}.value`}
+                as="span"
+                className="contact-card__value"
+              >
+                {channel.value}
+              </Editable>
+              <Editable
+                id={`${id}.channel.${channel.label}.note`}
+                as="span"
+                className="contact-card__note"
+              >
+                {channel.note}
+              </Editable>
               <span className="contact-card__arrow" aria-hidden="true">→</span>
             </a>
           </Reveal>
