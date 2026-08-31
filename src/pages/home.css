@@ -27,6 +27,7 @@
 .home-pillars { background: var(--color-surface-sunken); }
 
 .home-pillars__grid {
+  counter-reset: pillar;
   display: flex;
   flex-direction: column;
   border-block-end: 1px solid var(--color-line);
@@ -49,7 +50,16 @@
 
 .pillar-card:hover { background: var(--color-surface-raised); }
 
+/* Numbered by CSS rather than by JavaScript, so the counter follows render
+   order no matter how the cards were placed. A prop would let a hand-set
+   number disagree with the order, and vedit gives a placed component no
+   sibling index to derive one from. `counter-reset` lives on the grid. */
+.pillar-card__index::before {
+  content: counter(pillar, decimal-leading-zero);
+}
+
 .pillar-card__index {
+  counter-increment: pillar;
   grid-row: 1 / span 3;
   font-family: var(--font-display);
   font-size: var(--text-lg);

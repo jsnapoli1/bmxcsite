@@ -71,6 +71,45 @@ const MASTHEAD_PAGES = Object.freeze([
   '/camp', '/registration', '/contact', '/playlists', '/videos',
 ]);
 
+/**
+ * The pillar cards on the home page, placed inside the HomePillars grid.
+ *
+ * Their copy lives here rather than in `src/data/camp.js` because the grid is
+ * a container: cards are placed components, so one can be added or removed
+ * from the editor. That is the trade — this text no longer appears in a pull
+ * request, and a deleted card is recovered through the History panel.
+ *
+ * These are the four the page has always had, lifted verbatim. Ids match the
+ * old PILLARS ids so any override already stored against one still applies.
+ */
+const PILLAR_CARDS = [
+  {
+    id: 'training',
+    tag: "Training",
+    title: "Grouped by ability, not by age",
+    body: "We collect your training data right before camp so we have an accurate view of your training and fitness, and we create running groups based on that data. Every group stays together with an assigned coach, and we have road support cars out on the route.",
+    wide: true,
+  },
+  {
+    id: 'terrain',
+    tag: "Terrain",
+    title: "Miles of running terrain",
+    body: "We run on a combination of winding dirt roads, grass fields, paved roads, and a long cinder path. There is no track at camp, and we do not do measured intervals.",
+  },
+  {
+    id: 'staff',
+    tag: "Staff",
+    title: "Experienced staff",
+    body: "Our staff includes Hall of Fame high school coaches, current and former Division 1, 2 and 3 college athletes, a registered nurse, and Red Cross certified lifeguards.",
+  },
+  {
+    id: 'community',
+    tag: "Community",
+    title: "Teams and individuals",
+    body: "About half the camp comes as teams of 7 or more, and the other half in smaller groups or on their own. Campers develop friendships that last well beyond high school.",
+  },
+];
+
 /** vedit's document format version. Kept in step with DOCUMENT_VERSION. */
 const DOCUMENT_VERSION = 1;
 
@@ -99,6 +138,29 @@ export function buildPageDocument(path, updatedAt) {
 
     return { id, parentId: slot, kind: 'component', component, index };
   });
+
+  // The pillars grid is a container; its cards are placements inside it.
+  const grid = inserted.find((node) => node.component === 'HomePillars');
+  if (grid) {
+    PILLAR_CARDS.forEach((card, index) => {
+      const cardId = `${grid.id}:${card.id}`;
+      nodes[cardId] = {
+        props: {
+          tag: card.tag,
+          title: card.title,
+          body: card.body,
+          ...(card.wide ? { wide: true } : {}),
+        },
+      };
+      inserted.push({
+        id: cardId,
+        parentId: grid.id,
+        kind: 'component',
+        component: 'PillarCard',
+        index,
+      });
+    });
+  }
 
   return {
     version: DOCUMENT_VERSION,

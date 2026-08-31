@@ -22,6 +22,7 @@ import { defineComponents } from 'vedit';
 
 import HomeIntro from '../components/sections/HomeIntro.jsx';
 import HomePillars from '../components/sections/HomePillars.jsx';
+import PillarCard from '../components/sections/PillarCard.jsx';
 import HomeLocation from '../components/sections/HomeLocation.jsx';
 import HomeCta from '../components/sections/HomeCta.jsx';
 import CampSchedule from '../components/sections/CampSchedule.jsx';
@@ -90,8 +91,34 @@ export const components = defineComponents({
     component: HomePillars,
     name: 'Pillars grid',
     group: 'Sections',
-    description: 'What makes camp different, as an uneven grid of cards.',
+    description: 'What makes camp different. Holds pillar cards.',
     wrap: false,
+    // Holds PillarCards, so a fifth can be added from the Insert panel.
+    container: true,
+  },
+
+  PillarCard: {
+    component: PillarCard,
+    name: 'Pillar card',
+    group: 'Cards',
+    description: 'One card in the pillars grid: tag, title and a paragraph.',
+    wrap: false,
+    fields: [
+      { name: 'tag', type: 'text', help: 'Small label above the title.' },
+      { name: 'title', type: 'text' },
+      { name: 'body', type: 'textarea' },
+      {
+        name: 'wide',
+        type: 'boolean',
+        help: 'Spans two columns. Usually just the first card.',
+      },
+    ],
+    defaults: {
+      tag: 'Tag',
+      title: 'A pillar',
+      body: 'What makes this part of camp worth knowing about.',
+      wide: false,
+    },
   },
 
   HomeLocation: {

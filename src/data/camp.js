@@ -41,38 +41,12 @@ export const STATS = [
 
 /** What makes the week different — used on the Home page feature grid. */
 /**
- * Each pillar carries an `id` so the visual editor can key overrides on
- * something that does not change when the copy does. Keying on `title` —
- * which is itself editable — would orphan a card's other edits the moment
- * someone retitled it. Ids are permanent; renaming one abandons whatever was
- * stored against it.
+ * PILLARS used to live here. The home page's pillar cards are now placed
+ * components whose copy lives in the vedit document, so a fifth can be added
+ * from the editor without a deploy — see scripts/seed-vedit-pages.js for the
+ * four the page started with.
  */
-export const PILLARS = [
-  {
-    id: 'training',
-    title: 'Grouped by ability, not by age',
-    body: 'We collect your training data right before camp so we have an accurate view of your training and fitness, and we create running groups based on that data. Every group stays together with an assigned coach, and we have road support cars out on the route.',
-    tag: 'Training',
-  },
-  {
-    id: 'terrain',
-    title: 'Miles of running terrain',
-    body: 'We run on a combination of winding dirt roads, grass fields, paved roads, and a long cinder path. There is no track at camp, and we do not do measured intervals.',
-    tag: 'Terrain',
-  },
-  {
-    id: 'staff',
-    title: 'Experienced staff',
-    body: 'Our staff includes Hall of Fame high school coaches, current and former Division 1, 2 and 3 college athletes, a registered nurse, and Red Cross certified lifeguards.',
-    tag: 'Staff',
-  },
-  {
-    id: 'community',
-    title: 'Teams and individuals',
-    body: 'About half the camp comes as teams of 7 or more, and the other half in smaller groups or on their own. Campers develop friendships that last well beyond high school.',
-    tag: 'Community',
-  },
-];
+
 
 /** Full-day example schedule. */
 export const SCHEDULE = [

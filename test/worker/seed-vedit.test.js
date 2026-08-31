@@ -24,13 +24,15 @@ describe('seeded page documents', () => {
     }
   });
 
-  it('places everything into a slot that page actually renders', () => {
-    // A placement whose parentId names no slot renders nowhere and is
+  it('places everything into a slot or a container on that page', () => {
+    // A placement whose parentId names neither renders nowhere and is
     // reachable from nothing — invisible, and only findable in the JSON.
+    // Cards nest inside a container component (the pillars grid), so a
+    // parent may be the page slot or another placement on the same page.
     for (const [path, doc] of Object.entries(buildAllDocuments(AT))) {
-      const slot = PAGE_SLOTS[path];
+      const valid = new Set([PAGE_SLOTS[path], ...doc.inserted.map((n) => n.id)]);
       for (const node of doc.inserted) {
-        expect(node.parentId, `${path} node ${node.id}`).toBe(slot);
+        expect(valid.has(node.parentId), `${path} node ${node.id}`).toBe(true);
       }
     }
   });
@@ -51,16 +53,26 @@ describe('seeded page documents', () => {
     }
   });
 
-  it('numbers placements consecutively from zero, in render order', () => {
-    // vedit sorts siblings by `index`. A gap or a duplicate reorders the page
-    // silently, which is exactly the kind of thing that looks fine in the
-    // JSON and wrong in the browser.
+  it('numbers each set of siblings consecutively from zero', () => {
+    // vedit sorts siblings by `index`. A gap or a duplicate reorders them
+    // silently — fine in the JSON, wrong in the browser. Indices are per
+    // parent, so cards inside a container restart at zero.
     for (const [path, doc] of Object.entries(buildAllDocuments(AT))) {
-      const indices = doc.inserted.map((node) => node.index);
-      expect(indices, path).toEqual(doc.inserted.map((_, i) => i));
+      const byParent = {};
+      for (const node of doc.inserted) {
+        (byParent[node.parentId] ??= []).push(node.index);
+      }
+      for (const [parent, indices] of Object.entries(byParent)) {
+        expect(indices.sort((a, b) => a - b), `${path} under ${parent}`)
+          .toEqual(indices.map((_, i) => i));
+      }
 
-      const order = doc.inserted.map((node) => node.component);
-      expect(order, path).toEqual(PAGE_LAYOUTS[path]);
+      // The page's own top-level order still matches the declared layout.
+      const top = doc.inserted
+        .filter((n) => n.parentId === PAGE_SLOTS[path])
+        .sort((a, b) => a.index - b.index)
+        .map((n) => n.component);
+      expect(top, path).toEqual(PAGE_LAYOUTS[path]);
     }
   });
 
@@ -99,25 +111,56 @@ describe('seeded page documents', () => {
     // the day the session moves. Only `page` is stored.
     for (const [path, doc] of Object.entries(buildAllDocuments(AT))) {
       const hasMasthead = PAGE_LAYOUTS[path].includes('PageMasthead');
-      const propNodes = Object.values(doc.nodes).filter((n) => n.props);
-      expect(propNodes.length, path).toBe(hasMasthead ? 1 : 0);
+      const mastheadNodes = doc.inserted
+        .filter((n) => n.component === 'PageMasthead')
+        .map((n) => doc.nodes[n.id]);
+      expect(mastheadNodes.length, path).toBe(hasMasthead ? 1 : 0);
       if (hasMasthead) {
-        expect(Object.keys(propNodes[0].props), path).toEqual(['page']);
-        expect(propNodes[0].props.page, path).toBe(path);
+        expect(Object.keys(mastheadNodes[0].props), path).toEqual(['page']);
+        expect(mastheadNodes[0].props.page, path).toBe(path);
       }
     }
   });
 
-  it('seeds no rendered copy at all', () => {
-    // A guard on the rule above: nothing in a seeded document should be a
-    // sentence. If it is, it will drift from src/data and nobody will notice.
+  it('seeds no rendered copy except the pillar cards, which own theirs', () => {
+    // Sections read their copy from src/data, so a seeded sentence would
+    // drift from the code and nobody would notice. Pillar cards are the
+    // deliberate exception: their text lives in the document precisely so a
+    // fifth card can be added without a deploy.
+    const cardIds = new Set(
+      Object.values(buildAllDocuments(AT))
+        .flatMap((doc) => doc.inserted)
+        .filter((n) => n.component === 'PillarCard')
+        .map((n) => n.id),
+    );
+
     for (const [path, doc] of Object.entries(buildAllDocuments(AT))) {
-      for (const node of Object.values(doc.nodes)) {
+      for (const [id, node] of Object.entries(doc.nodes)) {
+        if (cardIds.has(id)) continue;
         for (const [key, value] of Object.entries(node.props ?? {})) {
           expect(typeof value === 'string' && value.includes(' '), `${path}.${key}`)
             .toBe(false);
         }
       }
+    }
+  });
+
+  it('gives every pillar card its copy', () => {
+    const doc = buildPageDocument('/', AT);
+    const cards = doc.inserted.filter((n) => n.component === 'PillarCard');
+    expect(cards.length).toBeGreaterThanOrEqual(4);
+    for (const card of cards) {
+      const props = doc.nodes[card.id]?.props ?? {};
+      expect(props.title, `${card.id} needs a title`).toBeTruthy();
+      expect(props.body, `${card.id} needs a body`).toBeTruthy();
+    }
+  });
+
+  it('nests the cards inside the pillars grid, not the page slot', () => {
+    const doc = buildPageDocument('/', AT);
+    const grid = doc.inserted.find((n) => n.component === 'HomePillars');
+    for (const card of doc.inserted.filter((n) => n.component === 'PillarCard')) {
+      expect(card.parentId, card.id).toBe(grid.id);
     }
   });
 });

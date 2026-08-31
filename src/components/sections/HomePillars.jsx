@@ -1,7 +1,4 @@
-import { Editable } from 'vedit';
-import Reveal from '../motion/Reveal.jsx';
 import SectionHeading from '../ui/SectionHeading.jsx';
-import { PILLARS } from '../../data/camp.js';
 
 /**
  * What makes BMXC different — a bento-ish grid of pillars.
@@ -10,7 +7,7 @@ import { PILLARS } from '../../data/camp.js';
  * the editor. Registered with `wrap: false` — see HomeIntro.jsx for why the
  * placement id is threaded into the nested `<Editable>` ids.
  */
-export default function HomePillars({ id = 'home.pillars', ...rest }) {
+export default function HomePillars({ id = 'home.pillars', children, ...rest }) {
   // Derived from the placement id so two copies of this section do not
   // emit the same HTML id — `aria-labelledby` must point at exactly one
   // element to label anything.
@@ -28,43 +25,11 @@ export default function HomePillars({ id = 'home.pillars', ...rest }) {
           as="h2"
         />
 
-        <div className="home-pillars__grid">
-          {PILLARS.map((pillar, index) => (
-            <Reveal
-              key={pillar.title}
-              delay={Math.min(index, 5) * 50}
-              className={`pillar-card pillar-card--${index === 0 ? 'wide' : 'standard'}`}
-            >
-              {/* Keyed on the pillar's stable `id`, not its title or loop
-                  position: the title is itself editable, so keying on it
-                  would orphan a card's other edits the moment someone
-                  retitled it. The `01/02/03` counter below stays out of the
-                  editor: it is aria-hidden decoration derived from position,
-                  not content, and editing it would let the numbering
-                  disagree with the order. */}
-              <Editable
-                id={`${id}.pillar.${pillar.id}.tag`}
-                as="span"
-                className="pillar-card__tag"
-              >
-                {pillar.tag}
-              </Editable>
-              <Editable
-                id={`${id}.pillar.${pillar.id}.title`}
-                as="h3"
-                className="pillar-card__title"
-              >
-                {pillar.title}
-              </Editable>
-              <Editable id={`${id}.pillar.${pillar.id}.body`} as="p" className="pillar-card__body">
-                {pillar.body}
-              </Editable>
-              <span className="pillar-card__index" aria-hidden="true">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-            </Reveal>
-          ))}
-        </div>
+        {/* A container: each card is a placed component living in the
+            document, so one can be added, reordered or removed from the
+            editor without a deploy. `children` is what vedit renders
+            the placements into. */}
+        <div className="home-pillars__grid">{children}</div>
       </div>
     </section>
   );
