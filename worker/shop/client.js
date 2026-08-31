@@ -59,7 +59,13 @@ async function sessionToken(env, { force = false } = {}) {
     return cached.token;
   }
 
-  const response = await fetch(`${origin}/api/admin/auth/login`, {
+  // `/api/admin/login`, not `/api/admin/auth/login`: OpenShop's auth router
+  // lives in routes/admin/auth.js but mounts at `/api/admin`, and its own
+  // middleware only exempts the former from the admin-token check. Calling
+  // the directory-shaped path is rejected by the guard before the login
+  // handler runs, with "Admin authentication required" — which reads like a
+  // bad password rather than a wrong URL.
+  const response = await fetch(`${origin}/api/admin/login`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ password }),

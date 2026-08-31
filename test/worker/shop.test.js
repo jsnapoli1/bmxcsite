@@ -41,7 +41,7 @@ function stubShop({ status = 200, body = '[]', onRequest } = {}) {
     calls.push({ url, method: init?.method ?? 'GET', headers: init?.headers, body: init?.body });
     onRequest?.({ url, init });
 
-    if (url.endsWith('/api/admin/auth/login')) {
+    if (url.endsWith('/api/admin/login')) {
       return new Response(JSON.stringify({ token: 'session-abc' }), {
         status: 200, headers: { 'content-type': 'application/json' },
       });
@@ -161,7 +161,7 @@ describe('shop proxy behaviour', () => {
     await call('GET', '/api/admin/shop/products');
     await call('GET', '/api/admin/shop/collections');
 
-    const logins = calls.filter((c) => c.url.endsWith('/auth/login'));
+    const logins = calls.filter((c) => c.url.endsWith('/api/admin/login'));
     expect(logins).toHaveLength(1);
   });
 
@@ -171,7 +171,7 @@ describe('shop proxy behaviour', () => {
     vi.stubGlobal('fetch', async (input, init) => {
       const url = typeof input === 'string' ? input : input.url;
       calls.push({ url });
-      if (url.endsWith('/auth/login')) {
+      if (url.endsWith('/api/admin/login')) {
         return new Response(JSON.stringify({ token: `t${++seenToken}` }), { status: 200 });
       }
       // First proxied call rejects the token, second succeeds.
@@ -181,7 +181,7 @@ describe('shop proxy behaviour', () => {
 
     const res = await call('GET', '/api/admin/shop/products');
     expect(res.status).toBe(200);
-    expect(calls.filter((c) => c.url.endsWith('/auth/login'))).toHaveLength(2);
+    expect(calls.filter((c) => c.url.endsWith('/api/admin/login'))).toHaveLength(2);
   });
 
   it('records a write in the audit log, attributed to the person', async () => {
