@@ -53,6 +53,12 @@ export default function VeditReader({ children }) {
       enabled={false}
       documentKey={pathname}
       initialDocument={doc}
+      // The DOM scanner exists to find things to edit, and nothing here can
+      // be edited. Leaving it on walked every page on every visit — and
+      // stamped `data-vedit-id` onto hundreds of elements — to build a list
+      // no one would ever read. Overrides are applied from the document by
+      // id, so they are unaffected.
+      auto={false}
     >
       {children}
     </VeditProvider>

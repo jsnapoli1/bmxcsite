@@ -15,16 +15,17 @@ import './motion.css';
  * the whole line and shifted into place, so it reads as one unbroken ramp
  * instead of restarting at every word.
  *
- * `data-vedit-ui` hides the word spans from the visual editor's DOM scanner,
- * which matches `span` and treats any childless element with text as its own
- * editable node — turning one headline into a row of one-word boxes, three
- * spans deep per word. The scanner tests it with `closest()`, so marking the
- * host covers every span inside it.
+ * The word spans are kept out of the visual editor by the `autoSelector`
+ * passed to VeditProvider (see visual-editor-provider.jsx), which excludes
+ * `.split-text__word` and friends. Without that the scanner — which matches
+ * `span` and treats any childless element holding text as its own node —
+ * turns one headline into a row of one-word boxes, three spans deep per word.
  *
- * This does not make the heading uneditable: SectionHeading and PageHeader
- * wrap SplitText in an `<Editable>` whose id addresses the whole line, which
- * is the right unit to rewrite anyway. Marking the host is what leaves that
- * wrapper as the only thing the editor offers here.
+ * Deliberately NOT `data-vedit-ui`: that attribute means "this is editor
+ * chrome, ignore clicks here entirely", and vedit tests it with `closest()`.
+ * Putting it on the words made every heading unselectable — a click landed
+ * on a word, the ancestor test matched, and the lookup returned null before
+ * it could reach the `<Editable>` wrapping the line.
  */
 export default function SplitText({
   text,
@@ -86,7 +87,6 @@ export default function SplitText({
   return (
     <Tag
       ref={setRefs}
-      data-vedit-ui=""
       className={`split-text${isInView ? ' is-visible' : ''} ${className}`}
       style={
         continuousFill && metrics

@@ -124,13 +124,27 @@ FAQ questions are deliberately **not** wrapped: their only handle is
 `${category.id}-${index}`, so an explicit id would look stable while silently
 reattaching on reorder.
 
-`SplitText` carries `data-vedit-ui`, which hides its word spans from the DOM
-scanner. The scanner matches `span` and treats any childless element holding
-text as its own node, so without it a headline arrived as a row of one-word
-boxes — three spans deep per word. The whole line is the right unit to
-rewrite anyway, and `SectionHeading` / `PageHeader` / the Hero each wrap
-their `SplitText` in an `<Editable>` that addresses it. **A bare `SplitText`
-with no wrapper is not editable at all** — wrap any new one.
+`SplitText`'s word spans are excluded from the scanner by the `autoSelector`
+passed to VeditProvider, not by `data-vedit-ui`. The scanner matches `span`
+and treats any childless element holding text as its own node, so without the
+exclusion a headline arrives as a row of one-word boxes, three spans deep per
+word.
+
+**`data-vedit-ui` is the wrong tool here.** It means "this is editor chrome,
+ignore clicks entirely", and vedit tests it with `closest()` — so marking the
+words made every heading on the site unselectable: a click landed on a word,
+the ancestor test matched, and the lookup returned null before reaching the
+`<Editable>` wrapping the line.
+
+The title wrappers use `display: block`, not `display: contents`. Contents
+generates no box, so vedit could resolve the heading from a click but had
+nothing to outline or select. Block keeps the layout identical, since the
+SplitText inside is already a block.
+
+The whole line is the right unit to rewrite, and `SectionHeading` /
+`PageHeader` / the Hero each wrap their `SplitText` in an `<Editable>` that
+addresses it. **A bare `SplitText` with no wrapper is not editable at all** —
+wrap any new one.
 
 **Two sources of truth.** On CMS-backed pages (merch, staff, blog) a vedit
 override layers on top of the D1 value and wins. Edit copy in /admin; use the

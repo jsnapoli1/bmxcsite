@@ -25,6 +25,33 @@ import './edit-page-button.css';
  * restyle and rewrite but cannot introduce new images; that is a reasonable
  * default, and widening it is a permission grant rather than a code change.
  */
+/**
+ * vedit's default scanner selector, minus SplitText's internals.
+ *
+ * The default matches `span`, and treats any childless element holding text
+ * as its own editable node. SplitText puts every word in its own span (three
+ * deep per word, for the staggered reveal), so a six-word headline arrived as
+ * ~18 selectable one-word boxes.
+ *
+ * Excluding them here rather than marking them `data-vedit-ui` is the
+ * difference between "not independently selectable" and "not clickable at
+ * all": vedit uses that attribute for its own chrome and tests it with
+ * `closest()`, so marking the words made the whole heading unselectable —
+ * the click matched an ancestor and returned before reaching the
+ * `<Editable>` wrapping the line.
+ *
+ * Kept in step with DEFAULT_AUTO_SELECTOR in vedit; if that gains a tag,
+ * this list needs it too.
+ */
+const SPLIT_TEXT_PARTS = ':not(.split-text__word):not(.split-text__inner):not(.split-text__space)';
+
+const AUTO_SELECTOR = [
+  'h1,h2,h3,h4,h5,h6,p,a,li,dt,dd,blockquote,figcaption,td,th,label,button',
+  `span${SPLIT_TEXT_PARTS}`,
+  'img,svg,picture,video,canvas,figure',
+  'div,section,article,header,footer,main,aside,nav,form,ul,ol,dl,table,pre',
+].join(',');
+
 const adapter = httpAdapter({
   endpoint: '/api/admin/vedit',
   uploadEndpoint: '/api/admin/media',
@@ -235,6 +262,7 @@ export default function VeditRoot({ children }) {
       documentKey={pathname}
       adapter={adapter}
       pages={EDITABLE_PAGES}
+      autoSelector={AUTO_SELECTOR}
       // Required, not optional. Without it vedit falls back to
       // defaultEnabled(), which is true only on localhost, in a
       // NODE_ENV=development build, or with `?vedit=1` in the URL — none of

@@ -187,9 +187,14 @@
   .hero__scroll { display: block; }
 }
 
-/* The editor's per-line wrappers must not participate in the title's flex
-   column — `display: contents` keeps each SplitText a direct flex item, so
-   the two lines stack exactly as they did without them. */
+/* The editor needs a real box here: it draws its selection outline from
+   getBoundingClientRect, and `display: contents` generates no box at all —
+   zero width and height — so the heading could be resolved from a click but
+   never highlighted or selected.
+
+   `display: block` restores the box while keeping the layout identical: the
+   SplitText inside is itself a block, so the wrapper simply takes the place
+   in the flow that the SplitText held before it. */
 .hero__title-slot {
-  display: contents;
+  display: block;
 }

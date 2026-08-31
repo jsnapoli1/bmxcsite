@@ -42,8 +42,14 @@
   color: var(--color-night-muted);
 }
 
-/* See section-heading.css: the editor's title wrapper must not participate
-   in layout, so SplitText stays exactly where it was. */
+/* The editor needs a real box here: it draws its selection outline from
+   getBoundingClientRect, and `display: contents` generates no box at all —
+   zero width and height — so the heading could be resolved from a click but
+   never highlighted or selected.
+
+   `display: block` restores the box while keeping the layout identical: the
+   SplitText inside is itself a block, so the wrapper simply takes the place
+   in the flow that the SplitText held before it. */
 .page-header__title-slot {
-  display: contents;
+  display: block;
 }
