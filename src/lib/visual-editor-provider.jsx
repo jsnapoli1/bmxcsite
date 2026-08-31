@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { VeditProvider, httpAdapter, useVeditEditing } from 'vedit';
 import { EDITABLE_PAGES, VEDIT_OPEN_KEY } from './visual-editor-pages.js';
+import { components } from './vedit-components.js';
 import './edit-page-button.css';
 
 /**
@@ -263,6 +264,7 @@ export default function VeditRoot({ children }) {
       adapter={adapter}
       pages={EDITABLE_PAGES}
       autoSelector={AUTO_SELECTOR}
+      components={components}
       // Required, not optional. Without it vedit falls back to
       // defaultEnabled(), which is true only on localhost, in a
       // NODE_ENV=development build, or with `?vedit=1` in the URL — none of

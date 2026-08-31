@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { VeditProvider } from 'vedit';
+import { components } from './vedit-components.js';
 
 /**
  * Fetch the published document for `pathname` from the public endpoint.
@@ -59,6 +60,13 @@ export default function VeditReader({ children }) {
       // no one would ever read. Overrides are applied from the document by
       // id, so they are unaffected.
       auto={false}
+      // Required here too, not just on the editor. Composed pages render
+      // their sections as placed components, and a provider without the
+      // registry draws vedit's "isn't registered on this page" placeholder
+      // instead — so every visitor would see an orange warning box where
+      // each section should be. The editor is where components are *placed*;
+      // this is where they are *rendered*.
+      components={components}
     >
       {children}
     </VeditProvider>

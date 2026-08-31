@@ -1,89 +1,29 @@
-import { Editable } from 'vedit';
-import PageHeader from '../components/layout/PageHeader.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
-import Reveal from '../components/motion/Reveal.jsx';
-import Button from '../components/ui/Button.jsx';
-import { SCHEDULE, CAMP } from '../data/camp.js';
-import { PACKING_LIST } from '../data/packing.js';
+import { VeditSlot } from 'vedit';
+import CampSchedule from '../components/sections/CampSchedule.jsx';
+import CampPacking from '../components/sections/CampPacking.jsx';
+import PageMasthead from '../components/sections/PageMasthead.jsx';
 import './camp.css';
 
+/**
+ * Composed from the document rather than hardcoded: everything on this page is
+ * a placed component, so it can be reordered, removed or added to from the
+ * editor without a deploy.
+ *
+ * The children below are the *fallback* — what a visitor sees before anyone has
+ * composed anything, and what the seed script (scripts/seed-vedit-pages.mjs)
+ * mirrors into the document so the page starts out identical to how it always
+ * looked. Once the document has placements, they replace this entirely.
+ *
+ * Keeping the fallback in code matters: a page whose document fails to load,
+ * or has not been seeded, still renders the real page rather than an empty
+ * shell.
+ */
 export default function Camp() {
   return (
-    <>
-      <PageHeader
-        id="camp.header"
-        eyebrow="2026 session"
-        title="The Week at Camp"
-        lead={`${CAMP.session.start} – ${CAMP.session.end}, ${CAMP.session.year}. Seven days at ${CAMP.venue.name} in ${CAMP.venue.town}.`}
-      />
-
-      {/* --- Schedule as a vertical track --- */}
-      <section className="section container" aria-labelledby="schedule-heading">
-        <SectionHeading
-          id="camp.fullday"
-          eyebrow="Full day example"
-          title="A full day at camp"
-          lead="Here is what a full day at BMXC looks like."
-          as="h2"
-        />
-
-        <ol className="schedule">
-          {SCHEDULE.map((slot, index) => (
-            <Reveal as="li" key={slot.time + slot.title} delay={Math.min(index, 5) * 35} className="schedule__item">
-              <div className="schedule__time">{slot.time}</div>
-              <div className="schedule__marker" aria-hidden="true">
-                <span className="schedule__dot" />
-              </div>
-              <div className="schedule__content">
-                <h3 className="schedule__title">{slot.title}</h3>
-                <Editable
-                  id={`camp.schedule.${slot.time}-${slot.title}.body`}
-                  as="p"
-                  className="schedule__body"
-                >
-                  {slot.body}
-                </Editable>
-              </div>
-            </Reveal>
-          ))}
-        </ol>
-      </section>
-
-      {/* --- Packing list --- */}
-      <section className="section camp-packing" aria-labelledby="packing-heading">
-        <div className="container">
-          <SectionHeading
-            id="camp.packing"
-            eyebrow="Before you go"
-            title="What to pack"
-            lead="There are 12 exercise sessions during the week, so bring at least 7 running outfits."
-            as="h2"
-          />
-
-          <div className="packing__grid">
-            {PACKING_LIST.map((group, index) => (
-              <Reveal key={group.category} delay={Math.min(index, 5) * 45} className="packing__card">
-                <h3 className="packing__category">{group.category}</h3>
-                <ul className="packing__items">
-                  {group.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal delay={200} className="packing__note">
-            <Editable id="camp.packing.leave.heading" as="h3">Please leave at home</Editable>
-            <Editable id="camp.packing.leave.body" as="p">
-              XC spikes (we do not wear them for any run or workout) and packs of bottled water.
-              There is no locked storage and no laundry, so if an item must be safeguarded,
-              consider leaving it at home.
-            </Editable>
-            <Button to="/faq" variant="ghost">More in the FAQ →</Button>
-          </Reveal>
-        </div>
-      </section>
-    </>
+    <VeditSlot id="camp.page" label="Camp page">
+      <PageMasthead page="/camp" />
+      <CampSchedule />
+      <CampPacking />
+    </VeditSlot>
   );
 }

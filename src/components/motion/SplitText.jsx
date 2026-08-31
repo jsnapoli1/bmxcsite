@@ -30,6 +30,7 @@ import './motion.css';
 export default function SplitText({
   text,
   as: Tag = 'span',
+  id,
   className = '',
   stagger = 38,
   delay = 0,
@@ -87,6 +88,7 @@ export default function SplitText({
   return (
     <Tag
       ref={setRefs}
+      id={id}
       className={`split-text${isInView ? ' is-visible' : ''} ${className}`}
       style={
         continuousFill && metrics

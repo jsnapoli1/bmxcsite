@@ -102,6 +102,34 @@ shouldn't spend a round trip on a feature they can't open. That request uses
 `/api/admin/*` with a cross-origin 302 that otherwise fails CORS and logs two
 red errors in every visitor's console.
 
+**Six pages are composed, five are not.** Home, Camp, Registration, Contact,
+Playlists and Videos render entirely from their document: every section is a
+placed component, so it can be reordered, removed, or added to from the
+editor. Merch, Staff, FAQ, Blog and BlogPost are deliberately *not* — their
+content comes from D1 via /admin, and a slot there would be a third place to
+change the same page.
+
+The registry is `src/lib/vedit-components.js`; the sections it lists live in
+`src/components/sections/`. Everything is registered `wrap: false`, because
+these are full-width `<section>`s whose own class carries the padding — vedit's
+default wrapper `<div>` breaks that, and only the unwrapped path passes the
+placement id through as a prop.
+
+**The registry must be passed to both providers.** The editor is where
+components are *placed*; the reader is where they are *rendered*. A reader
+without it draws vedit's "isn't registered on this page" placeholder, so every
+visitor sees an orange warning box where each section should be.
+
+**Seeding.** `node scripts/seed-vedit-pages.js --local|--remote` writes each
+page's starting layout. Without it a composed page falls back to the children
+in its `<VeditSlot>` — correct for a visitor, but nothing is movable, because
+vedit only renders the fallback while the slot is empty. Re-running overwrites
+whatever is there, so it is a migration step, not a routine one.
+
+The seed stores **no rendered copy** — only which page a masthead belongs to.
+Several leads interpolate live data (session dates, venue, directors), and a
+frozen string would go stale the day the session moves. A test enforces this.
+
 **Save vs. publish.** Saving writes a `draft`; visitors keep seeing the
 `published` stage until someone presses Publish. Every publish also appends to
 `vedit_versions`, which is what fills the History panel. `/api/vedit` (public,

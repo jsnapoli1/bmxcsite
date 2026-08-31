@@ -12,6 +12,11 @@ import './section-heading.css';
  * eyebrow, title and lead editable site-wide without wrapping each of the
  * dozens of call sites individually.
  *
+ * `headingId` puts a real HTML id on the rendered heading. Sections point
+ * `aria-labelledby` at one, and for a long time nothing emitted it — four
+ * references on the home page alone pointed at elements that did not exist,
+ * so the sections were effectively unlabelled to a screen reader.
+ *
  * The wrappers sit *around* SplitText, never inside it: SplitText puts each
  * word in its own span, and an override applied within that structure would
  * fight the per-word reveal (and, for the gradient-filled variants, the
@@ -19,6 +24,7 @@ import './section-heading.css';
  */
 export default function SectionHeading({
   id,
+  headingId,
   eyebrow,
   title,
   lead,
@@ -37,10 +43,20 @@ export default function SectionHeading({
 
       {id ? (
         <Editable id={`${id}.title`} as="div" className="section-heading__title-slot">
-          <SplitText as={Tag} text={title} className="section-heading__title" />
+          <SplitText
+            as={Tag}
+            id={headingId}
+            text={title}
+            className="section-heading__title"
+          />
         </Editable>
       ) : (
-        <SplitText as={Tag} text={title} className="section-heading__title" />
+        <SplitText
+          as={Tag}
+          id={headingId}
+          text={title}
+          className="section-heading__title"
+        />
       )}
 
       {lead ? (
