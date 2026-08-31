@@ -7,7 +7,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { VeditProvider, httpAdapter, useVeditEditing } from 'vedit';
-import { EDITABLE_PAGES } from './visual-editor.jsx';
+import { EDITABLE_PAGES, VEDIT_OPEN_KEY } from './visual-editor.jsx';
 import './edit-page-button.css';
 
 /**
@@ -56,21 +56,26 @@ const adapter = httpAdapter({
 function EditorLauncher() {
   const [editing, setEditing] = useVeditEditing();
 
-  // Open straight away when someone arrives asking for the editor. They
-  // said what they came for in the URL; making them press a button as well
-  // is a step with no decision in it.
+  // Open straight away for someone who arrived from the admin panel's
+  // Design page. They already picked a page and pressed a link that said
+  // "edit"; making them press a second button here is a step with no
+  // decision in it.
   //
-  // Top window only. The canvas loads artboards at their own paths, so a
-  // frame should never see `?vedit=1` — but if one ever did, it would open
-  // an editor inside an artboard of the editor, which is a confusing state
-  // to debug and cheap to rule out here.
+  // The flag is cleared as soon as it is read, so it opens the editor once
+  // rather than on every subsequent navigation in the tab. Closing the
+  // editor and clicking around the site then behaves normally, and the
+  // button stays available for reopening.
+  //
+  // Top window only: a framed artboard reading this would open an editor
+  // inside an artboard of the editor.
   useEffect(() => {
     if (window.top !== window.self) return;
-    if (new URLSearchParams(window.location.search).has('vedit')) {
+    if (sessionStorage.getItem(VEDIT_OPEN_KEY) === '1') {
+      // Consumed, not cleared wholesale: the session flag that keeps the
+      // button available for the rest of the tab is a separate key.
+      sessionStorage.removeItem(VEDIT_OPEN_KEY);
       setEditing(true);
     }
-    // Mount only: re-running on `editing` would reopen the editor every
-    // time it was closed, since the query string is still there.
   }, [setEditing]);
 
   useEffect(() => {

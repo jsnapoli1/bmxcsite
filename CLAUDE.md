@@ -65,12 +65,22 @@ It is its own column rather than a reuse of `campinfo` because vedit reaches
 every page at once; granting it through campinfo would silently widen that
 editor across merch and blog too. Locally it is always on.
 
-In production, load the site with **`?vedit=1`** to ask for the editor — it
-opens on arrival, and the answer is remembered for the tab. Without that, no permission request is
-made at all — visitors shouldn't spend a round trip on a feature they can't
-open. That request also uses `redirect: 'manual'`, because Access answers an
-unauthenticated `/api/admin/*` with a cross-origin 302 that otherwise fails
-CORS and logs two red errors in every visitor's console.
+**Getting in.** /admin → **Site design** lists every page; clicking one opens
+it in the editor. That is the only entry point — /admin is already behind
+Cloudflare Access, so the door is the sign-in you already have, and there is
+no URL to remember or share.
+
+The link sets two sessionStorage flags before navigating: `vedit:session`
+("here to edit", lasts the tab, gates the permission probe) and `vedit:open`
+("open now", consumed on arrival). They are separate because one flag doing
+both jobs either reopens the editor on every navigation or revokes the button
+after one page.
+
+Without the session flag no permission request is made at all — visitors
+shouldn't spend a round trip on a feature they can't open. That request uses
+`redirect: 'manual'`, because Access answers an unauthenticated
+`/api/admin/*` with a cross-origin 302 that otherwise fails CORS and logs two
+red errors in every visitor's console.
 
 **Save vs. publish.** Saving writes a `draft`; visitors keep seeing the
 `published` stage until someone presses Publish. Every publish also appends to

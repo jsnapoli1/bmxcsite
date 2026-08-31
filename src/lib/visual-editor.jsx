@@ -30,6 +30,28 @@ import VeditReader from './visual-editor-reader.jsx';
 
 const VeditEditor = lazy(() => import('./visual-editor-provider.jsx'));
 
+/**
+ * Two flags, because the admin panel's link is really saying two things with
+ * different lifetimes.
+ *
+ * `VEDIT_SESSION_KEY` — "this person is here to edit", for the rest of the
+ * tab. It is what allows the permission probe to run at all, so it has to
+ * outlive the first page: closing the editor and clicking to another route
+ * must not lose the button.
+ *
+ * `VEDIT_OPEN_KEY` — "open the editor now", consumed once. Without the
+ * split, opening the editor would either happen on every navigation for the
+ * rest of the tab, or clearing it would take the session flag with it and
+ * revoke the button after one page.
+ *
+ * sessionStorage rather than a query string: it survives the hop out of
+ * /admin, is scoped to the tab, and leaves no shareable URL that looks like
+ * it grants something. Neither flag grants anything on its own — setting
+ * them by hand only earns you a permission check you will fail.
+ */
+export const VEDIT_SESSION_KEY = 'vedit:session';
+export const VEDIT_OPEN_KEY = 'vedit:open';
+
 /** Every route the editor offers as an artboard on its canvas. */
 export const EDITABLE_PAGES = [
   { path: '/', label: 'Home' },
@@ -62,15 +84,17 @@ function useDesignAccess() {
   useEffect(() => {
     if (import.meta.env.DEV) return undefined;
 
-    // Don't ask at all unless someone signals they want the editor. The
-    // probe is only useful to the handful of people who can edit, and
-    // running it on every page load spends a request on thousands of
-    // visitors who never will. `?vedit=1` (or a previous opt-in remembered
-    // in sessionStorage) is the signal.
-    const wants = new URLSearchParams(window.location.search).has('vedit')
-      || sessionStorage.getItem('vedit:probe') === '1';
-    if (!wants) return undefined;
-    sessionStorage.setItem('vedit:probe', '1');
+    // Don't ask at all unless someone came here to edit. The probe is only
+    // useful to the handful of people who can, and running it on every page
+    // load spends a request on thousands of visitors who never will.
+    //
+    // The signal is set by the admin panel's Design page and lives in
+    // sessionStorage: it survives the navigation out of /admin, lasts the
+    // tab, and — unlike the `?vedit=1` it replaces — cannot be produced by
+    // typing a URL. That matters less than it sounds, since the permission
+    // check is what actually gates the editor, but a signal nobody can
+    // guess keeps the probe off visitors entirely.
+    if (sessionStorage.getItem(VEDIT_SESSION_KEY) !== '1') return undefined;
 
     // Guards against setting state after unmount.
     let active = true;

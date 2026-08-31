@@ -6,6 +6,7 @@ import Faq from './pages/Faq.jsx';
 import Merch from './pages/Merch.jsx';
 import Media from './pages/Media.jsx';
 import Blog from './pages/Blog.jsx';
+import Design from './pages/Design.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
 // below for why the tab stays hidden.
 
@@ -31,6 +32,9 @@ const PAGES = [
   { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
   { id: 'media', label: 'Photos & videos', permission: 'media', Component: Media },
   { id: 'blog', label: 'Blog', permission: 'blog', Component: Blog },
+  // Not an editor itself — a list of links into the visual editor, which
+  // lives on the public site because it edits those pages in place.
+  { id: 'design', label: 'Site design', permission: 'design', Component: Design },
 ];
 
 export default function AdminApp() {
