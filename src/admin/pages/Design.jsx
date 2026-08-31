@@ -55,9 +55,16 @@ export default function Design() {
       <ul className="design-pages">
         {EDITABLE_PAGES.map((page) => (
           <li key={page.path} className="design-pages__item">
+            {/* The query parameter is belt to the sessionStorage braces.
+                The flags are the primary signal, but they depend on the
+                write landing before the navigation and on storage being
+                available — neither guaranteed in every browser or privacy
+                mode. `?edit=1` survives regardless, is stripped from the
+                URL as soon as it is read, and grants nothing on its own:
+                the permission check behind it is unchanged. */}
             <a
               className="design-pages__link"
-              href={page.path}
+              href={`${page.path}?edit=1`}
               onClick={handoff}
             >
               <span className="design-pages__label">{page.label}</span>

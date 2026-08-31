@@ -70,11 +70,23 @@ it in the editor. That is the only entry point — /admin is already behind
 Cloudflare Access, so the door is the sign-in you already have, and there is
 no URL to remember or share.
 
-The link sets two sessionStorage flags before navigating: `vedit:session`
-("here to edit", lasts the tab, gates the permission probe) and `vedit:open`
-("open now", consumed on arrival). They are separate because one flag doing
-both jobs either reopens the editor on every navigation or revokes the button
-after one page.
+The link carries `?edit=1` **and** sets two sessionStorage flags:
+`vedit:session` ("here to edit", lasts the tab, gates the permission probe)
+and `vedit:open` ("open now", consumed on arrival). The flags are separate
+because one doing both jobs either reopens the editor on every navigation or
+revokes the button after one page.
+
+Two signals rather than one because the flags depend on a storage write
+landing before the browser navigates away, and on storage being available at
+all. `?edit=1` survives regardless and is stripped from the URL once read.
+Neither signal grants anything — the permission check behind them is what
+decides.
+
+**If the editor doesn't open, read the console.** Every branch of the check
+reports through `[vedit] …`: no session flag, signed out (Access redirect),
+a status code, a missing permission, or a network error. Without those the
+failure modes are indistinguishable from outside — all of them present as
+"no button", which is why diagnosing this once took several rounds.
 
 Without the session flag no permission request is made at all — visitors
 shouldn't spend a round trip on a feature they can't open. That request uses

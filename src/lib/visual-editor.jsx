@@ -52,6 +52,23 @@ export { VEDIT_SESSION_KEY, VEDIT_OPEN_KEY, EDITABLE_PAGES };
  * session) leaves the editor shut. A visitor who cannot be confirmed as a
  * designer is treated as not one.
  */
+/**
+ * Say why the editor is or isn't available, but only to someone who asked
+ * for it.
+ *
+ * Every branch of the permission check reports through here. Without it the
+ * failure modes are indistinguishable from the outside — a missing handoff
+ * flag, an expired Access session, a missing permission and a network error
+ * all present identically as "no button", which is why diagnosing this took
+ * several rounds of guessing.
+ *
+ * Visitors never reach any of these calls: the first thing the check does is
+ * return when the session flag is absent, and only the admin panel sets it.
+ */
+function reportVeditState(message) {
+  console.info(`[vedit] ${message}`);
+}
+
 function useDesignAccess() {
   const [allowed, setAllowed] = useState(import.meta.env.DEV);
 
@@ -68,22 +85,57 @@ function useDesignAccess() {
     // typing a URL. That matters less than it sounds, since the permission
     // check is what actually gates the editor, but a signal nobody can
     // guess keeps the probe off visitors entirely.
-    if (sessionStorage.getItem(VEDIT_SESSION_KEY) !== '1') return undefined;
+    // Either signal will do. The flag is the one that survives navigation
+    // around the site; `?edit=1` is what the admin panel's link carries so
+    // the handoff does not depend on a storage write landing before the
+    // browser navigates away.
+    const asked = sessionStorage.getItem(VEDIT_SESSION_KEY) === '1'
+      || new URLSearchParams(window.location.search).has('edit');
+    if (!asked) return undefined;
+
+    // Promote the URL signal to the session flag so it survives the rest of
+    // the tab, then take it out of the address bar — a URL that looks like
+    // it grants something invites being shared, and this one does not.
+    try {
+      sessionStorage.setItem(VEDIT_SESSION_KEY, '1');
+    } catch {
+      // Storage unavailable. The editor still works for this page; only
+      // the "stays available as you navigate" part is lost.
+    }
 
     // Guards against setting state after unmount.
     let active = true;
 
-    // `redirect: 'manual'` matters in production. Cloudflare Access answers
-    // an unauthenticated /api/admin/* with a 302 to a login page on
-    // cloudflareaccess.com; following it cross-origin fails CORS and logs
-    // two red errors in every visitor's console. Left manual, the redirect
-    // comes back as an opaque response — not `ok`, so it falls through to
-    // "not a designer" exactly as a 403 would, silently.
+    // `redirect: 'manual'` keeps an Access redirect from being followed
+    // cross-origin to cloudflareaccess.com, which fails CORS and logs red
+    // errors. The cost is that the response comes back opaque — status 0,
+    // ok false — which is indistinguishable from a refusal, so the branch
+    // above names it explicitly rather than letting it read as "not a
+    // designer".
+    //
+    // `credentials: 'same-origin'` is the default, but stated because this
+    // request only works at all if the CF_Authorization cookie rides along:
+    // without it Access redirects, and the editor stays shut for someone
+    // who is in fact signed in.
     fetch('/api/admin/me', {
       headers: { accept: 'application/json' },
+      credentials: 'same-origin',
       redirect: 'manual',
     })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        // An Access redirect answers opaque: status 0, ok false. Worth
+        // naming separately from a real 403, because the fix is different
+        // (sign in again vs. ask for the permission).
+        if (res.type === 'opaqueredirect' || res.status === 0) {
+          reportVeditState('signed out — /api/admin/me redirected to Access');
+          return null;
+        }
+        if (!res.ok) {
+          reportVeditState(`/api/admin/me answered ${res.status}`);
+          return null;
+        }
+        return res.json();
+      })
       .then((body) => {
         // `isAdmin ||` mirrors hasPermission() on the server, which
         // short-circuits on admin before it ever looks at the permission
@@ -92,13 +144,18 @@ function useDesignAccess() {
         // is allowed to write and was shown no way to start.
         if (!active || !body) return;
         if (body.isAdmin === true || body.permissions?.design === true) {
+          reportVeditState('ok — editor available');
           setAllowed(true);
+          return;
         }
+        reportVeditState(
+          `no design permission for ${body.email ?? 'this account'}`,
+        );
       })
-      .catch(() => {
-        // Deliberately silent. A visitor is not an editor, and reporting a
-        // failed permission probe is noise on a site mostly read by parents
-        // and athletes.
+      .catch((error) => {
+        // Still silent for visitors — this only speaks when someone asked
+        // for the editor, which a visitor never does.
+        reportVeditState(`permission check failed: ${error?.message ?? error}`);
       });
 
     return () => { active = false; };

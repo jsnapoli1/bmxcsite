@@ -70,12 +70,34 @@ function EditorLauncher() {
   // inside an artboard of the editor.
   useEffect(() => {
     if (window.top !== window.self) return;
-    if (sessionStorage.getItem(VEDIT_OPEN_KEY) === '1') {
-      // Consumed, not cleared wholesale: the session flag that keeps the
-      // button available for the rest of the tab is a separate key.
+    const params = new URLSearchParams(window.location.search);
+    const askedByUrl = params.has('edit');
+    const askedByFlag = sessionStorage.getItem(VEDIT_OPEN_KEY) === '1';
+
+    if (!askedByUrl && !askedByFlag) return;
+
+    // Consumed, not cleared wholesale: the session flag that keeps the
+    // button available for the rest of the tab is a separate key.
+    try {
       sessionStorage.removeItem(VEDIT_OPEN_KEY);
-      setEditing(true);
+    } catch {
+      // Storage unavailable; the URL signal already carried this open.
     }
+
+    // Take `?edit=1` out of the address bar once it has been read, so
+    // reloading doesn't reopen the editor and the URL isn't shareable in a
+    // way that implies it grants something.
+    if (askedByUrl) {
+      params.delete('edit');
+      const query = params.toString();
+      window.history.replaceState(
+        null,
+        '',
+        window.location.pathname + (query ? `?${query}` : '') + window.location.hash,
+      );
+    }
+
+    setEditing(true);
   }, [setEditing]);
 
   useEffect(() => {
