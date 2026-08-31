@@ -24,7 +24,12 @@ export default function HomeIntro({ id = 'home.intro', eyebrow, title, ...rest }
   const headingId = `${id}-heading`;
 
   return (
-    <section className="section container" aria-labelledby={headingId} {...rest}>
+    // `{...rest}` first, then className. vedit's Editable always sets a
+    // className on the wrap:false path — `[className, override.className]`,
+    // which is `undefined` with no override — so spreading rest *after* our
+    // own className overwrites it and the section loses `.container`, and
+    // with it all of its horizontal padding.
+    <section {...rest} className="section container" aria-labelledby={headingId}>
       <div className="home-intro">
         <SectionHeading
           id={id}
