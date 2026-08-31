@@ -1,4 +1,5 @@
 import { Editable } from 'vedit';
+import MerchStore from '../components/sections/MerchStore.jsx';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
@@ -26,6 +27,9 @@ export default function Merch() {
         title="Apparel"
         lead="Show your BMXC pride with the items below, available during the week of camp. Cash only, and availability is limited."
       />
+
+      {/* Renders only when the store has products. */}
+      <MerchStore />
 
       {/* --- The one thing everyone needs to know --- */}
       <section className="section container" aria-labelledby="essentials-heading">

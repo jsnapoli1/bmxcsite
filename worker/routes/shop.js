@@ -98,4 +98,36 @@ shop.all('/*', async (c) => {
   });
 });
 
+/**
+ * The storefront's read-only view of the catalogue, for the public site.
+ *
+ * Separate from the admin router above and mounted outside /api/admin/*: no
+ * Access token, no permission, no credential. It forwards to OpenShop's own
+ * public API, which is already unauthenticated — the proxy exists so the
+ * browser talks to one origin, not so it gains access to anything.
+ *
+ * Reads only. Nothing here can write, and checkout is deliberately absent
+ * until real Stripe keys exist (see the note in the shop's wrangler.toml).
+ */
+export const publicShop = new Hono();
+
+publicShop.get('/products', async (c) => {
+  const origin = c.env.SHOP_ORIGIN;
+  if (!origin) {
+    // No store configured is not an error for a visitor — it is an empty
+    // catalogue, which the page already knows how to render.
+    return c.json([]);
+  }
+
+  try {
+    const response = await fetch(`${origin.replace(/\/$/, '')}/api/products`);
+    if (!response.ok) return c.json([]);
+    return c.json(await response.json());
+  } catch (error) {
+    // The store being down must not take the merch page with it.
+    console.error(`Shop products unavailable: ${error?.message ?? error}`);
+    return c.json([]);
+  }
+});
+
 export default shop;

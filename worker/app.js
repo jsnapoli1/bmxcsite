@@ -7,7 +7,7 @@ import publicContent from './routes/public.js';
 import media, { publicMedia } from './routes/media.js';
 import blog, { publicBlog } from './routes/blog.js';
 import vedit, { publicVedit } from './routes/vedit.js';
-import shop from './routes/shop.js';
+import shop, { publicShop } from './routes/shop.js';
 
 const app = new Hono();
 
@@ -38,6 +38,7 @@ app.route('/api/admin/shop', shop);
 // answering 404) before Hono ever tries the more specific blog routes.
 app.route('/api/content/blog', publicBlog);
 app.route('/api/vedit', publicVedit);
+app.route('/api/shop', publicShop);
 app.route('/api/content', publicContent);
 app.route('/media', publicMedia);
 
