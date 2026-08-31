@@ -28,8 +28,8 @@ export default function HomeCta({ id = 'home.cta', ...rest }) {
           and buses fill even sooner.
         </Editable>
         <div className="home-cta__actions">
-          <Button to="/registration" variant="primary" size="lg">Registration & pricing</Button>
-          <Button to="/faq" variant="outline" size="lg">Read the FAQ</Button>
+          <Button id={`${id}.register`} to="/registration" variant="primary" size="lg">Registration & pricing</Button>
+          <Button id={`${id}.faq`} to="/faq" variant="outline" size="lg">Read the FAQ</Button>
         </div>
       </Reveal>
     </section>

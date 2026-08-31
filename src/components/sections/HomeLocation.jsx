@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import Button from '../ui/Button.jsx';
 import Reveal from '../motion/Reveal.jsx';
 import SectionHeading from '../ui/SectionHeading.jsx';
@@ -28,18 +29,18 @@ export default function HomeLocation({ id = 'home.location', ...rest }) {
           as="h2"
         />
         <Reveal delay={160} className="home-location__body">
-          <p>
+          <Editable id={`${id}.body`} as="p">
             We run miles and miles of scenic dirt roads and trails out of an ACA-accredited
             facility in {CAMP.venue.town}. It is all-inclusive: a dining hall with healthy
             and filling meals, separate boys and girls cabins, a private lake, and a program
             of educational and fun activities.
-          </p>
+          </Editable>
           <ul className="home-location__facts">
-            <li><span>Venue</span>{CAMP.venue.name}</li>
-            <li><span>Region</span>{CAMP.venue.region}</li>
-            <li><span>Buses from</span>Buffalo, Rochester, Syracuse, Rockaway & Woodbridge</li>
+            <li><Editable id={`${id}.fact.venue`} as="span">Venue</Editable>{CAMP.venue.name}</li>
+            <li><Editable id={`${id}.fact.region`} as="span">Region</Editable>{CAMP.venue.region}</li>
+            <li><Editable id={`${id}.fact.buses-from`} as="span">Buses from</Editable>Buffalo, Rochester, Syracuse, Rockaway & Woodbridge</li>
           </ul>
-          <Button href="https://maps.google.com/?q=Blue+Mountain+XC+Camp" variant="light">
+          <Button id={`${id}.map-link`} href="https://maps.google.com/?q=Blue+Mountain+XC+Camp" variant="light">
             Open in Google Maps
           </Button>
         </Reveal>

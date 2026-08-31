@@ -35,9 +35,28 @@ export default function HomePillars({ id = 'home.pillars', ...rest }) {
               delay={Math.min(index, 5) * 50}
               className={`pillar-card pillar-card--${index === 0 ? 'wide' : 'standard'}`}
             >
-              <span className="pillar-card__tag">{pillar.tag}</span>
-              <h3 className="pillar-card__title">{pillar.title}</h3>
-              <Editable id={`${id}.pillar.${pillar.title}.body`} as="p" className="pillar-card__body">
+              {/* Keyed on the pillar's stable `id`, not its title or loop
+                  position: the title is itself editable, so keying on it
+                  would orphan a card's other edits the moment someone
+                  retitled it. The `01/02/03` counter below stays out of the
+                  editor: it is aria-hidden decoration derived from position,
+                  not content, and editing it would let the numbering
+                  disagree with the order. */}
+              <Editable
+                id={`${id}.pillar.${pillar.id}.tag`}
+                as="span"
+                className="pillar-card__tag"
+              >
+                {pillar.tag}
+              </Editable>
+              <Editable
+                id={`${id}.pillar.${pillar.id}.title`}
+                as="h3"
+                className="pillar-card__title"
+              >
+                {pillar.title}
+              </Editable>
+              <Editable id={`${id}.pillar.${pillar.id}.body`} as="p" className="pillar-card__body">
                 {pillar.body}
               </Editable>
               <span className="pillar-card__index" aria-hidden="true">

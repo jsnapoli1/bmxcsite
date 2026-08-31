@@ -1,12 +1,20 @@
 import { Link } from 'react-router-dom';
+import { Editable } from 'vedit';
 import './button.css';
 
 /**
  * One button, three surfaces. Renders as <a>, <Link>, or <button> depending on
  * what it's pointing at, so semantics stay honest.
+ *
+ * `id` opts the label into the visual editor. It sits on the inner span
+ * rather than the button, so the editor addresses the words without
+ * swallowing the element's own behaviour — a Link that became an editable
+ * box would stop navigating. Without an id the label renders as before, so
+ * every existing call site is unaffected.
  */
 export default function Button({
   children,
+  id,
   to,
   href,
   variant = 'primary',
@@ -18,7 +26,11 @@ export default function Button({
 
   const inner = (
     <>
-      <span className="btn__label">{children}</span>
+      {id ? (
+        <Editable id={id} as="span" className="btn__label">{children}</Editable>
+      ) : (
+        <span className="btn__label">{children}</span>
+      )}
       <span className="btn__sweep" aria-hidden="true" />
     </>
   );

@@ -44,7 +44,7 @@ export default function HomeIntro({ id = 'home.intro', eyebrow, title, ...rest }
             {CAMP.intro}
           </Editable>
           <Editable id={`${id}.reach`} as="p">{CAMP.reach}</Editable>
-          <Button to="/camp" variant="ghost">What a week looks like →</Button>
+          <Button id={`${id}.cta`} to="/camp" variant="ghost">What a week looks like →</Button>
         </Reveal>
       </div>
     </section>
