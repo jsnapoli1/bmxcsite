@@ -205,7 +205,16 @@ function EditorLauncher() {
       type="button"
       className="edit-page-button"
       data-editing={editing ? 'true' : 'false'}
-      onClick={() => setEditing(true)}
+      onClick={() => {
+        // Logged at the click so a report can distinguish three cases that
+        // otherwise look identical: the click never fired, it fired but
+        // `editing` never flipped, or it flipped and the UI still didn't
+        // render (vedit's chunk load failing — see the rejection listener
+        // above). Only the third is vedit's bug; the first two would be
+        // this button's.
+        console.info('[vedit] Edit page clicked');
+        setEditing(true);
+      }}
     >
       <span className="edit-page-button__dot" aria-hidden="true" />
       Edit page
