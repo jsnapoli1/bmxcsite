@@ -30,15 +30,24 @@ export default function Hero() {
           <span className="hero__place">{CAMP.venue.town}</span>
         </Reveal>
 
+        {/* Each line is wrapped so the editor has one node per line to
+            address. Without a wrapper these would not be editable at all:
+            SplitText marks itself `data-vedit-ui`, which hides its word
+            spans from the DOM scanner — the whole point, since otherwise a
+            headline arrives as a row of one-word boxes. */}
         <h1 className="hero__title" id="hero-heading">
-          <SplitText as="span" text="Blue Mountain" className="hero__title-line" />
-          <SplitText
-            as="span"
-            text="Cross Country Camp"
-            className="hero__title-line hero__title-line--accent"
-            delay={140}
-            continuousFill
-          />
+          <Editable id="home.hero.title.line1" as="span" className="hero__title-slot">
+            <SplitText as="span" text="Blue Mountain" className="hero__title-line" />
+          </Editable>
+          <Editable id="home.hero.title.line2" as="span" className="hero__title-slot">
+            <SplitText
+              as="span"
+              text="Cross Country Camp"
+              className="hero__title-line hero__title-line--accent"
+              delay={140}
+              continuousFill
+            />
+          </Editable>
         </h1>
 
         <Reveal delay={300} className="hero__lead">

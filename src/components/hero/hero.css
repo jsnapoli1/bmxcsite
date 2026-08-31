@@ -186,3 +186,10 @@
   }
   .hero__scroll { display: block; }
 }
+
+/* The editor's per-line wrappers must not participate in the title's flex
+   column — `display: contents` keeps each SplitText a direct flex item, so
+   the two lines stack exactly as they did without them. */
+.hero__title-slot {
+  display: contents;
+}

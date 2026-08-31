@@ -94,6 +94,14 @@ FAQ questions are deliberately **not** wrapped: their only handle is
 `${category.id}-${index}`, so an explicit id would look stable while silently
 reattaching on reorder.
 
+`SplitText` carries `data-vedit-ui`, which hides its word spans from the DOM
+scanner. The scanner matches `span` and treats any childless element holding
+text as its own node, so without it a headline arrived as a row of one-word
+boxes — three spans deep per word. The whole line is the right unit to
+rewrite anyway, and `SectionHeading` / `PageHeader` / the Hero each wrap
+their `SplitText` in an `<Editable>` that addresses it. **A bare `SplitText`
+with no wrapper is not editable at all** — wrap any new one.
+
 **Two sources of truth.** On CMS-backed pages (merch, staff, blog) a vedit
 override layers on top of the D1 value and wins. Edit copy in /admin; use the
 editor when the presentation is what needs changing.

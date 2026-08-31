@@ -14,6 +14,17 @@ import './motion.css';
  * as --word-x / --line-w. A gradient applied to the words can then be sized to
  * the whole line and shifted into place, so it reads as one unbroken ramp
  * instead of restarting at every word.
+ *
+ * `data-vedit-ui` hides the word spans from the visual editor's DOM scanner,
+ * which matches `span` and treats any childless element with text as its own
+ * editable node — turning one headline into a row of one-word boxes, three
+ * spans deep per word. The scanner tests it with `closest()`, so marking the
+ * host covers every span inside it.
+ *
+ * This does not make the heading uneditable: SectionHeading and PageHeader
+ * wrap SplitText in an `<Editable>` whose id addresses the whole line, which
+ * is the right unit to rewrite anyway. Marking the host is what leaves that
+ * wrapper as the only thing the editor offers here.
  */
 export default function SplitText({
   text,
@@ -75,6 +86,7 @@ export default function SplitText({
   return (
     <Tag
       ref={setRefs}
+      data-vedit-ui=""
       className={`split-text${isInView ? ' is-visible' : ''} ${className}`}
       style={
         continuousFill && metrics
