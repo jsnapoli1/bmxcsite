@@ -117,6 +117,32 @@ function EditorLauncher() {
     console.info(`[vedit] editing = ${editing}`);
   }, [editing]);
 
+  // vedit loads its editor UI with a bare `void import(...).then(...)` and
+  // no catch (EditorHost, chunk-TTKFO6QU). If that import fails — a chunk
+  // that 404s behind a stale HTML cache, a CSP that blocks it, an offline
+  // moment — the rejection is unhandled, its `Editor` state stays null, and
+  // it renders null forever. `editing` is true the whole time, so from
+  // outside it is indistinguishable from the editor simply not appearing,
+  // with nothing in the console.
+  //
+  // This listener cannot repair that, but it makes it audible. Remove it
+  // once vedit catches its own import failure.
+  useEffect(() => {
+    const onRejection = (event) => {
+      const message = String(event.reason?.message ?? event.reason ?? '');
+      if (/mount-|dynamically imported module|Importing a module/i.test(message)) {
+        console.error(
+          '[vedit] the editor UI chunk failed to load — the editor cannot '
+          + 'render. Usually a stale cached page pointing at a chunk that no '
+          + 'longer exists: hard-reload (Cmd+Shift+R). Original error:',
+          event.reason,
+        );
+      }
+    };
+    window.addEventListener('unhandledrejection', onRejection);
+    return () => window.removeEventListener('unhandledrejection', onRejection);
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (event) => {
       // event.code, not event.key: with Shift held, `key` is layout- and

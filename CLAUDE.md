@@ -82,6 +82,14 @@ all. `?edit=1` survives regardless and is stripped from the URL once read.
 Neither signal grants anything — the permission check behind them is what
 decides.
 
+**"editing = true" but no editor** means vedit's editor-UI chunk failed to
+load. `EditorHost` (chunk-TTKFO6QU) fetches it with a bare
+`void import(...).then(...)` and no `.catch()`, so a failed import rejects
+unhandled, its `Editor` state stays null, and it renders null forever while
+`editing` stays true — invisible from outside. The provider listens for that
+rejection and says so; the usual cause is a cached page asking for a chunk
+hash a later deploy replaced, and a hard reload fixes it.
+
 **If the editor doesn't open, read the console.** Every branch of the check
 reports through `[vedit] …`: no session flag, signed out (Access redirect),
 a status code, a missing permission, or a network error. Without those the
