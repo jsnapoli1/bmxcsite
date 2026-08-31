@@ -7,6 +7,7 @@ import publicContent from './routes/public.js';
 import media, { publicMedia } from './routes/media.js';
 import blog, { publicBlog } from './routes/blog.js';
 import vedit, { publicVedit } from './routes/vedit.js';
+import shop from './routes/shop.js';
 
 const app = new Hono();
 
@@ -24,6 +25,8 @@ app.route('/api/admin/content', content);
 app.route('/api/admin/media', media);
 app.route('/api/admin/blog', blog);
 app.route('/api/admin/vedit', vedit);
+// Proxied to the OpenShop worker; see worker/routes/shop.js.
+app.route('/api/admin/shop', shop);
 
 // Deliberately a different prefix, NOT under /api/admin/*: the public site
 // must be able to read published content/media/blog with no Access token

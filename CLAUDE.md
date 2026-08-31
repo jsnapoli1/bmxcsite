@@ -205,6 +205,38 @@ deploy must not pick up an unreviewed editor. Since 0.4.0 `createVeditHandler`
 throws without `authorize`; a test asserts that, so dropping the callback in a
 refactor fails loudly instead of quietly opening the endpoint.
 
+## Merch store (OpenShop)
+
+The online store is [OpenShop](https://github.com/AJFrio/OpenShop), deployed as
+its **own worker** with its own KV and Stripe keys. This site calls its HTTP
+API; it is not vendored here.
+
+**That separation is a licence requirement, not a preference.** OpenShop is
+AGPL-3.0. Copying its source into this repo would put the whole site under
+AGPL, including an obligation to offer source to anyone who uses it over a
+network. Calling a separate service does not. Do not vendor it.
+
+**Auth is bridged, not shared.** OpenShop authenticates with one shared admin
+password exchanged for a 24h token. This site uses Cloudflare Access with
+per-person D1 permissions. `worker/routes/shop.js` verifies Access and the
+`merch` permission, then forwards with a server-side credential — so there is
+one sign-in, the password never reaches a browser, and store writes land in
+`audit_log` against a real person. On OpenShop's own side every change looks
+identical no matter who made it.
+
+**The proxy is an allowlist.** OpenShop's admin API also exposes store
+settings, media, AI image generation and an agent endpoint. None of those
+belong to the `merch` permission, so `ALLOWED` in shop.js names the exact
+method+path pairs that pass. Adding a capability should be deliberate, not a
+side effect of OpenShop shipping a route.
+
+**Two tabs, on purpose.** *Merch* edits the informational merch page in D1
+(cash only, sold at camp) — still what the public site shows. *Store* is the
+catalogue behind it. They share the `merch` permission.
+
+Needs `SHOP_ORIGIN` and `SHOP_ADMIN_PASSWORD`. Until both are set the Store
+tab reports the store is unavailable; nothing else is affected.
+
 ## Gotchas
 
 - **Verify in a browser.** Most bugs here were invisible to a passing build:

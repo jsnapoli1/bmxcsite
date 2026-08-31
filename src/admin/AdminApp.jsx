@@ -7,6 +7,7 @@ import Merch from './pages/Merch.jsx';
 import Media from './pages/Media.jsx';
 import Blog from './pages/Blog.jsx';
 import Design from './pages/Design.jsx';
+import Store from './pages/Store.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
 // below for why the tab stays hidden.
 
@@ -30,6 +31,10 @@ const PAGES = [
   { id: 'staff', label: 'Staff', permission: 'campinfo', Component: Staff },
   { id: 'faq', label: 'Questions & answers', permission: 'campinfo', Component: Faq },
   { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
+  // The online store, served by a separate OpenShop worker and proxied
+  // through worker/routes/shop.js. Shares the `merch` permission with the
+  // tab above: same person, same area, different backend.
+  { id: 'store', label: 'Store', permission: 'merch', Component: Store },
   { id: 'media', label: 'Photos & videos', permission: 'media', Component: Media },
   { id: 'blog', label: 'Blog', permission: 'blog', Component: Blog },
   // Not an editor itself — a list of links into the visual editor, which

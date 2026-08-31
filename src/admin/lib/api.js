@@ -108,3 +108,26 @@ export const publishPost = (slug) =>
 
 export const deletePost = (slug) =>
   request(`/blog/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+
+// --- Store (OpenShop, proxied) -------------------------------------------
+//
+// These reach the OpenShop worker through worker/routes/shop.js, which
+// verifies Access and the `merch` permission and then attaches a credential
+// the browser never holds. From here it is an ordinary admin API call.
+
+export const listShopProducts = () => request('/shop/products');
+
+export const getShopProduct = (id) =>
+  request(`/shop/products/${encodeURIComponent(id)}`);
+
+export const saveShopProduct = (product) => (
+  product.id
+    ? request(`/shop/products/${encodeURIComponent(product.id)}`,
+      { method: 'PUT', body: JSON.stringify(product) })
+    : request('/shop/products', { method: 'POST', body: JSON.stringify(product) })
+);
+
+export const deleteShopProduct = (id) =>
+  request(`/shop/products/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
+export const listShopCollections = () => request('/shop/collections');
