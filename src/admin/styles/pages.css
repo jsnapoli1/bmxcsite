@@ -256,3 +256,47 @@
   font-size: 0.8rem;
   color: var(--color-muted);
 }
+
+/* --- Upload queue ------------------------------------------------------ */
+
+.upload-queue { margin: 1.25rem 0; }
+
+.upload-queue__summary {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+.upload-queue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 40rem;
+}
+
+.upload-queue__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 0.875rem;
+}
+
+.upload-queue__name {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.upload-queue__state { color: var(--color-muted); }
+
+/* Failures are marked with the accent rule used elsewhere for attention,
+   not a filled colour — the panel has no filled status blocks. */
+.upload-queue__row--failed {
+  border-left: 3px solid var(--color-accent);
+  padding-left: 0.5rem;
+}
+
+.upload-queue__row--failed .upload-queue__state { color: var(--color-accent); }
+.upload-queue__row--done .upload-queue__state { color: var(--color-signal); }

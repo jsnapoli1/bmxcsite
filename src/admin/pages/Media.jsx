@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  listMedia, uploadMedia, updateMedia, publishMedia, unpublishMedia, deleteMedia,
+  listMedia, updateMedia, publishMedia, unpublishMedia, deleteMedia,
 } from '../lib/api.js';
+import UploadQueue from '../components/UploadQueue.jsx';
 
 /**
  * Photo & video library. Private and public media are two visually distinct
@@ -26,7 +27,6 @@ export default function Media() {
   const [status, setStatus] = useState(null);
   const [pending, setPending] = useState(() => new Set());
   const [altDrafts, setAltDrafts] = useState({});
-  const fileInputRef = useRef(null);
 
   function markPending(key) {
     setPending((prev) => new Set(prev).add(key));
@@ -57,29 +57,6 @@ export default function Media() {
 
   useEffect(() => { refresh().catch((err) => setError(err.message)); }, []);
 
-  async function handleUpload(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const key = 'upload';
-    if (pending.has(key)) return;
-
-    setError(null);
-    setStatus(null);
-    markPending(key);
-    try {
-      await uploadMedia(file);
-      await refresh();
-      setStatus('Uploaded. This photo is private — it is not visible on the public site.');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      clearPending(key);
-      // Always clear the file input, even on failure, so choosing the same
-      // file again fires a change event (the browser would otherwise treat
-      // an identical selection as a no-op).
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  }
 
   async function handleSaveAltText(item) {
     const key = `alt:${item.key}`;
@@ -200,18 +177,9 @@ export default function Media() {
       {error && <p className="admin-error" role="alert">{error}</p>}
       {status && <p className="admin-status" role="status">{status}</p>}
 
-      <div className="admin-actions">
-        <label className="admin-upload">
-          <span>{pending.has('upload') ? 'Uploading…' : 'Upload a photo'}</span>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={pending.has('upload')}
-            onChange={handleUpload}
-          />
-        </label>
-      </div>
+      <UploadQueue
+        onUploaded={() => refresh().catch((err) => setError(err.message))}
+      />
 
       <MediaGroup
         groupKind="private"
