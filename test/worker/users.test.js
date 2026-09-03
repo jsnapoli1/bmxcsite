@@ -76,7 +76,7 @@ describe('users API', () => {
       email: 'New@Example.com',
       name: 'New Person',
       permissions: {
-        blog: true, media: false, merch: false, campinfo: false, design: false,
+        blog: true, media: false, merch: false, campinfo: false, design: false, faces: false,
       },
     });
     expect(res.status).toBe(201);
@@ -142,7 +142,7 @@ describe('users API', () => {
     await call('POST', '/api/admin/users', {
       email: 'full@example.com',
       permissions: {
-        blog: true, media: true, merch: true, campinfo: true, design: true,
+        blog: true, media: true, merch: true, campinfo: true, design: true, faces: true,
       },
     });
 
@@ -152,7 +152,7 @@ describe('users API', () => {
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: true, media: true, merch: true, campinfo: true, design: true,
+      blog: true, media: true, merch: true, campinfo: true, design: true, faces: true,
     });
   });
 
@@ -162,7 +162,7 @@ describe('users API', () => {
     await call('POST', '/api/admin/users', {
       email: 'clearone@example.com',
       permissions: {
-        blog: true, media: true, merch: true, campinfo: true, design: true,
+        blog: true, media: true, merch: true, campinfo: true, design: true, faces: true,
       },
     });
 
@@ -172,7 +172,7 @@ describe('users API', () => {
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: true, media: false, merch: true, campinfo: true, design: true,
+      blog: true, media: false, merch: true, campinfo: true, design: true, faces: true,
     });
   });
 
@@ -182,19 +182,19 @@ describe('users API', () => {
     await call('POST', '/api/admin/users', {
       email: 'replaceall@example.com',
       permissions: {
-        blog: true, media: true, merch: true, campinfo: true, design: true,
+        blog: true, media: true, merch: true, campinfo: true, design: true, faces: true,
       },
     });
 
     const res = await call('PATCH', '/api/admin/users/replaceall@example.com', {
       permissions: {
-        blog: false, media: false, merch: false, campinfo: false, design: false,
+        blog: false, media: false, merch: false, campinfo: false, design: false, faces: false,
       },
     });
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: false, media: false, merch: false, campinfo: false, design: false,
+      blog: false, media: false, merch: false, campinfo: false, design: false, faces: false,
     });
   });
 
@@ -268,7 +268,7 @@ describe('users API', () => {
     expect(res.status).toBe(200);
     const { user } = await res.json();
     expect(user.permissions).toEqual({
-      blog: false, media: false, merch: false, campinfo: false, design: false,
+      blog: false, media: false, merch: false, campinfo: false, design: false, faces: false,
     });
   });
 
@@ -344,7 +344,7 @@ describe('users API', () => {
     await call('POST', '/api/admin/users', { email: 'audit-detail@example.com' });
     await call('PATCH', '/api/admin/users/audit-detail@example.com', {
       permissions: {
-        blog: true, media: false, merch: false, campinfo: false, design: false,
+        blog: true, media: false, merch: false, campinfo: false, design: false, faces: false,
       },
       isAdmin: false,
     });
@@ -358,7 +358,7 @@ describe('users API', () => {
     const parsed = JSON.parse(jsonPart);
     expect(parsed).toEqual({
       permissions: {
-        blog: true, media: false, merch: false, campinfo: false, design: false,
+        blog: true, media: false, merch: false, campinfo: false, design: false, faces: false,
       },
       isAdmin: false,
     });

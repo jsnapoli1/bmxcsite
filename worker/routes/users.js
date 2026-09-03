@@ -22,7 +22,13 @@ function normaliseEmail(value) {
 }
 
 /**
- * Map an API permissions object to the five database columns.
+ * Map an API permissions object to its database columns.
+ *
+ * Derived from AREAS rather than enumerated. Enumerating meant a new area
+ * had to be added here, in the INSERT, in the UPDATE and in the PATCH's
+ * merge — and `faces` was once added to the schema and the permission
+ * module but not to any of them, so granting it through the API silently
+ * did nothing.
  *
  * Strict: only a literal `true` sets a flag. Truthy-but-not-boolean input
  * (a non-empty string, an array, an object) must never grant a permission
@@ -31,14 +37,13 @@ function normaliseEmail(value) {
 function toFlags(permissions = {}, isAdmin = false) {
   const on = (value) => (value === true ? 1 : 0);
   return {
-    can_blog: on(permissions.blog),
-    can_media: on(permissions.media),
-    can_merch: on(permissions.merch),
-    can_campinfo: on(permissions.campinfo),
-    can_design: on(permissions.design),
+    ...Object.fromEntries(AREAS.map((area) => [`can_${area}`, on(permissions[area])])),
     is_admin: on(isAdmin),
   };
 }
+
+/** The permission columns, in one fixed order shared by every statement. */
+const COLUMNS = AREAS.map((area) => `can_${area}`);
 
 async function audit(db, actorEmail, action, detail) {
   await db.prepare(
@@ -55,13 +60,9 @@ users.get('/', async (c) => {
     users: results.map((row) => ({
       email: row.email,
       name: row.name,
-      permissions: {
-        blog: row.can_blog === 1,
-        media: row.can_media === 1,
-        merch: row.can_merch === 1,
-        campinfo: row.can_campinfo === 1,
-        design: row.can_design === 1,
-      },
+      permissions: Object.fromEntries(
+        AREAS.map((area) => [area, row[`can_${area}`] === 1]),
+      ),
       isAdmin: row.is_admin === 1,
       createdAt: row.created_at,
     })),
@@ -85,15 +86,13 @@ users.post('/', async (c) => {
   const flags = toFlags(body.permissions, body.isAdmin);
   try {
     await c.env.DB.prepare(
-      `INSERT INTO users
-         (email, name, can_blog, can_media, can_merch, can_campinfo,
-          can_design, is_admin)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users (email, name, ${COLUMNS.join(', ')}, is_admin)
+       VALUES (${new Array(COLUMNS.length + 3).fill('?').join(', ')})`,
     ).bind(
       email,
       typeof body.name === 'string' && body.name.trim() ? body.name.trim() : null,
-      flags.can_blog, flags.can_media, flags.can_merch,
-      flags.can_campinfo, flags.can_design, flags.is_admin,
+      ...COLUMNS.map((column) => flags[column]),
+      flags.is_admin,
     ).run();
   } catch (error) {
     // The pre-check above is read-then-write, not atomic: a concurrent POST
@@ -138,11 +137,7 @@ users.patch('/:email', async (c) => {
   // three areas untouched. Only an explicit `false` in the body clears one —
   // silence should never revoke access.
   const permissions = {
-    blog: existing.can_blog === 1,
-    media: existing.can_media === 1,
-    merch: existing.can_merch === 1,
-    campinfo: existing.can_campinfo === 1,
-    design: existing.can_design === 1,
+    ...Object.fromEntries(AREAS.map((area) => [area, existing[`can_${area}`] === 1])),
     ...body.permissions,
   };
   const isAdmin = body.isAdmin ?? existing.is_admin === 1;
@@ -152,12 +147,13 @@ users.patch('/:email', async (c) => {
     : (typeof body.name === 'string' && body.name.trim() ? body.name.trim() : null);
 
   await c.env.DB.prepare(
-    `UPDATE users SET name = ?, can_blog = ?, can_media = ?, can_merch = ?,
-       can_campinfo = ?, can_design = ?, is_admin = ?, updated_at = unixepoch()
+    `UPDATE users SET name = ?, ${COLUMNS.map((column) => `${column} = ?`).join(', ')},
+       is_admin = ?, updated_at = unixepoch()
      WHERE email = ?`,
   ).bind(
-    name, flags.can_blog, flags.can_media, flags.can_merch,
-    flags.can_campinfo, flags.can_design, flags.is_admin, target,
+    name,
+    ...COLUMNS.map((column) => flags[column]),
+    flags.is_admin, target,
   ).run();
 
   // Record the resulting state, not just that a change happened — a grant,

@@ -10,6 +10,7 @@ import vedit, { publicVedit } from './routes/vedit.js';
 import shop, { publicShop } from './routes/shop.js';
 import emailRoutes from './routes/email.js';
 import subscribeRoutes from './routes/subscribe.js';
+import facesRoutes from './routes/faces.js';
 
 const app = new Hono();
 
@@ -30,6 +31,9 @@ app.route('/api/admin/vedit', vedit);
 // Proxied to the OpenShop worker; see worker/routes/shop.js.
 app.route('/api/admin/shop', shop);
 app.route('/api/admin/email', emailRoutes);
+// Face tagging. The service is not deployed; without FACE_ORIGIN the
+// proxied routes report 503 while the roster half still works.
+app.route('/api/admin/faces', facesRoutes);
 
 // Deliberately a different prefix, NOT under /api/admin/*: the public site
 // must be able to read published content/media/blog with no Access token
