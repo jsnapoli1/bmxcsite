@@ -10,3 +10,8 @@ admin-preview.html
 
 # Local browser-verification screenshots.
 .screenshots/
+
+# Local secrets for `wrangler dev`. Never commit: this holds real
+# credentials (CF_API_TOKEN, SHOP_ADMIN_PASSWORD).
+.dev.vars
+.dev.vars.*
