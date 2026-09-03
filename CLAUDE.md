@@ -247,6 +247,88 @@ Stripe before writing to KV, so with no `STRIPE_SECRET_KEY` it fails with
 `Neither apiKey nor config.authenticator provided`. That means no products,
 so no redirect, so `/merch` stays as it is until real keys are added.
 
+## Admin panel
+
+Six grantable areas: blog, media, merch, campinfo, design, faces. The
+list lives in `worker/auth/permissions.js` and is mirrored with labels in
+`src/admin/lib/permission-areas.js`; a test cross-checks both directions.
+
+**`worker/routes/users.js` derives its columns from `AREAS`.** It used to
+enumerate them in five places — `toFlags`, the INSERT, the UPDATE, the
+PATCH merge and the list response — and `faces` was added to the schema
+and the permission module while all five still listed only the first
+five. The API accepted the grant and persisted it nowhere. Keep it
+derived; a seventh area must not need five edits.
+
+The panel is responsive: a sidebar above 48rem, a drawer below it, and
+tables that stack into labelled rows. Every `<td>` in an `.admin-table`
+carries `data-label` matching its column header — that is what the
+stacked layout reads.
+
+**`admin.css` was split** into `src/admin/styles/{shell,controls,tables,
+pages}.css`. The panel does not import `global.css` (that carries the
+public site's base typography), so `shell.css` restates the
+`box-sizing: border-box` reset. Without it, anything with an explicit
+width plus a border overflows its grid track.
+
+**`admin-preview.html` is gitignored and local only.** The panel needs a
+Cloudflare Access JWT that does not exist on localhost, so
+`/api/admin/me` answers 403 and the real entry point renders only its
+error state. The preview stubs the reads so layout can be checked; it
+stubs nothing that writes, and `vite.admin.config.js` names a single
+`admin.html` input so it cannot ship.
+
+## Email
+
+**Email Routing is live on bmxc.camp; Email Sending is not.** The
+subscribe flow writes the row and issues the token but sends nothing
+until `wrangler email sending enable bmxc.camp` is done.
+
+**Announcements are not sendable from the panel, on purpose.** Cloudflare
+Email Service is transactional-only by their own FAQ — there is no bulk
+tier to opt into. The double opt-in confirmation is transactional and
+belongs there; a broadcast does not, and would put the sending
+reputation those confirmations depend on at risk. The panel exports CSV
+instead.
+
+`worker/email/routing-client.js` is the allowlist: five operations, no
+passthrough. The zone id is fixed in the file so no request can point a
+write at another zone. Destinations are **account**-scoped and shared by
+every zone on the account, which is why nothing deletes one — it could
+break routing on an unrelated domain. `listRules` filters the catch-all
+out; it is what stops mail to an unknown address vanishing.
+
+Needs `CF_API_TOKEN` (a secret: `Zone / Email Routing / Edit` on
+bmxc.camp plus `Account / Email Routing Addresses / Edit`). The deploy
+token is `zone: read` and cannot do this.
+
+## Face tagging
+
+`face-service/` is Python with a ~280MB InsightFace model. It **cannot
+run on Workers** and is not deployed. This repo holds the surface it will
+need: the `faces` permission, the `campers` roster, and
+`worker/routes/faces.js` — an allowlisted proxy on the `shop.js` pattern.
+Without `FACE_ORIGIN` the proxied routes answer 503 while the roster
+still works.
+
+**Consent gates enrollment, not display.** Every camper must opt in.
+`campers.consent_at` defaults to NULL, and `consentedRoster()` is the
+only roster the service is ever sent — a bib without consent is not
+merely un-enrolled, the service is never told the name exists. `/ingest`
+refuses outright on an empty consenting roster rather than making a pass
+over children's faces that can produce no legitimate result.
+
+Filtering at display time would meet the requirement in appearance only:
+the face templates would already have been built.
+
+**Before any real ingest, set `bib_pattern`** in
+`face-service/config.toml` to the width the camp actually issues. The
+default `^\d{3}$` is a guess, and OCR fragments ('51' from 516) each
+mint their own phantom identity — that failure once turned two runners
+into eight identities. The face half is well evidenced (~166,000 pairs,
+zero false accepts); the bib half was measured on adult road races, and
+cross-country with children is harder.
+
 ## Gotchas
 
 - **Verify in a browser.** Most bugs here were invisible to a passing build:
