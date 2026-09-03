@@ -1,6 +1,18 @@
 /* Admin panel. Same Field Guide direction as the public site: ruled rows,
    no shadows, structure from weight and rules. */
 
+/* The admin panel does not import global.css — that file carries the
+   public site's base typography, which this panel deliberately does not
+   share. But it also carried the box-sizing reset, and without it any
+   element given an explicit width plus a border overflows its grid track:
+   the 120px media thumbnails rendered 138px wide and ran under the
+   filename beside them. Only the reset is taken here, not the rest. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .admin-shell {
   max-width: 68rem;
   margin: 0 auto;

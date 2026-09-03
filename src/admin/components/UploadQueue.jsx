@@ -61,6 +61,7 @@ export default function UploadQueue({ onUploaded, albumId = null }) {
         <span>{running ? 'Uploading…' : 'Choose photos or videos'}</span>
         <input
           ref={inputRef}
+          name="files"
           type="file"
           multiple
           accept="image/jpeg,image/png,image/webp,video/mp4"

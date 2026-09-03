@@ -89,7 +89,7 @@ export default function Media() {
     if (pending.has(key)) return;
 
     const confirmed = window.confirm(
-      `Publish "${item.filename}"? This makes the photo visible to anyone on the internet, `
+      `Publish "${item.filename}"? This makes the ${nounFor(item)} visible to anyone on the internet, `
       + 'not just people signed in here. This cannot be undone by itself — you would need to '
       + 'come back and unpublish it.',
     );
@@ -204,7 +204,7 @@ export default function Media() {
       <MediaGroup
         groupKind="private"
         title="Private — not visible on the public site"
-        emptyMessage="No private photos. Newly uploaded photos will appear here first."
+        emptyMessage="Nothing private here. New uploads appear here first."
         items={privateItems}
         altDrafts={altDrafts}
         setAltDrafts={setAltDrafts}
@@ -218,7 +218,7 @@ export default function Media() {
       <MediaGroup
         groupKind="public"
         title="Public — visible to anyone on the internet"
-        emptyMessage="No published photos yet."
+        emptyMessage="Nothing published yet."
         items={publicItems}
         altDrafts={altDrafts}
         setAltDrafts={setAltDrafts}
@@ -230,6 +230,15 @@ export default function Media() {
       />
     </section>
   );
+}
+
+/**
+ * The noun for one item, so a director publishing a clip is not asked
+ * about a photo. The library holds both, and the confirmations here name
+ * a consequence — they should name the right thing.
+ */
+function nounFor(item) {
+  return item.content_type.startsWith('video/') ? 'video' : 'photo';
 }
 
 function MediaGroup({
@@ -293,14 +302,15 @@ function MediaGroup({
                   <label className="admin-field admin-field--wide">
                     Alt text
                     <textarea
+                      name={`alt-${item.key}`}
                       value={altText}
-                      placeholder="Describe what the photo shows, for people using a screen reader."
+                      placeholder={`Describe what the ${nounFor(item)} shows, for people using a screen reader.`}
                       onChange={(e) => setAltDrafts((prev) => ({ ...prev, [item.key]: e.target.value }))}
                     />
                   </label>
                   {!hasAltText && (
                     <p className="media-row__hint">
-                      Alt text is required before this photo can be published.
+                      Alt text is required before this {nounFor(item)} can be published.
                     </p>
                   )}
 
