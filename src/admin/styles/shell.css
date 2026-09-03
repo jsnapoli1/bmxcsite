@@ -180,3 +180,12 @@
 @media (max-width: 30rem) {
   .admin-shell { padding: 1rem 0.875rem 2rem; }
 }
+
+/* An empty list, distinguished from a loading one: dashed, so it reads as
+   a space waiting to be filled rather than a failure. */
+.admin-notice--empty {
+  border: 1px dashed var(--color-line-strong);
+  border-radius: 2px;
+  padding: 1.25rem;
+  background: var(--color-surface-sunken);
+}

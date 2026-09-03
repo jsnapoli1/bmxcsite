@@ -26,6 +26,15 @@ export default defineConfig({
       };
     }),
   ],
+  // JSX in tests compiles to the automatic runtime, which imports
+  // jsx-runtime itself. Without this, esbuild emits React.createElement and
+  // a test rendering a component fails with "React is not defined" — the
+  // app's own JSX only works because vite.config.js supplies the React
+  // plugin, and this config does not use it.
+  esbuild: {
+    jsx: 'automatic',
+  },
+
   test: {
     setupFiles: ['./test/setup.js', './test/setup-kv.js'],
     // Vitest does not restore vi.spyOn mocks between tests by default —
