@@ -7,6 +7,25 @@
   font-size: 0.925rem;
 }
 
+/* Between the breakpoint and roughly 60rem the sidebar is present but the
+   viewport is not wide enough for it plus an eight-column table. A table
+   will not shrink below its intrinsic width, so without this it spills
+   past the viewport and scrolls the whole page sideways — the header and
+   nav slide away with it. Scrolling the table inside its own column keeps
+   the rest of the page still.
+
+   `display: block` is what makes the element scrollable; the table keeps
+   its own layout because .admin-table below is the table, not this. */
+@media (min-width: 48.0625rem) and (max-width: 60rem) {
+  .admin-main :is(table).admin-table {
+    display: block;
+    overflow-x: auto;
+    /* Without this the block-level table collapses to its content width
+       and the columns stop filling the row. */
+    max-width: 100%;
+  }
+}
+
 .admin-table th,
 .admin-table td {
   text-align: left;

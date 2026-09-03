@@ -98,6 +98,7 @@ export default function Users({ currentEmail }) {
           Email
           <input
             type="email" required value={email}
+            name="email" autoComplete="email"
             onChange={(e) => setEmail(e.target.value)}
             placeholder="person@example.com"
           />
@@ -106,6 +107,7 @@ export default function Users({ currentEmail }) {
           Name
           <input
             type="text" value={name}
+            name="name" autoComplete="name"
             onChange={(e) => setName(e.target.value)}
             placeholder="Optional"
           />

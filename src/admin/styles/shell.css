@@ -49,12 +49,17 @@
 }
 
 
+/* Hidden visually, still read aloud.
+   `clip-path` rather than the older `position: absolute` + `clip` recipe:
+   an absolutely-positioned element escapes an ancestor that scrolls, and
+   the one inside the Users table's actions header did exactly that — it
+   sat past the right edge and gave the whole page a horizontal scrollbar
+   between 48rem and 60rem. Staying in flow cannot do that. */
 .visually-hidden {
-  position: absolute;
   width: 1px; height: 1px;
   padding: 0; margin: -1px;
   overflow: hidden;
-  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
@@ -91,13 +96,25 @@
   gap: 1rem;
 }
 
+/* The dividing rule is drawn by the layout, not by the nav.
+   `align-items: start` is what lets the nav be shorter than the page and
+   therefore scroll with `position: sticky` — but a border on a
+   content-sized nav stops wherever the last item ends. Painting it as a
+   gradient on the container puts the line at full height while leaving
+   the nav free to stick. */
+.admin-layout:has(.admin-nav) {
+  background-image: linear-gradient(var(--color-line), var(--color-line));
+  background-size: 1px 100%;
+  background-position: 13rem 0;
+  background-repeat: no-repeat;
+}
+
 .admin-nav {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
   position: sticky;
   top: clamp(1.5rem, 1rem + 2vw, 3rem);
-  border-right: 1px solid var(--color-line);
   padding-right: 0.75rem;
 }
 
@@ -152,10 +169,13 @@
     gap: 0;
   }
 
+  /* No vertical rule in the drawer layout — the nav sits above the page,
+     not beside it. */
+  .admin-layout:has(.admin-nav) { background-image: none; }
+
   .admin-nav {
     display: none;
     position: static;
-    border-right: none;
     border-bottom: 1px solid var(--color-line);
     padding: 0 0 1rem;
     margin-bottom: 1.5rem;
@@ -166,12 +186,21 @@
   .admin-nav__link {
     border-left: none;
     border-bottom: 1px solid var(--color-line);
-    padding: 0.7rem 0.25rem;
+    padding: 0.7rem 0.5rem;
   }
 
+  /* The nav closes with its own rule, so the last item must not draw one
+     too — stacked with the nav's padding between them they read as two
+     separate rules with a gap, not one edge. */
+  .admin-nav__link:last-child { border-bottom: none; }
+
+  /* In the drawer the active item is marked by its rule alone. The
+     sidebar's tinted background spans the full width here, which reads as
+     a filled band rather than a marked row. */
   .admin-nav__link--active {
     border-left: none;
     border-bottom-color: var(--color-primary);
+    background: transparent;
   }
 
   .admin-nav__toggle { display: block; }
