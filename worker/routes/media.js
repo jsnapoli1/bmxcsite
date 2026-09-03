@@ -4,6 +4,9 @@ import {
   storeUpload, listMedia, updateMediaMetadata, publishMedia, unpublishMedia, getPublicObject,
   UploadError,
 } from '../media/repository.js';
+import {
+  listAlbums, createAlbum, updateAlbum, deleteAlbum, setMediaAlbum, AlbumError,
+} from '../media/albums.js';
 
 /**
  * Admin media routes. Every route here requires the `media` permission —
@@ -60,6 +63,94 @@ media.get('/', async (c) => {
     listMedia(c.env.DB, { status: 'public' }),
   ]);
   return c.json({ media: [...publicRows, ...privateRows] });
+});
+
+// --- Albums --------------------------------------------------------------
+// Registered before the /:key routes below: Hono matches in order, and
+// '/albums' would otherwise bind as a media key.
+
+media.get('/albums', async (c) => {
+  return c.json({ albums: await listAlbums(c.env.DB) });
+});
+
+media.post('/albums', async (c) => {
+  let body;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Request body must be valid JSON' }, 400);
+  }
+
+  let album;
+  try {
+    album = await createAlbum(c.env.DB, {
+      title: body.title,
+      description: typeof body.description === 'string' ? body.description : undefined,
+      creatorEmail: c.get('email'),
+    });
+  } catch (error) {
+    if (error instanceof AlbumError) return c.json({ error: error.message }, error.status);
+    throw error;
+  }
+
+  await audit(c.env.DB, c.get('email'), 'album.create', album.slug);
+  return c.json({ album }, 201);
+});
+
+media.patch('/albums/:id', async (c) => {
+  let body;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Request body must be valid JSON' }, 400);
+  }
+
+  let album;
+  try {
+    album = await updateAlbum(c.env.DB, Number(c.req.param('id')), {
+      title: typeof body.title === 'string' ? body.title : undefined,
+      description: typeof body.description === 'string' ? body.description : undefined,
+    });
+  } catch (error) {
+    if (error instanceof AlbumError) return c.json({ error: error.message }, error.status);
+    throw error;
+  }
+
+  if (album === null) return c.json({ error: 'No such album.' }, 404);
+
+  await audit(c.env.DB, c.get('email'), 'album.update', album.slug);
+  return c.json({ album });
+});
+
+media.delete('/albums/:id', async (c) => {
+  const removed = await deleteAlbum(c.env.DB, Number(c.req.param('id')));
+  if (!removed) return c.json({ error: 'No such album.' }, 404);
+
+  await audit(c.env.DB, c.get('email'), 'album.delete', c.req.param('id'));
+  return c.json({ ok: true });
+});
+
+// Moves one item into an album, or out of every album with albumId: null.
+// Cannot change `status` — see setMediaAlbum in worker/media/albums.js.
+media.put('/:key/album', async (c) => {
+  let body;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Request body must be valid JSON' }, 400);
+  }
+
+  const albumId = body.albumId === null || body.albumId === undefined
+    ? null
+    : Number(body.albumId);
+
+  const row = await setMediaAlbum(c.env.DB, c.req.param('key'), albumId);
+  if (row === null) {
+    return c.json({ error: `No media row found for key "${c.req.param('key')}".` }, 404);
+  }
+
+  await audit(c.env.DB, c.get('email'), 'media.album', c.req.param('key'));
+  return c.json({ media: row });
 });
 
 // Sets alt text and/or caption on an existing row. This is the only place
