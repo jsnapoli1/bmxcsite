@@ -46,6 +46,10 @@ export default function AdminApp() {
   const [me, setMe] = useState(null);
   const [error, setError] = useState(null);
   const [activePage, setActivePage] = useState(null);
+  // Drawer state, and only meaningful under 48rem — the sidebar layout
+  // ignores it entirely. Selecting a section closes it, since on a phone
+  // the nav covers the thing you just asked to see.
+  const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
     getMe().then(setMe).catch((err) => setError(err.message));
@@ -101,42 +105,63 @@ export default function AdminApp() {
   const activeContentPage = availablePages.find((page) => page.id === selected);
 
   return (
-    <main className="admin-shell">
+    <div className="admin-shell">
       <header className="admin-header">
-        <h1>Admin</h1>
+        <div className="admin-header__bar">
+          <h1>Admin</h1>
+          {navItems.length > 1 && (
+            <button
+              type="button"
+              className="admin-nav__toggle"
+              aria-expanded={navOpen}
+              aria-controls="admin-nav"
+              onClick={() => setNavOpen((open) => !open)}
+            >
+              {navOpen ? 'Close' : 'Sections'}
+            </button>
+          )}
+        </div>
         <p className="admin-identity">
           Signed in as {me.name ?? me.email}
           {me.isAdmin ? ' · Administrator' : ''}
         </p>
       </header>
 
-      {navItems.length > 1 && (
-        <nav className="admin-nav" aria-label="Admin sections">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={
-                item.id === selected ? 'admin-nav__link admin-nav__link--active' : 'admin-nav__link'
-              }
-              aria-current={item.id === selected ? 'page' : undefined}
-              onClick={() => setActivePage(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      )}
+      <div className="admin-layout">
+        {navItems.length > 1 && (
+          <nav
+            id="admin-nav"
+            className={navOpen ? 'admin-nav admin-nav--open' : 'admin-nav'}
+            aria-label="Admin sections"
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={
+                  item.id === selected ? 'admin-nav__link admin-nav__link--active' : 'admin-nav__link'
+                }
+                aria-current={item.id === selected ? 'page' : undefined}
+                onClick={() => { setActivePage(item.id); setNavOpen(false); }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        )}
 
-      {!selected && (
-        <p className="admin-notice">
-          You have not been given anything to edit yet. Ask a camp director
-          to add you to an area.
-        </p>
-      )}
+        <main className="admin-main">
+          {!selected && (
+            <p className="admin-notice">
+              You have not been given anything to edit yet. Ask a camp director
+              to add you to an area.
+            </p>
+          )}
 
-      {selected === 'people' && me.isAdmin && <Users currentEmail={me.email} />}
-      {activeContentPage && <activeContentPage.Component key={activeContentPage.id} />}
-    </main>
+          {selected === 'people' && me.isAdmin && <Users currentEmail={me.email} />}
+          {activeContentPage && <activeContentPage.Component key={activeContentPage.id} />}
+        </main>
+      </div>
+    </div>
   );
 }

@@ -67,3 +67,116 @@
   font-size: 0.925rem;
 }
 
+
+/* --- Layout ----------------------------------------------------------
+   Sidebar on desktop, drawer under 48rem. The nav stays in the DOM either
+   way — the narrow layout hides it with `display: none` rather than
+   unmounting it, so toggling never remounts the buttons or drops focus. */
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 13rem 1fr;
+  gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+  align-items: start;
+}
+
+/* Without this a wide table stretches the column instead of scrolling,
+   because a grid item's default min-width is auto, not zero. */
+.admin-main { min-width: 0; }
+
+.admin-header__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  position: sticky;
+  top: clamp(1.5rem, 1rem + 2vw, 3rem);
+  border-right: 1px solid var(--color-line);
+  padding-right: 0.75rem;
+}
+
+.admin-nav__link {
+  border: none;
+  border-left: 2px solid transparent;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.admin-nav__link:hover { color: var(--color-ink); }
+
+.admin-nav__link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.admin-nav__link--active {
+  color: var(--color-ink);
+  border-left-color: var(--color-primary);
+  background: var(--color-surface-sunken);
+}
+
+/* The drawer toggle exists only in the narrow layout. */
+.admin-nav__toggle {
+  display: none;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 2px;
+  background: var(--color-surface-raised);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+
+.admin-nav__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+@media (max-width: 48rem) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .admin-nav {
+    display: none;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--color-line);
+    padding: 0 0 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .admin-nav--open { display: flex; }
+
+  .admin-nav__link {
+    border-left: none;
+    border-bottom: 1px solid var(--color-line);
+    padding: 0.7rem 0.25rem;
+  }
+
+  .admin-nav__link--active {
+    border-left: none;
+    border-bottom-color: var(--color-primary);
+  }
+
+  .admin-nav__toggle { display: block; }
+}
+
+@media (max-width: 30rem) {
+  .admin-shell { padding: 1rem 0.875rem 2rem; }
+}
