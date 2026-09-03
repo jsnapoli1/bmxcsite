@@ -7,6 +7,7 @@ import Merch from './pages/Merch.jsx';
 import Media from './pages/Media.jsx';
 import Blog from './pages/Blog.jsx';
 import Design from './pages/Design.jsx';
+import Email from './pages/Email.jsx';
 import Store from './pages/Store.jsx';
 import { Busy, Failure } from './components/States.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
@@ -31,6 +32,10 @@ import { Busy, Failure } from './components/States.jsx';
 const PAGES = [
   { id: 'staff', label: 'Staff', permission: 'campinfo', Component: Staff },
   { id: 'faq', label: 'Questions & answers', permission: 'campinfo', Component: Faq },
+  // Staff @bmxc.camp forwarding addresses and the subscriber list. Under
+  // `campinfo` because handing someone a camp address is camp
+  // administration, which that permission already covers.
+  { id: 'email', label: 'Email', permission: 'campinfo', Component: Email },
   { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
   // The online store, served by a separate OpenShop worker and proxied
   // through worker/routes/shop.js. Shares the `merch` permission with the

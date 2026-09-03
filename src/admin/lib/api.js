@@ -151,3 +151,22 @@ export const deleteShopProduct = (id) =>
   request(`/shop/products/${encodeURIComponent(id)}`, { method: 'DELETE' });
 
 export const listShopCollections = () => request('/shop/collections');
+
+// --- Email ---------------------------------------------------------------
+// Staff @bmxc.camp forwarding addresses, and the subscriber list. No
+// announcement is sendable from here; see worker/email/subscribers.js.
+
+export const listAddresses = () => request('/email/addresses');
+
+export const createAddress = (input) =>
+  request('/email/addresses', { method: 'POST', body: JSON.stringify(input) });
+
+export const deleteAddress = (id) =>
+  request(`/email/addresses/${id}`, { method: 'DELETE' });
+
+export const listDestinations = () => request('/email/destinations');
+
+export const createDestination = (input) =>
+  request('/email/destinations', { method: 'POST', body: JSON.stringify(input) });
+
+export const listSubscribers = () => request('/email/subscribers');

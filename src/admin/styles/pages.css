@@ -366,3 +366,13 @@
   border-radius: 2px;
   background: var(--color-ink);
 }
+
+/* --- Email --------------------------------------------------------------
+   The fixed @bmxc.camp beside the local part. Aligned to the input's
+   bottom edge so the two read as one address rather than two fields. */
+.email-domain {
+  align-self: flex-end;
+  padding-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
