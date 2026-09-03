@@ -94,18 +94,20 @@ export default function Email() {
       <Failure message={error} />
 
       <form className="admin-invite" onSubmit={handleCreate}>
-        <label>
-          Camp address
-          <input
-            type="text"
-            name="local"
-            required
-            value={local}
-            placeholder="ken"
-            onChange={(event) => setLocal(event.target.value)}
-          />
-        </label>
-        <span className="email-domain">@bmxc.camp</span>
+        <div className="email-address-field">
+          <label>
+            Camp address
+            <input
+              type="text"
+              name="local"
+              required
+              value={local}
+              placeholder="ken"
+              onChange={(event) => setLocal(event.target.value)}
+            />
+          </label>
+          <span className="email-domain">@bmxc.camp</span>
+        </div>
         <label>
           Forwards to
           <input

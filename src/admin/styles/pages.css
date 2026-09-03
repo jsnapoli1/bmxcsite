@@ -368,11 +368,53 @@
 }
 
 /* --- Email --------------------------------------------------------------
-   The fixed @bmxc.camp beside the local part. Aligned to the input's
-   bottom edge so the two read as one address rather than two fields. */
+   The fixed @bmxc.camp beside the local part.
+
+   The label and its input are grouped so the suffix can sit against the
+   input's bottom edge and read as one address. Left to the parent's own
+   wrapping it drops to its own line at narrow widths, where it looks like
+   a stray heading rather than the end of the address above it. */
+.email-address-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  max-width: 100%;
+  /* This wrapper is the flex item of .admin-invite, so the row's width is
+     decided here. Left at the default `0 1 auto` it sizes to content and
+     shrinks the label inside it no matter what basis that label carries. */
+  flex: 1 1 20rem;
+}
+
+/* .admin-invite input carries min-width: 16rem, which together with the
+   suffix is wider than a phone.
+
+   The sizing goes on the label, not the input: the label is the flex item
+   of this row, and the input is a flex item of the label (which is itself
+   a column flex container). Setting a basis on the input therefore does
+   nothing to the row. A basis of 12rem that is free to shrink gives a
+   comfortable field on desktop and a narrow one on a phone, with the
+   suffix staying on the line either way. */
+.email-address-field label {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.email-address-field input {
+  min-width: 0;
+  width: 100%;
+}
+
 .email-domain {
-  align-self: flex-end;
   padding-bottom: 0.5rem;
   font-weight: 600;
   color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+
+/* .admin-invite already closes with a rule and .admin-subheading opens
+   with one, so the first heading after the form drew two lines with a gap
+   between them. One edge, not two. */
+.admin-invite + .admin-subheading {
+  border-top: none;
+  padding-top: 0;
 }
