@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
-  listMedia, updateMedia, publishMedia, unpublishMedia, deleteMedia,
+  listMedia, listAlbums, updateMedia, publishMedia, unpublishMedia, deleteMedia,
 } from '../lib/api.js';
 import UploadQueue from '../components/UploadQueue.jsx';
+import AlbumBar from '../components/AlbumBar.jsx';
 
 /**
  * Photo & video library. Private and public media are two visually distinct
@@ -27,6 +28,8 @@ export default function Media() {
   const [status, setStatus] = useState(null);
   const [pending, setPending] = useState(() => new Set());
   const [altDrafts, setAltDrafts] = useState({});
+  const [albums, setAlbums] = useState([]);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
 
   function markPending(key) {
     setPending((prev) => new Set(prev).add(key));
@@ -41,8 +44,12 @@ export default function Media() {
   }
 
   async function refresh() {
-    const { media } = await listMedia();
+    const [{ media }, { albums: albumRows }] = await Promise.all([
+      listMedia(),
+      listAlbums(),
+    ]);
     setItems(media);
+    setAlbums(albumRows);
     // Seed the alt-text draft inputs from the server's current values, but
     // only for keys not already being edited — otherwise a refresh() that
     // races an in-progress edit would clobber what the director just typed.
@@ -162,8 +169,14 @@ export default function Media() {
     );
   }
 
-  const privateItems = items.filter((item) => item.status === 'private');
-  const publicItems = items.filter((item) => item.status === 'public');
+  // An album is a filter over the one library, so this narrows what is
+  // shown without touching the private/public split below it.
+  const visible = selectedAlbum === null
+    ? items
+    : items.filter((item) => item.album_id === selectedAlbum);
+
+  const privateItems = visible.filter((item) => item.status === 'private');
+  const publicItems = visible.filter((item) => item.status === 'public');
 
   return (
     <section className="admin-section" aria-labelledby="media-heading">
@@ -179,6 +192,13 @@ export default function Media() {
 
       <UploadQueue
         onUploaded={() => refresh().catch((err) => setError(err.message))}
+      />
+
+      <AlbumBar
+        albums={albums}
+        selected={selectedAlbum}
+        onSelect={setSelectedAlbum}
+        onCreated={() => refresh().catch((err) => setError(err.message))}
       />
 
       <MediaGroup
@@ -235,13 +255,24 @@ function MediaGroup({
               <li className="media-row" key={item.key}>
                 <div className="media-row__preview">
                   {item.status === 'public' ? (
-                    <img
-                      src={`/media/${item.key}`}
-                      alt={item.alt_text ?? ''}
-                      width="120"
-                      height="120"
-                      loading="lazy"
-                    />
+                    item.content_type.startsWith('video/') ? (
+                      <video
+                        src={`/media/${item.key}`}
+                        controls
+                        preload="metadata"
+                        width="120"
+                        height="120"
+                        aria-label={item.alt_text ?? item.filename}
+                      />
+                    ) : (
+                      <img
+                        src={`/media/${item.key}`}
+                        alt={item.alt_text ?? ''}
+                        width="120"
+                        height="120"
+                        loading="lazy"
+                      />
+                    )
                   ) : (
                     <div className="media-row__placeholder" role="img" aria-label={`${item.filename}, private, cannot be previewed until published`}>
                       Private &mdash; cannot be

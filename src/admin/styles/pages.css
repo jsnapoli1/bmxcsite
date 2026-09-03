@@ -300,3 +300,69 @@
 
 .upload-queue__row--failed .upload-queue__state { color: var(--color-accent); }
 .upload-queue__row--done .upload-queue__state { color: var(--color-signal); }
+
+/* --- Albums ------------------------------------------------------------ */
+
+.album-bar {
+  margin: 1.25rem 0;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.album-bar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+/* Square-cornered, in keeping with the 2-6px radii used throughout — these
+   are filter buttons, not pills. */
+.album-chip {
+  border: 1px solid var(--color-line-strong);
+  border-radius: 2px;
+  background: var(--color-surface-raised);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
+.album-chip:hover { border-color: var(--color-ink); }
+
+.album-chip:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.album-chip--active {
+  border-color: var(--color-primary);
+  background: var(--color-surface-sunken);
+  color: var(--color-ink);
+}
+
+.album-chip__count {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.album-bar__create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+/* Sized to match the photo thumbnails exactly so a mixed library stays on
+   one grid. The dark fill is the video's own letterboxing, not a surface. */
+.media-row__preview video {
+  display: block;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+  background: var(--color-ink);
+}
