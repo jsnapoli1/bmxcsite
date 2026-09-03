@@ -1,0 +1,258 @@
+/* Per-page admin styling: reorder controls, staff/FAQ/merch bodies, the
+   media library and the blog list. */
+
+/* --- Reorder controls (OrderedList) ------------------------------------ */
+
+.ordered-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ordered-list__row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.ordered-list__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.ordered-list__move {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+  background: var(--color-surface-raised);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ordered-list__move:hover:not(:disabled) { border-color: var(--color-ink); }
+
+.ordered-list__move:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.ordered-list__move:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.ordered-list__body { flex: 1; min-width: 0; }
+
+/* --- Staff / FAQ / Merch item bodies ------------------------------------ */
+
+.staff-group,
+.faq-category,
+.merch-item,
+.merch-fact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+}
+
+.staff-group__header,
+.faq-category__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-line);
+  margin-bottom: 0.5rem;
+}
+
+.staff-group .ordered-list,
+.faq-category .ordered-list { grid-column: 1 / -1; }
+
+.staff-member,
+.faq-item {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.campinfo-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 40rem;
+}
+
+/* --- Media library ------------------------------------------------------
+   Private and public are two visually distinct, clearly labelled groups,
+   private first. The border colour (not a background gradient — none are
+   used in this design) is the only differentiator, kept subtle and
+   consistent with the ruled-row language used everywhere else. */
+
+.media-group {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--color-ink);
+}
+
+.media-group--private { border-top-color: var(--color-accent); }
+.media-group--public { border-top-color: var(--color-signal); }
+
+.media-group .admin-subheading {
+  margin: 0 0 0.75rem;
+  padding-top: 0;
+  border-top: none;
+}
+
+.media-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.media-row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.media-row__preview img {
+  display: block;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+}
+
+.media-row__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border: 1px dashed var(--color-line-strong);
+  border-radius: 2px;
+  background: var(--color-surface-sunken);
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.5rem;
+  line-height: 1.3;
+}
+
+.media-row__body { min-width: 0; }
+
+.media-row__filename {
+  margin: 0;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.media-row__meta {
+  margin: 0.2rem 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.media-row__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.media-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.media-row__publish-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.media-row__publish-reason {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+/* --- Blog ---------------------------------------------------------------- */
+
+.blog-status {
+  display: inline-block;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 2px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.blog-status--draft {
+  color: var(--color-ink-soft);
+  background: var(--color-surface-sunken);
+}
+
+.blog-status--published {
+  color: #fff;
+  background: var(--color-signal);
+  border-color: var(--color-signal);
+}
+
+.blog-body-textarea {
+  min-height: 16rem;
+  font-family: var(--font-mono);
+}
+
+/* --- Site design: links into the visual editor ------------------------ */
+
+.design-pages {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.design-pages__item {
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* A ruled row per page, the same shape the rest of the panel uses. */
+.design-pages__link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.25rem;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.design-pages__link:hover {
+  background: var(--color-surface-sunken);
+}
+
+.design-pages__link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.design-pages__label {
+  font-weight: 600;
+}
+
+.design-pages__path {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}

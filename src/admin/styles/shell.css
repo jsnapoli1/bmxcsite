@@ -1,0 +1,69 @@
+/* Admin panel. Same Field Guide direction as the public site: ruled rows,
+   no shadows, structure from weight and rules. */
+
+.admin-shell {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 1rem + 2vw, 3rem);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  min-height: 100vh;
+}
+
+.admin-header {
+  border-bottom: 2px solid var(--color-ink);
+  padding-bottom: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.admin-shell h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+  margin: 0;
+}
+
+.admin-identity {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.admin-section h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  margin: 0 0 0.25rem;
+}
+
+.admin-help,
+.admin-notice {
+  color: var(--color-muted);
+  font-size: 0.925rem;
+  max-width: 60ch;
+}
+
+.admin-error {
+  border-left: 3px solid var(--color-accent);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-sunken);
+  font-size: 0.925rem;
+}
+
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Draft / publish state -------------------------------------------- */
+
+.admin-status {
+  border-left: 3px solid var(--color-signal);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-sunken);
+  font-size: 0.925rem;
+}
+
