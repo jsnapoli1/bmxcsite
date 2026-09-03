@@ -37,3 +37,52 @@
   outline: 2px solid var(--color-primary);
   outline-offset: 1px;
 }
+
+/* --- Narrow screens ---------------------------------------------------
+   Person + five permission areas + role + actions is eight columns, which
+   cannot shrink to a phone. Below 48rem each row becomes its own ruled
+   block and every cell is labelled from `data-label`, so the header row is
+   no longer needed and is dropped from both sight and the accessibility
+   tree (`display: none` does both).
+
+   The markup does not change, so there is still only one table here. */
+
+@media (max-width: 48rem) {
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table th,
+  .admin-table td {
+    display: block;
+  }
+
+  .admin-table thead { display: none; }
+
+  .admin-table tr {
+    border-bottom: 2px solid var(--color-ink);
+    padding: 0.75rem 0;
+  }
+
+  .admin-table tbody th,
+  .admin-table td {
+    border-bottom: none;
+    padding: 0.3rem 0;
+  }
+
+  .admin-table tbody th {
+    font-size: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* The label sits inline with its value rather than above it: these are
+     short cells — a checkbox, a role name — and stacking them would double
+     each row's height for nothing. */
+  .admin-table td[data-label]::before {
+    content: attr(data-label);
+    display: inline-block;
+    min-width: 9rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-ink-soft);
+  }
+}

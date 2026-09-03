@@ -139,7 +139,7 @@ export default function Users({ currentEmail }) {
                 const key = `${user.email}:${area.key}`;
                 const isPending = pending.has(key);
                 return (
-                  <td key={area.key}>
+                  <td key={area.key} data-label={area.label}>
                     <input
                       type="checkbox"
                       checked={user.isAdmin || user.permissions[area.key]}
@@ -151,7 +151,7 @@ export default function Users({ currentEmail }) {
                   </td>
                 );
               })}
-              <td>{user.isAdmin ? 'Administrator' : 'Editor'}</td>
+              <td data-label="Role">{user.isAdmin ? 'Administrator' : 'Editor'}</td>
               <td>
                 {user.email !== currentEmail && (
                   <button
