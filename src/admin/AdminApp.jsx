@@ -8,6 +8,7 @@ import Media from './pages/Media.jsx';
 import Blog from './pages/Blog.jsx';
 import Design from './pages/Design.jsx';
 import Store from './pages/Store.jsx';
+import { Busy, Failure } from './components/States.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
 // below for why the tab stays hidden.
 
@@ -59,9 +60,7 @@ export default function AdminApp() {
     return (
       <main className="admin-shell">
         <h1>Admin</h1>
-        <p className="admin-notice">
-          We could not confirm your access. Try reloading the page.
-        </p>
+        <Failure message="We could not confirm your access. Try reloading the page." />
       </main>
     );
   }
@@ -69,7 +68,7 @@ export default function AdminApp() {
   if (!me) {
     return (
       <main className="admin-shell">
-        <p className="admin-notice" aria-busy="true">Loading…</p>
+        <Busy />
       </main>
     );
   }
