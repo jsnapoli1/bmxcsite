@@ -170,3 +170,19 @@ export const createDestination = (input) =>
   request('/email/destinations', { method: 'POST', body: JSON.stringify(input) });
 
 export const listSubscribers = () => request('/email/subscribers');
+
+// --- Face tagging --------------------------------------------------------
+// The roster and its consent record. Consent is what decides whether a
+// camper's name is ever sent to the tagging service; see
+// worker/faces/roster.js.
+
+export const listCampers = () => request('/faces/campers');
+
+export const saveCamper = (input) =>
+  request('/faces/campers', { method: 'POST', body: JSON.stringify(input) });
+
+export const recordConsent = (bib) =>
+  request(`/faces/campers/${encodeURIComponent(bib)}/consent`, { method: 'POST' });
+
+export const withdrawConsent = (bib) =>
+  request(`/faces/campers/${encodeURIComponent(bib)}/consent`, { method: 'DELETE' });

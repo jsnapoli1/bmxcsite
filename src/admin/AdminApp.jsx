@@ -8,6 +8,7 @@ import Media from './pages/Media.jsx';
 import Blog from './pages/Blog.jsx';
 import Design from './pages/Design.jsx';
 import Email from './pages/Email.jsx';
+import Faces from './pages/Faces.jsx';
 import Store from './pages/Store.jsx';
 import { Busy, Failure } from './components/States.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
@@ -42,6 +43,9 @@ const PAGES = [
   // tab above: same person, same area, different backend.
   { id: 'store', label: 'Store', permission: 'merch', Component: Store },
   { id: 'media', label: 'Photos & videos', permission: 'media', Component: Media },
+  // The camp roster and its consent record. Its own permission, not
+  // `media`: tagging asserts that a named child is in a photograph.
+  { id: 'faces', label: 'Face tagging', permission: 'faces', Component: Faces },
   { id: 'blog', label: 'Blog', permission: 'blog', Component: Blog },
   // Not an editor itself — a list of links into the visual editor, which
   // lives on the public site because it edits those pages in place.
