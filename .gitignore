@@ -7,3 +7,6 @@ dist
 # Local-only admin layout preview (see the comment inside it). Stubs the
 # Access-gated reads so the panel's layout can be viewed on localhost.
 admin-preview.html
+
+# Local browser-verification screenshots.
+.screenshots/
