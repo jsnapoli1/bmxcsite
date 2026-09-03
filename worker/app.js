@@ -8,6 +8,8 @@ import media, { publicMedia } from './routes/media.js';
 import blog, { publicBlog } from './routes/blog.js';
 import vedit, { publicVedit } from './routes/vedit.js';
 import shop, { publicShop } from './routes/shop.js';
+import emailRoutes from './routes/email.js';
+import subscribeRoutes from './routes/subscribe.js';
 
 const app = new Hono();
 
@@ -27,6 +29,7 @@ app.route('/api/admin/blog', blog);
 app.route('/api/admin/vedit', vedit);
 // Proxied to the OpenShop worker; see worker/routes/shop.js.
 app.route('/api/admin/shop', shop);
+app.route('/api/admin/email', emailRoutes);
 
 // Deliberately a different prefix, NOT under /api/admin/*: the public site
 // must be able to read published content/media/blog with no Access token
@@ -39,6 +42,11 @@ app.route('/api/admin/shop', shop);
 app.route('/api/content/blog', publicBlog);
 app.route('/api/vedit', publicVedit);
 app.route('/api/shop', publicShop);
+// Public, unauthenticated on purpose: a parent subscribing has no
+// account, and an unsubscribe link that required signing in would not be
+// an unsubscribe link. Mounted outside /api/admin/*, so requireAuth
+// above does not apply.
+app.route('/api', subscribeRoutes);
 app.route('/api/content', publicContent);
 app.route('/media', publicMedia);
 
