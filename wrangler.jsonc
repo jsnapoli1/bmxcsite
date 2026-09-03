@@ -28,7 +28,17 @@
     // The OpenShop worker backing the merch store. Its admin password is a
     // secret (SHOP_ADMIN_PASSWORD), not a var — see worker/shop/client.js.
     "SHOP_ORIGIN": "https://shop.bmxc.camp",
-    "POLICY_AUD": "db4848e077aabcf690adc8aad5b389359a9fe034d9c924109774764e6d850efe"
+    "POLICY_AUD": "db4848e077aabcf690adc8aad5b389359a9fe034d9c924109774764e6d850efe",
+    // The account that owns Email Routing's destination addresses. Not a
+    // secret — it appears in every dashboard URL — but it belongs in
+    // config rather than beside the zone id in routing-client.js, because
+    // unlike the zone it is not specific to bmxc.camp.
+    //
+    // CF_API_TOKEN is a secret, not a var: `wrangler secret put
+    // CF_API_TOKEN`. It needs Zone / Email Routing / Edit on bmxc.camp
+    // plus Account / Email Routing Addresses / Edit. The deploy token is
+    // zone:read and cannot do this.
+    "CF_ACCOUNT_ID": "9569781c361a80bd0b96dedbac0aca6d"
   },
 
   // Custom domains. Declared here rather than set in the dashboard so that
