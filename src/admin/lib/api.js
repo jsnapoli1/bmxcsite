@@ -92,6 +92,26 @@ export const unpublishMedia = (key) =>
 export const deleteMedia = (key) =>
   request(`/media/${encodeURIComponent(key)}`, { method: 'DELETE' });
 
+// --- Albums --------------------------------------------------------------
+// An album groups media; it never decides what is public. See
+// worker/media/albums.js.
+
+export const listAlbums = () => request('/media/albums');
+
+export const createAlbum = (input) =>
+  request('/media/albums', { method: 'POST', body: JSON.stringify(input) });
+
+export const updateAlbum = (id, input) =>
+  request(`/media/albums/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+
+export const deleteAlbum = (id) => request(`/media/albums/${id}`, { method: 'DELETE' });
+
+export const setMediaAlbum = (key, albumId) =>
+  request(`/media/${encodeURIComponent(key)}/album`, {
+    method: 'PUT',
+    body: JSON.stringify({ albumId }),
+  });
+
 // --- Blog ----------------------------------------------------------------
 
 export const listPosts = () => request('/blog');
