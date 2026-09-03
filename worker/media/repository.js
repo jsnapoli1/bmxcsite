@@ -19,17 +19,33 @@
  * When a check is ambiguous, deny.
  */
 
-/** Largest upload this repository will accept, in bytes. */
+/** Largest image this repository will accept, in bytes. */
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
+/**
+ * Largest video, in bytes. Separate and larger because a 10MB ceiling
+ * makes video unusable, and because the two limits should be able to move
+ * independently — a change to what a photograph may weigh should not
+ * silently change what a video may weigh.
+ */
+export const MAX_UPLOAD_BYTES_VIDEO = 200 * 1024 * 1024;
+
 /** Content types this repository will accept, matched against magic bytes. */
-export const ALLOWED_TYPES = Object.freeze(['image/jpeg', 'image/png', 'image/webp']);
+export const ALLOWED_TYPES = Object.freeze([
+  'image/jpeg', 'image/png', 'image/webp', 'video/mp4',
+]);
 
 const EXTENSIONS_BY_TYPE = Object.freeze({
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
+  'video/mp4': 'mp4',
 });
+
+/** Whether a validated content type is video rather than a still image. */
+export function isVideo(contentType) {
+  return String(contentType).startsWith('video/');
+}
 
 const PRIVATE_PREFIX = 'private/';
 const PUBLIC_PREFIX = 'public/';
@@ -62,6 +78,7 @@ const JPEG_SIGNATURE = [0xff, 0xd8, 0xff];
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47];
 const RIFF_SIGNATURE = [0x52, 0x49, 0x46, 0x46]; // "RIFF"
 const WEBP_SIGNATURE = [0x57, 0x45, 0x42, 0x50]; // "WEBP"
+const FTYP_SIGNATURE = [0x66, 0x74, 0x79, 0x70]; // 'ftyp'
 
 /**
  * Sniffs `bytes` against every known signature and returns the content
@@ -75,6 +92,10 @@ function sniffContentType(bytes) {
   if (startsWith(bytes, RIFF_SIGNATURE) && startsWith(bytes, WEBP_SIGNATURE, 8)) {
     return 'image/webp';
   }
+  // MP4: a 'ftyp' box at offset 4. The four bytes before it are the box
+  // length, which varies, so the brand box is what identifies the
+  // container rather than a fixed prefix.
+  if (startsWith(bytes, FTYP_SIGNATURE, 4)) return 'video/mp4';
   return null;
 }
 
@@ -85,21 +106,25 @@ function sniffContentType(bytes) {
  * invalid upload by forgetting to check a return value.
  */
 function assertValidUpload(bytes, contentType) {
-  if (bytes.byteLength > MAX_UPLOAD_BYTES) {
-    throw new UploadError(
-      `File is ${bytes.byteLength} bytes, over the ${MAX_UPLOAD_BYTES}-byte limit.`,
-      413,
-    );
-  }
-
-  // Strict membership check — only these three literal strings pass.
+  // Strict membership check first — only these literal strings pass, and
+  // the size limit below is chosen from the declared type, so an unknown
+  // type must be rejected as unknown rather than measured against a limit
+  // picked for it.
   if (!ALLOWED_TYPES.includes(contentType)) {
     throw new UploadError(`Content type "${contentType}" is not allowed.`, 400);
   }
 
+  const limit = isVideo(contentType) ? MAX_UPLOAD_BYTES_VIDEO : MAX_UPLOAD_BYTES;
+  if (bytes.byteLength > limit) {
+    throw new UploadError(
+      `File is ${bytes.byteLength} bytes, over the ${limit}-byte limit.`,
+      413,
+    );
+  }
+
   const actualType = sniffContentType(bytes);
   if (actualType === null) {
-    throw new UploadError('File content does not match any allowed image type.', 400);
+    throw new UploadError('File content does not match any allowed type.', 400);
   }
   if (actualType !== contentType) {
     throw new UploadError(
