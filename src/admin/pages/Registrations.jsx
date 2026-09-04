@@ -91,8 +91,14 @@ export default function Registrations() {
             <>
               <p className="admin-help">
                 {rows.length} {rows.length === 1 ? 'registration' : 'registrations'}.
-                {' '}
-                <a href="/api/admin/registrations/export.csv" download>Download CSV</a>
+              </p>
+              <p>
+                {/* Styled like the Email tab's export rather than left as a
+                    bare anchor: the browser default is #00EE blue, which is
+                    not in this palette. */}
+                <a className="admin-add" href="/api/admin/registrations/export.csv" download>
+                  Download CSV
+                </a>
               </p>
               <table className="admin-table">
                 <thead>
