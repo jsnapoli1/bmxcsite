@@ -54,8 +54,8 @@ export default function RegistrationDetails({ id = 'registration.details', ...re
           Email the directors — they answer everything.
         </Editable>
         <div className="registration-cta__actions">
-          <Button href="https://bluemountainxccamp.com/registration.html" variant="primary" size="lg">
-            Register at bluemountainxccamp.com
+          <Button to="/register" variant="primary" size="lg">
+            Register for camp
           </Button>
           <Button to="/contact" variant="outline" size="lg">Contact the directors</Button>
         </div>
