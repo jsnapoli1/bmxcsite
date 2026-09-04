@@ -186,3 +186,12 @@ export const recordConsent = (bib) =>
 
 export const withdrawConsent = (bib) =>
   request(`/faces/campers/${encodeURIComponent(bib)}/consent`, { method: 'DELETE' });
+
+// --- Registrations -------------------------------------------------------
+// Payment state is not writable here: Stripe and the webhook own it.
+
+export const listRegistrations = (status = 'confirmed') =>
+  request(`/registrations?status=${encodeURIComponent(status)}`);
+
+export const cancelRegistration = (reference) =>
+  request(`/registrations/${encodeURIComponent(reference)}/cancel`, { method: 'POST' });

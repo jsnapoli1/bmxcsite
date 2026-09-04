@@ -9,6 +9,7 @@ import Blog from './pages/Blog.jsx';
 import Design from './pages/Design.jsx';
 import Email from './pages/Email.jsx';
 import Faces from './pages/Faces.jsx';
+import Registrations from './pages/Registrations.jsx';
 import Store from './pages/Store.jsx';
 import { Busy, Failure } from './components/States.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
@@ -36,6 +37,9 @@ const PAGES = [
   // Staff @bmxc.camp forwarding addresses and the subscriber list. Under
   // `campinfo` because handing someone a camp address is camp
   // administration, which that permission already covers.
+  // Who is coming to camp. Its own permission — guardians' contact
+  // details and children's names, not site copy.
+  { id: 'registrations', label: 'Registrations', permission: 'registrations', Component: Registrations },
   { id: 'email', label: 'Email', permission: 'campinfo', Component: Email },
   { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
   // The online store, served by a separate OpenShop worker and proxied

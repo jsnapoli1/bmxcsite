@@ -6,7 +6,7 @@
  * on any page — granting it through campinfo would silently extend that
  * editor's reach across merch and blog pages too.
  */
-export const AREAS = Object.freeze(['blog', 'media', 'merch', 'campinfo', 'design', 'faces']);
+export const AREAS = Object.freeze(['blog', 'media', 'merch', 'campinfo', 'design', 'faces', 'registrations']);
 
 /**
  * Load an admin user by email.
@@ -33,6 +33,7 @@ export async function loadUser(db, email) {
       campinfo: row.can_campinfo === 1,
       design: row.can_design === 1,
       faces: row.can_faces === 1,
+      registrations: row.can_registrations === 1,
     },
     isAdmin: row.is_admin === 1,
   };

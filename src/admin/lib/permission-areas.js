@@ -18,6 +18,7 @@ export const AREAS = Object.freeze([
   { key: 'campinfo', label: 'Camp info' },
   { key: 'design', label: 'Site design' },
   { key: 'faces', label: 'Face tagging' },
+  { key: 'registrations', label: 'Registrations' },
 ]);
 
 /** Every area off — the starting state for a newly invited user. */

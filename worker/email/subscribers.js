@@ -109,13 +109,17 @@ export async function listSubscribers(db, { status }) {
 }
 
 /**
- * A CSV of the list.
+ * A CSV of rows.
  *
  * Fields beginning = + - @ are prefixed with an apostrophe: Excel and
  * Sheets execute those as formulas on open, and this file exists to be
  * opened in exactly those programs.
+ *
+ * `columns` defaults to the subscriber shape. It is a parameter so the
+ * registrations export can reuse this escaping rather than grow a second
+ * copy of it — the formula guard is the part worth having in one place.
  */
-export function toCsv(rows) {
+export function toCsv(rows, { columns = ['email', 'confirmed_at'] } = {}) {
   const escape = (value) => {
     const text = String(value ?? '');
     const guarded = /^[=+\-@]/.test(text) ? `'${text}` : text;
@@ -123,7 +127,7 @@ export function toCsv(rows) {
   };
 
   return [
-    'email,confirmed_at',
-    ...rows.map((row) => `${escape(row.email)},${escape(row.confirmed_at ?? '')}`),
+    columns.join(','),
+    ...rows.map((row) => columns.map((column) => escape(row[column])).join(',')),
   ].join('\n');
 }
