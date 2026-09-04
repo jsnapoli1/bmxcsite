@@ -249,8 +249,8 @@ so no redirect, so `/merch` stays as it is until real keys are added.
 
 ## Admin panel
 
-Six grantable areas: blog, media, merch, campinfo, design, faces. The
-list lives in `worker/auth/permissions.js` and is mirrored with labels in
+Seven grantable areas: blog, media, merch, campinfo, design, faces,
+registrations. The list lives in `worker/auth/permissions.js` and is mirrored with labels in
 `src/admin/lib/permission-areas.js`; a test cross-checks both directions.
 
 **`worker/routes/users.js` derives its columns from `AREAS`.** It used to
@@ -328,6 +328,52 @@ mint their own phantom identity — that failure once turned two runners
 into eight identities. The face half is well evidenced (~166,000 pairs,
 zero false accepts); the bib half was measured on adult road races, and
 cross-country with children is harder.
+
+## Registration
+
+Custom, replacing the old site's handoff to **CampNetwork**
+(`portal.campnetwork.com/Register/Register.php?camp_id=398522`, camp_id
+398522 — still live, and the fallback until this is trusted).
+
+Four steps at `/register`, each saved before advancing, the reference
+kept in sessionStorage so a reload resumes. `src/lib/pricing.js` is the
+one place money is decided: integer cents, dates compared in **UTC** so a
+tier boundary cannot shift with the timezone the worker runs in.
+
+**The client never sets a price.** `repository.js` drops `status`,
+`total_cents` and `deposit_paid_cents` from any draft write, and the
+server recomputes the quote when creating the Checkout session. Three
+tests pin it.
+
+**Only the Stripe webhook confirms a registration.** Signature verified
+against the raw bytes (a re-serialised object is not the signed
+payload), constant-time compared, timestamped against replay, and
+idempotent via `UNIQUE(stripe_session_id)` — Stripe retries until
+acknowledged. An event naming an unknown reference is acknowledged, not
+errored, or Stripe retries forever.
+
+`quote()` returns **null outside Jan 1 – Jun 30**, and the API passes
+that through as `registrationOpen: false` rather than inventing a tier.
+Tests pin the clock with fake timers; without that they pass only half
+the year.
+
+Confirming writes a `campers` row with a `reg-<reference>` placeholder
+bib, carrying photo consent exactly as the guardian gave it. A director
+renames the bib in Face tagging once numbers are handed out.
+
+Needs `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Without them
+checkout answers 503 and the page says so; drafts still save.
+
+**Health data is not stored yet, and HIPAA is not the reason.** An
+earlier version of this file said Cloudflare's Enterprise-only BAA
+blocked it. That was wrong: HIPAA binds covered entities — health plans,
+clearinghouses, and providers billing insurance electronically — and a
+camp collecting forms from parents is none of those. PA (camp is in
+Poyntelle) regulates camps for sanitation only, with no health-record
+requirements; NY's 10 NYCRR 7-2.8 would apply had the camp been located
+there. What does apply is PA's breach-notification act, where
+**encryption is the safe harbour** — which argues for encrypting the
+registration data already stored, not just future health fields.
 
 ## Gotchas
 
