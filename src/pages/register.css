@@ -5,7 +5,11 @@
   background: var(--color-surface);
   color: var(--color-ink);
   min-height: 100vh;
-  padding: clamp(1.5rem, 1rem + 3vw, 4rem) clamp(1rem, 0.5rem + 2vw, 2rem);
+  /* The top value clears the fixed site header, matching the same clamp
+     .page-header uses. Anything smaller and the title renders underneath
+     the nav — the header is position: fixed and 85px tall. */
+  padding: clamp(7rem, 12vw, 9rem) clamp(1rem, 0.5rem + 2vw, 2rem)
+           clamp(2.5rem, 5vw, 3.5rem);
 }
 
 .register__inner {

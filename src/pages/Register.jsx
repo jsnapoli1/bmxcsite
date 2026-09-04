@@ -379,11 +379,23 @@ export default function Register() {
                 </div>
               </>
             ) : (
-              <p className="register__notice">
-                Registration is closed for this year, so there is nothing to
-                pay yet. We have kept what you filled in
-                {reference ? ` under reference ${reference}` : ''}.
-              </p>
+              <>
+                <p className="register__notice">
+                  Registration is closed for this year, so there is nothing to
+                  pay yet. We have kept what you filled in
+                  {reference ? ` under reference ${reference}` : ''}.
+                </p>
+                {/* Without this there is no way back off the last step, and
+                    someone who mistyped a name is stranded. */}
+                <div className="register__actions">
+                  <button
+                    type="button" className="register__back"
+                    onClick={() => setStep(2)}
+                  >
+                    Back
+                  </button>
+                </div>
+              </>
             )}
 
             {reference && (
