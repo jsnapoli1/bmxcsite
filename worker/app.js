@@ -11,6 +11,7 @@ import shop, { publicShop } from './routes/shop.js';
 import emailRoutes from './routes/email.js';
 import subscribeRoutes from './routes/subscribe.js';
 import facesRoutes from './routes/faces.js';
+import registrationRoutes from './routes/registration.js';
 
 const app = new Hono();
 
@@ -51,6 +52,9 @@ app.route('/api/shop', publicShop);
 // an unsubscribe link. Mounted outside /api/admin/*, so requireAuth
 // above does not apply.
 app.route('/api', subscribeRoutes);
+// Public: a guardian filling in a registration has no account. The
+// reference in the URL is the credential.
+app.route('/api/registration', registrationRoutes);
 app.route('/api/content', publicContent);
 app.route('/media', publicMedia);
 
