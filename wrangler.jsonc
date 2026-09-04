@@ -7,7 +7,23 @@
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+
+    // Without this, a *navigation* to a Worker route never reaches the
+    // Worker. With not_found_handling set and a compatibility date past
+    // 2025-04-01, Cloudflare answers any request carrying
+    // `Sec-Fetch-Mode: navigate` with index.html — which browsers attach
+    // to every address-bar visit and every link click. React Router then
+    // has no matching route and renders "Page not found".
+    //
+    // That is how the email confirmation link shipped broken: curl never
+    // navigates, so it saw the Worker's real answer and reported 200,
+    // while every person who clicked the link in their inbox got a 404.
+    //
+    // Listing the API paths here opts them out of that Sec-Fetch-Mode
+    // interpretation. Everything else keeps asset-first routing, so the
+    // SPA still handles its own client-side routes.
+    "run_worker_first": ["/api/*", "/media/*"]
   },
   "d1_databases": [
     {
