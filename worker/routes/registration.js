@@ -16,6 +16,8 @@ import {
   RegistrationError,
 } from '../registration/repository.js';
 import { quote } from '../../src/lib/pricing.js';
+import { recordPayment } from '../registration/repository.js';
+import { createCheckoutSession, verifyWebhook, StripeError } from '../registration/stripe.js';
 
 const registration = new Hono();
 
@@ -85,6 +87,70 @@ registration.get('/:reference', async (c) => {
   const row = await getByReference(c.env.DB, c.req.param('reference'));
   if (row === null) return c.json({ error: 'No such registration.' }, 404);
   return withQuote(c, row, await priceFor(c.env.DB, row));
+});
+
+registration.post('/:reference/checkout', async (c) => {
+  if (!c.env.STRIPE_SECRET_KEY) {
+    return c.json({
+      error: 'Online payment is not set up yet. Please contact the camp directors.',
+    }, 503);
+  }
+
+  const row = await getByReference(c.env.DB, c.req.param('reference'));
+  if (row === null) return c.json({ error: 'No such registration.' }, 404);
+  if (row.status !== 'draft') return c.json({ error: 'This registration is already paid.' }, 409);
+
+  const priced = await priceFor(c.env.DB, row);
+  if (priced === null) return c.json({ error: 'Registration is closed for this year.' }, 400);
+
+  try {
+    const session = await createCheckoutSession(c.env, {
+      registration: row,
+      quote: priced,
+      origin: new URL(c.req.url).origin,
+    });
+    return c.json({ url: session.url });
+  } catch (error) {
+    if (error instanceof StripeError) return c.json({ error: error.message }, error.status);
+    throw error;
+  }
+});
+
+/**
+ * The only writer of paid state.
+ *
+ * Reads the raw body before parsing: the signature is over bytes, and
+ * re-serialising a parsed object does not reproduce them.
+ */
+registration.post('/webhook', async (c) => {
+  const rawBody = await c.req.text();
+
+  let event;
+  try {
+    event = await verifyWebhook(
+      c.req.header('stripe-signature'),
+      rawBody,
+      c.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch (error) {
+    if (error instanceof StripeError) return c.json({ error: error.message }, error.status);
+    throw error;
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    await recordPayment(c.env.DB, {
+      reference: session.metadata?.reference,
+      sessionId: session.id,
+      paymentIntent: session.payment_intent,
+      amountCents: session.amount_total,
+    });
+  }
+
+  // Always acknowledge a well-signed event, including one naming a
+  // registration we do not have. Returning an error would make Stripe
+  // retry something that can never succeed.
+  return c.json({ received: true });
 });
 
 export default registration;
