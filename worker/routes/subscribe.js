@@ -12,6 +12,7 @@
 import { Hono } from 'hono';
 import { subscribe, confirm, unsubscribe, SubscriberError } from '../email/subscribers.js';
 import { confirmationEmail } from '../email/confirmation.js';
+import { wantsHtml, resultPage } from '../email/pages.js';
 
 const routes = new Hono();
 
@@ -66,15 +67,42 @@ routes.post('/subscribe', async (c) => {
   return c.json(SAME_ANSWER);
 });
 
+/**
+ * Answers HTML to a browser and JSON to anything else.
+ *
+ * The HTML branch is not decoration. With
+ * `not_found_handling: "single-page-application"`, the static-asset layer
+ * answers a navigation it does not recognise with index.html, and React
+ * Router renders "Page not found" — so a JSON-only route is a 404 to
+ * every person who clicks the link in their email, while curl reports 200
+ * and looks healthy. That is how this shipped broken once.
+ */
+function answer(c, { title, message }) {
+  if (wantsHtml(c.req.raw)) {
+    return c.html(resultPage({ title, body: message }));
+  }
+  return c.json({ ok: true, message });
+}
+
 routes.get('/subscribe/confirm', async (c) => {
   await confirm(c.env.DB, c.req.query('token') ?? '');
-  // Same answer whether or not the token was real.
-  return c.json({ ok: true, message: 'You are subscribed. Thanks!' });
+  // Same answer whether or not the token was real — an unknown token must
+  // not reveal whether that address is on the list, and someone clicking
+  // an older email should not get an alarming page.
+  return answer(c, {
+    title: 'You are on the list',
+    message: 'Thanks for confirming. We will send camp news now and then, '
+      + 'and every email has a link to stop.',
+  });
 });
 
 routes.get('/unsubscribe', async (c) => {
   await unsubscribe(c.env.DB, c.req.query('token') ?? '');
-  return c.json({ ok: true, message: 'You will not get any more email from us.' });
+  return answer(c, {
+    title: 'You are unsubscribed',
+    message: 'You will not get any more email from us. If that was a '
+      + 'mistake, you can sign up again any time.',
+  });
 });
 
 export default routes;
