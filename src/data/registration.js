@@ -2,18 +2,29 @@
 
 export const BASE_PRICE = 655;
 
+/**
+ * `window` is the prose shown on the page; `from`/`to` are the same dates
+ * as 'MM-DD' so src/lib/pricing.js can compare them. Both are kept in
+ * step by hand — a test pins that every tier has both.
+ */
 export const PRICE_TIERS = [
-  { name: 'Early Bird', window: 'Jan 1 – Feb 28', discount: 100, price: BASE_PRICE - 100, highlight: true },
-  { name: 'Full Rate', window: 'Mar 1 – Apr 30', discount: 55, price: BASE_PRICE - 55, highlight: false },
-  { name: 'Late Rate', window: 'May 1 – Jun 30', discount: 0, price: BASE_PRICE, highlight: false },
+  { name: 'Early Bird', window: 'Jan 1 – Feb 28', from: '01-01', to: '02-28', discount: 100, price: BASE_PRICE - 100, highlight: true },
+  { name: 'Full Rate', window: 'Mar 1 – Apr 30', from: '03-01', to: '04-30', discount: 55, price: BASE_PRICE - 55, highlight: false },
+  { name: 'Late Rate', window: 'May 1 – Jun 30', from: '05-01', to: '06-30', discount: 0, price: BASE_PRICE, highlight: false },
 ];
 
 export const BUS_ROUTES = [
-  { region: 'New Jersey', stops: 'Rockaway & Woodbridge', price: 100 },
-  { region: 'New York', stops: 'Buffalo, Rochester & Syracuse', price: 125 },
+  { key: 'nj', region: 'New Jersey', stops: 'Rockaway & Woodbridge', price: 100 },
+  { key: 'ny', region: 'New York', stops: 'Buffalo, Rochester & Syracuse', price: 125 },
 ];
 
 export const DEPOSIT = 250;
+
+/**
+ * Off each registration after the first sharing a guardian email. Stated
+ * in PAYMENT_NOTES as prose; this is the number pricing.js applies.
+ */
+export const SIBLING_DISCOUNT = 50;
 
 export const PAYMENT_NOTES = [
   'The $250 deposit is non-refundable and guarantees your spot at BMXC.',
