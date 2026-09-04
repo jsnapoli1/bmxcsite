@@ -20,6 +20,12 @@
   "kv_namespaces": [
     { "binding": "CONTENT", "id": "e2441d00da964c31802c92de3e627a1b" }
   ],
+  // The confirmation email for newsletter double opt-in — the only mail
+  // this worker sends, and transactional: the recipient asked for it
+  // seconds earlier. Announcements are not sendable from here; Cloudflare
+  // Email Service is transactional-only. See worker/email/subscribers.js.
+  "send_email": [{ "name": "EMAIL" }],
+
   "r2_buckets": [
     { "binding": "MEDIA", "bucket_name": "bmxc-media" }
   ],
