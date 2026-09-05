@@ -22,15 +22,6 @@ import { createCheckoutSession, verifyWebhook, StripeError } from '../registrati
 const registration = new Hono();
 
 /**
- * Hostnames the development clock override is honoured on.
- *
- * An exact-match set, not a substring test: `localhost.bmxc.camp` is a
- * hostname an attacker can own, and `includes('localhost')` would accept
- * it.
- */
-const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '0.0.0.0']);
-
-/**
  * "Now", as the pricing module should see it.
  *
  * Registration runs January to June, so for half the year the priced path
@@ -38,16 +29,22 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '0.0.0.0']);
  * this repo's real bugs get found. `REGISTRATION_TODAY` moves the clock
  * for local development.
  *
- * Two locks, because a var that reprices the camp is worth being careful
- * about: it must be set explicitly, AND the request must come from a
- * local hostname. Setting it on bmxc.camp does nothing.
+ * Two locks, and neither is the hostname. `wrangler dev` rewrites the
+ * request URL to the configured route host, so a Worker running on
+ * localhost sees `bmxc.camp` and a hostname check can never pass locally
+ * — it made this override useless for the one job it has.
+ *
+ * Instead both vars must be set, and `DEV_MODE` is deliberately absent
+ * from wrangler.jsonc: it can only come from `.dev.vars`, which is
+ * gitignored and never deployed. A production Worker has no way to
+ * acquire it short of someone adding it to the config on purpose.
  */
 function now(c) {
   const override = c.env.REGISTRATION_TODAY;
   if (!override) return new Date();
 
-  if (!LOCAL_HOSTS.has(new URL(c.req.url).hostname)) {
-    console.error('REGISTRATION_TODAY is set on a non-local host and was ignored.');
+  if (c.env.DEV_MODE !== 'true') {
+    console.error('REGISTRATION_TODAY ignored: DEV_MODE is not set.');
     return new Date();
   }
 
@@ -143,10 +140,16 @@ registration.post('/:reference/checkout', async (c) => {
   if (priced === null) return c.json({ error: 'Registration is closed for this year.' }, 400);
 
   try {
+    // SITE_ORIGIN when set, otherwise the request's own origin. Needed
+    // because `wrangler dev` rewrites the request URL to the configured
+    // route host, so locally the origin is https://bmxc.camp and Stripe
+    // would send a developer back to production after paying.
+    const origin = c.env.SITE_ORIGIN || new URL(c.req.url).origin;
+
     const session = await createCheckoutSession(c.env, {
       registration: row,
       quote: priced,
-      origin: new URL(c.req.url).origin,
+      origin,
     });
     return c.json({ url: session.url });
   } catch (error) {

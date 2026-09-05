@@ -42,6 +42,8 @@ export default function Register() {
   const [registration, setRegistration] = useState(null);
   const [quote, setQuote] = useState(null);
   const [open, setOpen] = useState(true);
+  // Set when Stripe redirects back after a successful payment.
+  const [paid, setPaid] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [fields, setFields] = useState({
@@ -55,6 +57,20 @@ export default function Register() {
   // Resume an unfinished registration. A guardian who closed the tab
   // should not have to type it all again.
   useEffect(() => {
+    // Stripe sends the guardian back here with ?paid=<reference>. Without
+    // this the page would try to resume a draft that is now confirmed,
+    // clear the stored reference, and show an empty step 1 — so a parent
+    // who just paid would be looking at a blank form.
+    const params = new URLSearchParams(window.location.search);
+    const justPaid = params.get('paid');
+    if (justPaid) {
+      setPaid(justPaid);
+      sessionStorage.removeItem(STORAGE_KEY);
+      // Drop the query so a refresh does not keep re-announcing it.
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
     const saved = sessionStorage.getItem(STORAGE_KEY);
     if (!saved) return;
     api(`/${saved}`)
@@ -133,6 +149,28 @@ export default function Register() {
       setError(err.message);
       setBusy(false);
     }
+  }
+
+  if (paid) {
+    return (
+      <main className="register">
+        <div className="register__inner">
+          <h1 className="register__title">You are registered</h1>
+          <p className="register__notice">
+            Your deposit is paid and your camper&rsquo;s place is held.
+            Stripe has emailed you a receipt.
+          </p>
+          <p className="register__hint">
+            Your reference is <strong>{paid}</strong>. Keep it if you need to
+            ring the camp about this registration. The balance is due at the
+            end of May.
+          </p>
+          <div className="register__actions">
+            <a className="register__next" href="/">Back to the camp site</a>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   return (
