@@ -56,6 +56,7 @@ const WRITABLE = {
   busRoute: 'bus_route',
   shirtSize: 'shirt_size',
   photoConsent: 'photo_consent',
+  insurance: 'insurance',
 };
 
 /**
@@ -68,9 +69,10 @@ function writableFields(fields) {
   const out = {};
   for (const [key, column] of Object.entries(WRITABLE)) {
     if (fields[key] === undefined) continue;
-    out[column] = key === 'photoConsent'
-      // Only a literal true consents. A truthy string must not grant
-      // consent on a family's behalf.
+    // Only a literal true sets either flag. A truthy string must not
+    // consent on a family's behalf, nor buy $50 of cover they did not ask
+    // for. Same rule as isAdmin in worker/routes/users.js.
+    out[column] = (key === 'photoConsent' || key === 'insurance')
       ? (fields[key] === true ? 1 : 0)
       : fields[key];
   }

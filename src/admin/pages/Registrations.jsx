@@ -40,10 +40,21 @@ export default function Registrations() {
   }, [status]);
 
   async function handleCancel(row) {
+    // Name what the family is owed. Refunds are issued by hand in Stripe,
+    // so this screen is the only place the policy and the money meet — a
+    // director should not have to remember who bought cover.
+    const owed = row.insurance === 1
+      ? `They bought cancellation cover, so every camp fee is refundable `
+        + `up to the first day of camp: ${money(row.deposit_paid_cents)} paid `
+        + `so far. The $50 cover itself is not refunded.`
+      : `They did not buy cancellation cover, so the ordinary policy `
+        + `applies: the deposit is not refundable, and nothing is refunded `
+        + `from July 1.`;
+
     const confirmed = window.confirm(
-      `Cancel ${row.camper_name}'s registration (${row.reference})? `
-      + 'This does not refund anything — refunds are handled in Stripe, '
-      + 'and the camp’s policy on the deposit still applies.',
+      `Cancel ${row.camper_name}'s registration (${row.reference})?\n\n`
+      + `${owed}\n\n`
+      + 'This does not move any money. Issue the refund in Stripe.',
     );
     if (!confirmed) return;
 
@@ -108,6 +119,7 @@ export default function Registrations() {
                     <th scope="col">Bus</th>
                     <th scope="col">Paid</th>
                     <th scope="col">Balance</th>
+                    <th scope="col">Cover</th>
                     <th scope="col">Tagging</th>
                     <th scope="col"><span className="visually-hidden">Actions</span></th>
                   </tr>
@@ -126,6 +138,9 @@ export default function Registrations() {
                       <td data-label="Bus">{row.bus_route ? row.bus_route.toUpperCase() : 'Own transport'}</td>
                       <td data-label="Paid">{money(row.deposit_paid_cents)}</td>
                       <td data-label="Balance">{money(row.balance_due_cents)}</td>
+                      <td data-label="Cover">
+                        {row.insurance === 1 ? 'Refundable' : 'No cover'}
+                      </td>
                       <td data-label="Tagging">
                         {row.photo_consent === 1 ? 'Allowed' : 'No consent'}
                       </td>

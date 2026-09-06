@@ -74,6 +74,9 @@ async function priceFor(c, row) {
     date: now(c),
     busRoute: row.bus_route,
     siblingIndex,
+    // From the stored row, not the request — the same reason the price
+    // itself is never taken from a body.
+    insurance: row.insurance === 1,
   });
 }
 

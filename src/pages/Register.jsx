@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BUS_ROUTES } from '../data/registration.js';
+import { BUS_ROUTES, INSURANCE } from '../data/registration.js';
 import './register.css';
 
 /**
@@ -51,7 +51,7 @@ export default function Register() {
     guardianName: '', guardianEmail: '', guardianPhone: '',
     addressLine1: '', addressCity: '', addressState: '', addressPostal: '',
     emergencyName: '', emergencyPhone: '',
-    busRoute: '', shirtSize: '', photoConsent: false,
+    busRoute: '', shirtSize: '', photoConsent: false, insurance: false,
   });
 
   // Resume an unfinished registration. A guardian who closed the tab
@@ -101,6 +101,7 @@ export default function Register() {
           busRoute: payload.registration.bus_route ?? '',
           shirtSize: payload.registration.shirt_size ?? '',
           photoConsent: payload.registration.photo_consent === 1,
+          insurance: payload.registration.insurance === 1,
         }));
       })
       .catch(() => sessionStorage.removeItem(STORAGE_KEY));
@@ -343,6 +344,23 @@ export default function Register() {
                 </label>
                 <label className="register__check">
                   <input
+                    type="checkbox" name="insurance" checked={fields.insurance}
+                    onChange={(e) => set('insurance', e.target.checked)}
+                  />
+                  <span>
+                    Add cancellation cover for ${INSURANCE}. Cancel any time
+                    before camp starts and every camp fee comes back, deposit
+                    and bus included.
+                  </span>
+                </label>
+                <p className="register__hint">
+                  Without it the deposit is not refundable, and nothing is
+                  refunded from July 1. The ${INSURANCE} itself is not
+                  returned.
+                </p>
+
+                <label className="register__check">
+                  <input
                     type="checkbox" name="photoConsent" checked={fields.photoConsent}
                     onChange={(e) => set('photoConsent', e.target.checked)}
                   />
@@ -389,6 +407,12 @@ export default function Register() {
                       <dd>&minus;{money(quote.siblingDiscountCents)}</dd>
                     </div>
                   )}
+                  {quote.insuranceCents > 0 && (
+                    <div>
+                      <dt>Cancellation cover</dt>
+                      <dd>{money(quote.insuranceCents)}</dd>
+                    </div>
+                  )}
                   <div className="register__prices-total">
                     <dt>Total</dt><dd>{money(quote.totalCents)}</dd>
                   </div>
@@ -399,7 +423,10 @@ export default function Register() {
                   </div>
                 </dl>
                 <p className="register__hint">
-                  The deposit is non-refundable and holds your place.
+                  {quote.insuranceCents > 0
+                    ? 'Your deposit holds your place, and with cancellation '
+                      + 'cover every camp fee is refundable until camp starts.'
+                    : 'The deposit is non-refundable and holds your place.'}
                 </p>
                 <div className="register__actions">
                   <button

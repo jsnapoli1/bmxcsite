@@ -128,3 +128,50 @@ describe('quote', () => {
     expect(tierFor(new Date('2026-03-01T00:01:00Z')).name).toBe('Full Rate');
   });
 });
+
+describe('cancellation cover', () => {
+  it('adds $50 when taken', () => {
+    const without = quote({ date: on('2026-01-15'), busRoute: null, siblingIndex: 0 });
+    const with_ = quote({ date: on('2026-01-15'), busRoute: null, siblingIndex: 0, insurance: true });
+    expect(with_.insuranceCents).toBe(5000);
+    expect(with_.totalCents).toBe(without.totalCents + 5000);
+  });
+
+  it('charges nothing when declined', () => {
+    const q = quote({ date: on('2026-01-15'), busRoute: null, siblingIndex: 0, insurance: false });
+    expect(q.insuranceCents).toBe(0);
+  });
+
+  it('defaults to declined', () => {
+    // Nobody is charged for cover they did not ask for.
+    const q = quote({ date: on('2026-01-15'), busRoute: null, siblingIndex: 0 });
+    expect(q.insuranceCents).toBe(0);
+  });
+
+  it('only a literal true buys it', () => {
+    // Same rule as photo consent: a truthy string from a form must not
+    // add a charge.
+    const q = quote({ date: on('2026-01-15'), busRoute: null, siblingIndex: 0, insurance: 'yes' });
+    expect(q.insuranceCents).toBe(0);
+  });
+
+  it('is not reduced by the sibling discount', () => {
+    // The discount is off the camp fee. A second child's cover costs the
+    // same $50 as the first.
+    const q = quote({ date: on('2026-01-15'), busRoute: null, siblingIndex: 1, insurance: true });
+    expect(q.insuranceCents).toBe(5000);
+  });
+
+  it('stacks with a bus', () => {
+    const q = quote({ date: on('2026-01-15'), busRoute: 'ny', siblingIndex: 0, insurance: true });
+    expect(q.totalCents).toBe(55500 + 12500 + 5000);
+  });
+
+  it('does not change the deposit', () => {
+    // The deposit is what holds the place; cover is an extra on the
+    // balance, not a bigger payment up front.
+    const q = quote({ date: on('2026-01-15'), busRoute: null, siblingIndex: 0, insurance: true });
+    expect(q.depositCents).toBe(25000);
+    expect(q.balanceDueCents).toBe(q.totalCents - 25000);
+  });
+});

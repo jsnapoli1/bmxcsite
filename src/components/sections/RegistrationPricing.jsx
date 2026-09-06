@@ -1,7 +1,7 @@
 import { Editable } from 'vedit';
 import Reveal from '../motion/Reveal.jsx';
 import SectionHeading from '../ui/SectionHeading.jsx';
-import { DEPOSIT, PRICE_TIERS } from '../../data/registration.js';
+import { DEPOSIT, PRICE_TIERS, INSURANCE } from '../../data/registration.js';
 
 /**
  * Tuition tiers and the deposit.
@@ -51,11 +51,13 @@ export default function RegistrationPricing({ id = 'registration.pricing', ...re
       <Reveal delay={220} className="deposit">
         <div className="deposit__figure">
           <span className="deposit__amount">${DEPOSIT}</span>
-          <span className="deposit__label">Non-refundable deposit</span>
+          <span className="deposit__label">Deposit</span>
         </div>
         <Editable id="registration.deposit.body" as="p" className="deposit__body">
-          Your deposit guarantees your spot at BMXC. Sibling discounts take $50 off the
-          2nd sibling and every sibling after that, applied at checkout.
+          Your deposit guarantees your spot at BMXC. It is non-refundable unless you add
+          cancellation cover for ${INSURANCE}, which makes every camp fee refundable up
+          to the first day of camp. Sibling discounts take $50 off the 2nd sibling and
+          every sibling after that, applied at checkout.
         </Editable>
       </Reveal>
     </section>

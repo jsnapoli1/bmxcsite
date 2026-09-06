@@ -21,13 +21,26 @@ export const BUS_ROUTES = [
 export const DEPOSIT = 250;
 
 /**
+ * Optional cancellation cover.
+ *
+ * Buying it makes every camp fee refundable in full — deposit and bus
+ * included — right up to the day camp starts. Without it the ordinary
+ * policy in FINE_PRINT applies.
+ *
+ * The $50 itself is not refunded on a cancellation: it is the premium,
+ * not part of the camp fee. FINE_PRINT says so in as many words.
+ */
+export const INSURANCE = 50;
+
+/**
  * Off each registration after the first sharing a guardian email. Stated
  * in PAYMENT_NOTES as prose; this is the number pricing.js applies.
  */
 export const SIBLING_DISCOUNT = 50;
 
 export const PAYMENT_NOTES = [
-  'The $250 deposit is non-refundable and guarantees your spot at BMXC.',
+  'The $250 deposit guarantees your spot at BMXC. Without cancellation cover it is non-refundable.',
+  'Add cancellation cover for $50 and everything you pay for camp comes back if you cancel any time before camp starts — deposit and bus included. The $50 itself is not returned.',
   'Register before May 31 and the deposit plus bus fees are due at registration; the balance is billed at the end of May.',
   'Register on June 1 or later and the full balance is due at registration.',
   'Pay by card or by check — you cannot mix payment methods once you have chosen.',
@@ -36,9 +49,10 @@ export const PAYMENT_NOTES = [
 ];
 
 export const FINE_PRINT = [
-  'Cancellations before the end of June: all money refunded except the non-refundable $250 deposit.',
-  'Cancellations on 7/1 or later: no money will be refunded.',
-  'Bus cancellations on July 1 or later: no refunds.',
+  'With cancellation cover: cancel any time before the first day of camp and every camp fee is refunded in full, including the deposit and any bus fee. The $50 cover itself is not refunded.',
+  'Without cancellation cover, cancellations before the end of June: all money refunded except the $250 deposit.',
+  'Without cancellation cover, cancellations on 7/1 or later: no money will be refunded.',
+  'Without cancellation cover, bus cancellations on July 1 or later: no refunds.',
   'No transfers between campers.',
   'No discounts, refunds, or partial refunds for arriving late or leaving early.',
 ];

@@ -162,3 +162,62 @@ describe('when registration is closed for the year', () => {
     expect(row.camper_name).toBe('Too late');
   });
 });
+
+describe('cancellation cover', () => {
+  it('adds $50 to the server-computed quote', async () => {
+    duringRegistration();
+    const { reference } = await (await call('POST', '/api/registration', {
+      camperName: 'Covered',
+    })).json();
+
+    const before = await (await call('GET', `/api/registration/${reference}`)).json();
+    const after = await (await call('PATCH', `/api/registration/${reference}`, {
+      insurance: true,
+    })).json();
+
+    expect(after.quote.insuranceCents).toBe(5000);
+    expect(after.quote.totalCents).toBe(before.quote.totalCents + 5000);
+  });
+
+  it('prices from the stored row, not the request body', async () => {
+    // The client sends `insurance` to be *saved*; the price then comes
+    // from what was saved. A body claiming cover on a GET must not change
+    // what is charged.
+    duringRegistration();
+    const { reference } = await (await call('POST', '/api/registration', {
+      camperName: 'Uncovered',
+    })).json();
+
+    const read = await (await call('GET', `/api/registration/${reference}`)).json();
+    expect(read.quote.insuranceCents).toBe(0);
+
+    const row = await env.DB.prepare(
+      'SELECT insurance FROM registrations WHERE reference = ?',
+    ).bind(reference).first();
+    expect(row.insurance).toBe(0);
+  });
+
+  it('only a literal true buys it', async () => {
+    duringRegistration();
+    const { reference } = await (await call('POST', '/api/registration', {
+      camperName: 'Coerced', insurance: 'yes',
+    })).json();
+
+    const row = await env.DB.prepare(
+      'SELECT insurance FROM registrations WHERE reference = ?',
+    ).bind(reference).first();
+    expect(row.insurance).toBe(0);
+  });
+
+  it('can be turned back off before paying', async () => {
+    duringRegistration();
+    const { reference } = await (await call('POST', '/api/registration', {
+      camperName: 'Changed mind', insurance: true,
+    })).json();
+
+    const off = await (await call('PATCH', `/api/registration/${reference}`, {
+      insurance: false,
+    })).json();
+    expect(off.quote.insuranceCents).toBe(0);
+  });
+});

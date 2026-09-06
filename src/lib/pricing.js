@@ -9,10 +9,11 @@
  * error the moment a discount is applied, and this is real money.
  */
 import {
-  PRICE_TIERS, BUS_ROUTES, DEPOSIT, SIBLING_DISCOUNT,
+  PRICE_TIERS, BUS_ROUTES, DEPOSIT, SIBLING_DISCOUNT, INSURANCE,
 } from '../data/registration.js';
 
 export const DEPOSIT_CENTS = DEPOSIT * 100;
+export const INSURANCE_CENTS = INSURANCE * 100;
 
 /**
  * 'MM-DD' for a date, in UTC.
@@ -51,18 +52,26 @@ export function busCents(route) {
  *
  * `siblingIndex` is how many registrations this guardian already has
  * confirmed — 0 for the first child, 1 for the second, and so on.
+ *
+ * `insurance` buys cancellation cover: every camp fee becomes refundable
+ * up to the first day of camp. The $50 is added after the sibling
+ * discount, because the discount is off the camp fee — a second child's
+ * cover costs the same as the first child's.
  */
-export function quote({ date, busRoute, siblingIndex = 0 }) {
+export function quote({ date, busRoute, siblingIndex = 0, insurance = false }) {
   const tier = tierFor(date);
   if (tier === null) return null;
 
   const baseCents = tier.price * 100;
   const bus = busCents(busRoute);
   const siblingDiscountCents = siblingIndex > 0 ? SIBLING_DISCOUNT * 100 : 0;
+  // Only a literal true buys cover. A truthy string arriving from a form
+  // must not add a charge nobody agreed to.
+  const insuranceCents = insurance === true ? INSURANCE_CENTS : 0;
 
   // Clamped at zero: a future discount larger than the base price must
   // not produce a negative charge.
-  const totalCents = Math.max(0, baseCents + bus - siblingDiscountCents);
+  const totalCents = Math.max(0, baseCents + bus - siblingDiscountCents) + insuranceCents;
 
   // The camp's rule: before June the deposit is taken now and the balance
   // billed at the end of May; from June 1 the whole amount is due at
@@ -77,6 +86,7 @@ export function quote({ date, busRoute, siblingIndex = 0 }) {
     baseCents,
     busCents: bus,
     siblingDiscountCents,
+    insuranceCents,
     totalCents,
     depositCents: DEPOSIT_CENTS,
     balanceDueCents: Math.max(0, totalCents - DEPOSIT_CENTS),

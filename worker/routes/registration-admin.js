@@ -43,7 +43,7 @@ admin.get('/export.csv', async (c) => {
       'reference', 'camper_name', 'camper_dob', 'camper_grade',
       'guardian_name', 'guardian_email', 'guardian_phone',
       'emergency_name', 'emergency_phone',
-      'bus_route', 'shirt_size', 'photo_consent',
+      'bus_route', 'shirt_size', 'photo_consent', 'insurance',
       'tier', 'total_cents', 'deposit_paid_cents', 'balance_due_cents',
     ],
   });
