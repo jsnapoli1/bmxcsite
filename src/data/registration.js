@@ -48,5 +48,5 @@ export const KEY_DATES = [
   { date: 'Early April', label: 'Buses usually 80% full' },
   { date: 'Early May', label: 'Camp usually 80% full' },
   { date: 'End of June', label: 'Registration closes' },
-  { date: 'August 16–22, 2026', label: 'Camp week' },
+  { date: 'August 15–21, 2027', label: 'Camp week' },
 ];

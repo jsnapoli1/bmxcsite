@@ -12,7 +12,7 @@ export const CAMP = {
     "Founded in 1969, Blue Mountain Cross Country Camp is the oldest and longest running XC summer camp in the Northeast! We're a sleepover running camp for students entering grades 7-12 and are dedicated to fostering a love for running and providing an environment in which student athletes are healthy and successful.",
   reach:
     'Individuals and teams come from all over New York, Pennsylvania, & New Jersey to kick off their season and develop friendships that span beyond their running years in high school.',
-  session: { year: 2026, start: 'Sunday, August 16', end: 'Saturday, August 22' },
+  session: { year: 2027, start: 'Sunday, August 15', end: 'Saturday, August 21' },
   venue: {
     name: 'Camp Westmont',
     region: 'Pocono Mountains, Pennsylvania',
