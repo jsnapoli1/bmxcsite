@@ -53,11 +53,20 @@ export default function RegistrationPricing({ id = 'registration.pricing', ...re
           <span className="deposit__amount">${DEPOSIT}</span>
           <span className="deposit__label">Deposit</span>
         </div>
-        <Editable id="registration.deposit.body" as="p" className="deposit__body">
-          Your deposit guarantees your spot at BMXC. It is non-refundable unless you add
-          cancellation cover for ${INSURANCE}, which makes every camp fee refundable up
-          to the first day of camp. Sibling discounts take $50 off the 2nd sibling and
-          every sibling after that, applied at checkout.
+        {/* A template, not a sentence with the price baked in. Someone rewording
+            this in the editor keeps `{insurance}`, and the number stays whatever
+            src/data/registration.js says — change INSURANCE and this paragraph
+            follows, including any rewrite saved on top of it. */}
+        <Editable
+          id="registration.deposit.body"
+          as="p"
+          className="deposit__body"
+          vars={{ insurance: `$${INSURANCE}` }}
+        >
+          {'Your deposit guarantees your spot at BMXC. It is non-refundable unless you add ' +
+            'cancellation cover for {insurance}, which makes every camp fee refundable up ' +
+            'to the first day of camp. Sibling discounts take $50 off the 2nd sibling and ' +
+            'every sibling after that, applied at checkout.'}
         </Editable>
       </Reveal>
     </section>

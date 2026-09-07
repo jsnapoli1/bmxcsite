@@ -2,6 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { AREAS as SERVER_AREAS } from '../../worker/auth/permissions.js';
 import { AREAS as PANEL_AREAS, EMPTY_PERMISSIONS } from '../../src/admin/lib/permission-areas.js';
 import { EDITABLE_PAGES, VEDIT_SESSION_KEY, VEDIT_OPEN_KEY } from '../../src/lib/visual-editor-pages.js';
+// As text, not as a module: importing App.jsx would pull in every lazy route
+// (and the whole component tree) just to read the paths off it. These tests
+// run in the Workers pool, where node:fs is unavailable, so `?raw` is how a
+// source file is read here.
+import appSource from '../../src/App.jsx?raw';
 
 /**
  * The admin panel keeps its own area list, because labels are a UI concern
@@ -54,6 +59,26 @@ describe('the Site design entry point', () => {
     for (const page of EDITABLE_PAGES) {
       expect(page.path.startsWith('/')).toBe(true);
       expect(page.label?.trim()).toBeTruthy();
+    }
+  });
+
+  it('offers every route the app actually serves, or says why not', () => {
+    // A page missing from this list is unreachable from the editor however
+    // much of it is wrapped in <Editable> — which is exactly how /register
+    // came to have an uneditable "Pay $250 deposit" button while every other
+    // page was editable. The omission is invisible from the page itself.
+    //
+    // The exclusions are deliberate, not oversights: /blog/:slug is a
+    // parameterised route with no single URL to open, and the 404 is not a
+    // page anyone composes.
+    const routes = [...appSource.matchAll(/<Route path="([^"]+)"/g)]
+      .map((match) => match[1])
+      .filter((path) => path !== '*' && !path.includes(':'));
+
+    const editable = new Set(EDITABLE_PAGES.map((page) => page.path));
+    for (const path of routes) {
+      expect(editable.has(path), `${path} is served but not offered in the editor`)
+        .toBe(true);
     }
   });
 

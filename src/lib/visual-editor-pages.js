@@ -44,5 +44,9 @@ export const EDITABLE_PAGES = Object.freeze([
   { path: '/faq', label: 'FAQ' },
   { path: '/blog', label: 'Blog' },
   { path: '/registration', label: 'Registration' },
+  // The form itself, as distinct from the informational page above it. Its copy
+  // is editable but its layout is not composed — the four steps share state and
+  // run in an order that is the flow, not an arrangement. See Register.jsx.
+  { path: '/register', label: 'Register form' },
   { path: '/contact', label: 'Contact' },
 ]);

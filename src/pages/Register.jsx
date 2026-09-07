@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Editable } from 'vedit';
 import { BUS_ROUTES, INSURANCE } from '../data/registration.js';
 import './register.css';
 
@@ -13,6 +14,19 @@ import './register.css';
  * computes money — the server recomputes it when creating the Checkout
  * session and ignores whatever a form sent, so a number computed in the
  * browser would only ever be a second, disagreeing answer.
+ *
+ * **Editable, but deliberately not composed.** Every authored string here
+ * is wrapped in an `<Editable>`, so the wording can be changed from the
+ * editor like anywhere else on the site. What this page does *not* have is
+ * a `<VeditSlot>`: the four steps share `step`, `fields` and `quote`, and
+ * the order they run in is the flow itself, not a layout. A movable
+ * payment step would be a way to break checkout from a design tool.
+ *
+ * Strings that quote a price are templates rather than sentences —
+ * `{deposit}`, `{insurance}` — with the value passed through `vars` and
+ * substituted at render. The rewrite is saved; the number stays live. A
+ * frozen `$250` would go stale the day the deposit moves, and would then
+ * disagree with what Stripe actually charges.
  */
 
 const STORAGE_KEY = 'bmxc:registration-reference';
@@ -39,6 +53,30 @@ function readableDate(iso) {
   return parsed.toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', timeZone: 'UTC',
   });
+}
+
+/**
+ * A field label, editable by name.
+ *
+ * The id is keyed on the field's `name` — the same string the server stores
+ * the answer under — so it is stable across a reordering of the form. Wrapping
+ * each `<label>`'s text by hand would be forty near-identical lines; this keeps
+ * the form readable while still giving every label its own override.
+ *
+ * The wrapper is a `<span>` inside the existing `<label>`, so the label still
+ * labels its input: making the `<label>` itself the Editable would put the
+ * input inside the overridable region, and a rewrite would delete the field.
+ *
+ * No class: `.register__form label` is already a flex column, and the bare text
+ * node this replaces was an anonymous flex item, so a plain span lands in the
+ * same box. A class here would be a styling hook nothing uses.
+ */
+function FieldLabel({ name, children }) {
+  return (
+    <Editable id={`register.field.${name}`} as="span">
+      {children}
+    </Editable>
+  );
 }
 
 async function api(path, { method = 'GET', body } = {}) {
@@ -172,20 +210,34 @@ export default function Register() {
     return (
       <main className="register">
         <div className="register__inner">
-          <h1 className="register__title">You are registered</h1>
-          <p className="register__notice">
-            Your deposit is paid and your camper&rsquo;s place is held.
-            Stripe has emailed you a receipt.
-          </p>
+          <Editable id="register.paid.title" as="h1" className="register__title">
+            You are registered
+          </Editable>
+          <Editable id="register.paid.notice" as="p" className="register__notice">
+            {'Your deposit is paid and your camper’s place is held. ' +
+              'Stripe has emailed you a receipt.'}
+          </Editable>
           {/* No mention of a balance here. It used to say "due at the end of
               May", which is wrong from June 1, when quote() makes the whole
               amount payable at registration and there is no balance left. */}
+          {/* The reference is the one thing on this screen worth keeping, so it
+              stays outside the editable sentence — a rewrite can move the words
+              around it but cannot drop it. */}
           <p className="register__hint">
-            Your reference is <strong>{paid}</strong>. Keep it if you need to
-            ring the camp about this registration.
+            <Editable id="register.paid.reference-lead" as="span">
+              Your reference is
+            </Editable>{' '}
+            <strong>{paid}</strong>.{' '}
+            <Editable id="register.paid.reference-note" as="span">
+              Keep it if you need to ring the camp about this registration.
+            </Editable>
           </p>
           <div className="register__actions">
-            <a className="register__next" href="/">Back to the camp site</a>
+            <a className="register__next" href="/">
+              <Editable id="register.paid.home-link" as="span">
+                Back to the camp site
+              </Editable>
+            </a>
           </div>
         </div>
       </main>
@@ -195,8 +247,13 @@ export default function Register() {
   return (
     <main className="register">
       <div className="register__inner">
-        <h1 className="register__title">Register for camp</h1>
+        <Editable id="register.title" as="h1" className="register__title">
+          Register for camp
+        </Editable>
 
+        {/* Keyed on the step's own name rather than its position: renaming a
+            step should move its override with it, and reordering the flow must
+            not slide "Camper" onto the payment step. */}
         <ol className="register__steps" aria-label="Registration steps">
           {STEPS.map((label, index) => (
             <li
@@ -204,16 +261,18 @@ export default function Register() {
               className={index === step ? 'register__step register__step--current' : 'register__step'}
               aria-current={index === step ? 'step' : undefined}
             >
-              {label}
+              <Editable id={`register.step.${label.toLowerCase()}`} as="span">
+                {label}
+              </Editable>
             </li>
           ))}
         </ol>
 
         {!open && (
-          <p className="register__notice">
-            Registration is closed for this year. You can still fill this in
-            and we will hold it, but payment opens when registration does.
-          </p>
+          <Editable id="register.closed-notice" as="p" className="register__notice">
+            {'Registration is closed for this year. You can still fill this in ' +
+              'and we will hold it, but payment opens when registration does.'}
+          </Editable>
         )}
 
         {error && <p className="register__error" role="alert">{error}</p>}
@@ -223,28 +282,28 @@ export default function Register() {
             {step === 0 && (
               <>
                 <label>
-                  Camper&rsquo;s full name
+                  <FieldLabel name="camperName">Camper&rsquo;s full name</FieldLabel>
                   <input
                     type="text" name="camperName" required value={fields.camperName}
                     onChange={(e) => set('camperName', e.target.value)}
                   />
                 </label>
                 <label>
-                  Date of birth
+                  <FieldLabel name="camperDob">Date of birth</FieldLabel>
                   <input
                     type="date" name="camperDob" required value={fields.camperDob}
                     onChange={(e) => set('camperDob', e.target.value)}
                   />
                 </label>
                 <label>
-                  School
+                  <FieldLabel name="camperSchool">School</FieldLabel>
                   <input
                     type="text" name="camperSchool" value={fields.camperSchool}
                     onChange={(e) => set('camperSchool', e.target.value)}
                   />
                 </label>
                 <label>
-                  Grade in the autumn
+                  <FieldLabel name="camperGrade">Grade in the autumn</FieldLabel>
                   <input
                     type="text" name="camperGrade" value={fields.camperGrade}
                     onChange={(e) => set('camperGrade', e.target.value)}
@@ -256,14 +315,14 @@ export default function Register() {
             {step === 1 && (
               <>
                 <label>
-                  Parent or guardian
+                  <FieldLabel name="guardianName">Parent or guardian</FieldLabel>
                   <input
                     type="text" name="guardianName" required value={fields.guardianName}
                     onChange={(e) => set('guardianName', e.target.value)}
                   />
                 </label>
                 <label>
-                  Email
+                  <FieldLabel name="guardianEmail">Email</FieldLabel>
                   <input
                     type="email" name="guardianEmail" required autoComplete="email"
                     value={fields.guardianEmail}
@@ -271,7 +330,7 @@ export default function Register() {
                   />
                 </label>
                 <label>
-                  Phone
+                  <FieldLabel name="guardianPhone">Phone</FieldLabel>
                   <input
                     type="tel" name="guardianPhone" required autoComplete="tel"
                     value={fields.guardianPhone}
@@ -279,7 +338,7 @@ export default function Register() {
                   />
                 </label>
                 <label>
-                  Address
+                  <FieldLabel name="addressLine1">Address</FieldLabel>
                   <input
                     type="text" name="addressLine1" autoComplete="address-line1"
                     value={fields.addressLine1}
@@ -288,7 +347,7 @@ export default function Register() {
                 </label>
                 <div className="register__row">
                   <label>
-                    Town
+                    <FieldLabel name="addressCity">Town</FieldLabel>
                     <input
                       type="text" name="addressCity" autoComplete="address-level2"
                       value={fields.addressCity}
@@ -296,7 +355,7 @@ export default function Register() {
                     />
                   </label>
                   <label>
-                    State
+                    <FieldLabel name="addressState">State</FieldLabel>
                     <input
                       type="text" name="addressState" autoComplete="address-level1"
                       value={fields.addressState}
@@ -304,7 +363,7 @@ export default function Register() {
                     />
                   </label>
                   <label>
-                    ZIP
+                    <FieldLabel name="addressPostal">ZIP</FieldLabel>
                     <input
                       type="text" name="addressPostal" autoComplete="postal-code"
                       value={fields.addressPostal}
@@ -312,18 +371,22 @@ export default function Register() {
                     />
                   </label>
                 </div>
-                <h2 className="register__subheading">
+                <Editable
+                  id="register.emergency.heading"
+                  as="h2"
+                  className="register__subheading"
+                >
                   Someone else we can reach in an emergency
-                </h2>
+                </Editable>
                 <label>
-                  Name
+                  <FieldLabel name="emergencyName">Name</FieldLabel>
                   <input
                     type="text" name="emergencyName" required value={fields.emergencyName}
                     onChange={(e) => set('emergencyName', e.target.value)}
                   />
                 </label>
                 <label>
-                  Phone
+                  <FieldLabel name="emergencyPhone">Phone</FieldLabel>
                   <input
                     type="tel" name="emergencyPhone" required value={fields.emergencyPhone}
                     onChange={(e) => set('emergencyPhone', e.target.value)}
@@ -335,7 +398,7 @@ export default function Register() {
             {step === 2 && (
               <>
                 <label>
-                  Getting to camp
+                  <FieldLabel name="busRoute">Getting to camp</FieldLabel>
                   <select
                     name="busRoute" value={fields.busRoute}
                     onChange={(e) => set('busRoute', e.target.value)}
@@ -349,7 +412,7 @@ export default function Register() {
                   </select>
                 </label>
                 <label>
-                  T-shirt size
+                  <FieldLabel name="shirtSize">T-shirt size</FieldLabel>
                   <select
                     name="shirtSize" value={fields.shirtSize}
                     onChange={(e) => set('shirtSize', e.target.value)}
@@ -360,7 +423,13 @@ export default function Register() {
                     ))}
                   </select>
                 </label>
-                <h2 className="register__subheading">Two things to decide</h2>
+                <Editable
+                  id="register.options.heading"
+                  as="h2"
+                  className="register__subheading"
+                >
+                  Two things to decide
+                </Editable>
 
                 <label className="register__check">
                   <input
@@ -368,13 +437,27 @@ export default function Register() {
                     onChange={(e) => set('insurance', e.target.checked)}
                   />
                   <span>
-                    Add cancellation cover, ${INSURANCE}
-                    <span className="register__check-note">
-                      Cancel before camp starts and every camp fee comes back,
-                      deposit and bus included. The ${INSURANCE} is not
-                      returned. Without cover the deposit is not refundable,
-                      and nothing is refunded from July 1.
-                    </span>
+                    {/* Both strings quote the cover price, so both are
+                        templates: change INSURANCE and the wording follows,
+                        including any rewrite saved on top of it. */}
+                    <Editable
+                      id="register.insurance.label"
+                      as="span"
+                      vars={{ insurance: `$${INSURANCE}` }}
+                    >
+                      {'Add cancellation cover, {insurance}'}
+                    </Editable>
+                    <Editable
+                      id="register.insurance.note"
+                      as="span"
+                      className="register__check-note"
+                      vars={{ insurance: `$${INSURANCE}` }}
+                    >
+                      {'Cancel before camp starts and every camp fee comes back, ' +
+                        'deposit and bus included. The {insurance} is not ' +
+                        'returned. Without cover the deposit is not refundable, ' +
+                        'and nothing is refunded from July 1.'}
+                    </Editable>
                   </span>
                 </label>
 
@@ -384,12 +467,18 @@ export default function Register() {
                     onChange={(e) => set('photoConsent', e.target.checked)}
                   />
                   <span>
-                    Photos and name tagging
-                    <span className="register__check-note">
-                      You may use photos of my child on the camp website and
-                      tag them by name. Left unticked we tag nothing; you can
-                      change your mind by telling a director.
-                    </span>
+                    <Editable id="register.photo.label" as="span">
+                      Photos and name tagging
+                    </Editable>
+                    <Editable
+                      id="register.photo.note"
+                      as="span"
+                      className="register__check-note"
+                    >
+                      {'You may use photos of my child on the camp website and ' +
+                        'tag them by name. Left unticked we tag nothing; you can ' +
+                        'change your mind by telling a director.'}
+                    </Editable>
                   </span>
                 </label>
               </>
@@ -401,11 +490,15 @@ export default function Register() {
                   type="button" className="register__back"
                   onClick={() => setStep((current) => current - 1)}
                 >
-                  Back
+                  <Editable id="register.back" as="span">Back</Editable>
                 </button>
               )}
+              {/* Only the resting label is editable. The busy text is a
+                  transient state nobody can click on to select, so an override
+                  on it would be unreachable from the editor — and a saved
+                  "Saving…" would be indistinguishable from a stuck form. */}
               <button type="submit" className="register__next" disabled={busy}>
-                {busy ? 'Saving…' : 'Continue'}
+                {busy ? 'Saving…' : <Editable id="register.continue" as="span">Continue</Editable>}
               </button>
             </div>
           </form>
@@ -414,7 +507,9 @@ export default function Register() {
             {/* Only when there is a price. With registration closed the
                 heading announced a table that never came. */}
             {quote && (
-              <h2 className="register__subheading">What you will pay</h2>
+              <Editable id="register.summary.heading" as="h2" className="register__subheading">
+                What you will pay
+              </Editable>
             )}
 
             {quote ? (
@@ -422,22 +517,30 @@ export default function Register() {
                 <dl className="register__prices">
                   <div><dt>{quote.tier}</dt><dd>{money(quote.baseCents)}</dd></div>
                   {quote.busCents > 0 && (
-                    <div><dt>Bus</dt><dd>{money(quote.busCents)}</dd></div>
+                    <div>
+                      <dt><Editable id="register.line.bus" as="span">Bus</Editable></dt>
+                      <dd>{money(quote.busCents)}</dd>
+                    </div>
                   )}
                   {quote.siblingDiscountCents > 0 && (
                     <div>
-                      <dt>Sibling discount</dt>
+                      <dt>
+                        <Editable id="register.line.sibling" as="span">Sibling discount</Editable>
+                      </dt>
                       <dd>&minus;{money(quote.siblingDiscountCents)}</dd>
                     </div>
                   )}
                   {quote.insuranceCents > 0 && (
                     <div>
-                      <dt>Cancellation cover</dt>
+                      <dt>
+                        <Editable id="register.line.insurance" as="span">Cancellation cover</Editable>
+                      </dt>
                       <dd>{money(quote.insuranceCents)}</dd>
                     </div>
                   )}
                   <div className="register__prices-total">
-                    <dt>Total</dt><dd>{money(quote.totalCents)}</dd>
+                    <dt><Editable id="register.line.total" as="span">Total</Editable></dt>
+                    <dd>{money(quote.totalCents)}</dd>
                   </div>
                 </dl>
 
@@ -446,34 +549,54 @@ export default function Register() {
                     in one list, Total read as one row among six. */}
                 <dl className="register__split">
                   <div className="register__split-now">
-                    <dt>Due today</dt>
+                    <dt><Editable id="register.line.due-today" as="span">Due today</Editable></dt>
                     <dd>{money(quote.depositCents)}</dd>
                   </div>
                   {quote.balanceDueCents > 0 && (
                     <div>
-                      <dt>Then {readableDate(quote.balanceDueAt)}</dt>
+                      <dt>
+                        <Editable
+                          id="register.line.balance"
+                          as="span"
+                          vars={{ date: readableDate(quote.balanceDueAt) }}
+                        >
+                          {'Then {date}'}
+                        </Editable>
+                      </dt>
                       <dd>{money(quote.balanceDueCents)}</dd>
                     </div>
                   )}
                 </dl>
 
                 {quote.insuranceCents === 0 && (
-                  <p className="register__hint">
+                  <Editable id="register.no-refund-hint" as="p" className="register__hint">
                     The deposit is not refundable.
-                  </p>
+                  </Editable>
                 )}
                 <div className="register__actions">
                   <button
                     type="button" className="register__back"
                     onClick={() => setStep(2)}
                   >
-                    Back
+                    <Editable id="register.summary.back" as="span">Back</Editable>
                   </button>
+                  {/* The words are editable, the amount is not. `{deposit}` is
+                      filled from the server's quote on every render, so this
+                      button can never advertise a figure that differs from what
+                      Stripe is about to charge. */}
                   <button
                     type="button" className="register__next"
                     onClick={startCheckout} disabled={busy}
                   >
-                    {busy ? 'Opening payment…' : `Pay ${money(quote.depositCents)} deposit`}
+                    {busy ? 'Opening payment…' : (
+                      <Editable
+                        id="register.pay"
+                        as="span"
+                        vars={{ deposit: money(quote.depositCents) }}
+                      >
+                        {'Pay {deposit} deposit'}
+                      </Editable>
+                    )}
                   </button>
                 </div>
               </>
@@ -481,9 +604,9 @@ export default function Register() {
               <>
                 {/* The banner above already says registration is closed, so
                     this only adds what is new here: the form is saved. */}
-                <p className="register__notice">
+                <Editable id="register.nothing-to-pay" as="p" className="register__notice">
                   There is nothing to pay yet. We have kept what you filled in.
-                </p>
+                </Editable>
                 {/* Without this there is no way back off the last step, and
                     someone who mistyped a name is stranded. */}
                 <div className="register__actions">
@@ -491,7 +614,7 @@ export default function Register() {
                     type="button" className="register__back"
                     onClick={() => setStep(2)}
                   >
-                    Back
+                    <Editable id="register.closed.back" as="span">Back</Editable>
                   </button>
                 </div>
               </>
@@ -502,7 +625,8 @@ export default function Register() {
                 thing worth keeping — repeating it on both read as filler. */}
             {reference && (
               <p className="register__hint">
-                Reference <strong>{reference}</strong>
+                <Editable id="register.reference-label" as="span">Reference</Editable>{' '}
+                <strong>{reference}</strong>
               </p>
             )}
           </div>
