@@ -28,6 +28,29 @@ body {
   overflow-x: hidden;
 }
 
+/* Sticky footer for the whole app, so a page shorter than the viewport puts
+   the footer at the bottom instead of leaving paper below it.
+
+   This lives on the shell rather than on each page for a reason: without it
+   the only way to stop a short page floating its footer mid-screen was to
+   pad the page itself out to `min-height: 100vh`, which register.css did.
+   That fills the viewport by inflating the *content* box, so the form ended
+   up with 219px of dead space between its last button and the footer — the
+   gap grows as the content shrinks, which is exactly backwards.
+
+   `svh` rather than `vh`: on mobile `vh` measures the viewport with browser
+   chrome retracted, so a `100vh` box is taller than what is actually on
+   screen and introduces a scroll on a page that should have none. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+#root > main {
+  flex: 1;
+}
+
 img,
 picture,
 video,
