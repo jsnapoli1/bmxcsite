@@ -16,6 +16,22 @@ import Button from '../ui/Button.jsx';
  * store, which is where a purchase will happen once real keys exist. Adding
  * a cart here before then would be a checkout that silently fails.
  */
+/**
+ * The store's public origin.
+ *
+ * Product images and links come back from the API as root-relative paths
+ * (`/api/images/…`, and `/products/<id>` is served over there too). Rendered
+ * on bmxc.camp they would resolve against *this* origin and 404 — the images
+ * live in the store's own R2 bucket, served back through its worker.
+ */
+const SHOP_ORIGIN = 'https://shop.bmxc.camp';
+
+/** Resolve a store-relative path against the store, leaving absolute URLs be. */
+function shopUrl(path) {
+  if (!path) return path;
+  return /^https?:\/\//.test(path) ? path : `${SHOP_ORIGIN}${path}`;
+}
+
 export default function MerchStore({ id = 'merch.store', ...rest }) {
   const headingId = `${id}-heading`;
   const [products, setProducts] = useState([]);
@@ -56,7 +72,7 @@ export default function MerchStore({ id = 'merch.store', ...rest }) {
             {product.images?.[0] && (
               <img
                 className="merch-store__image"
-                src={product.images[0]}
+                src={shopUrl(product.images[0])}
                 alt={product.name}
                 width="600"
                 height="600"
@@ -71,7 +87,7 @@ export default function MerchStore({ id = 'merch.store', ...rest }) {
               <p className="merch-store__note">{product.description}</p>
             )}
             <Button
-              href={`https://shop.bmxc.camp/products/${product.id}`}
+              href={`${SHOP_ORIGIN}/products/${product.id}`}
               variant="ghost"
             >
               View in the store →
