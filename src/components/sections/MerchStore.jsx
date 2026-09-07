@@ -71,7 +71,7 @@ export default function MerchStore({ id = 'merch.store', ...rest }) {
               <p className="merch-store__note">{product.description}</p>
             )}
             <Button
-              href={`https://shop.bmxc.camp/product/${product.id}`}
+              href={`https://shop.bmxc.camp/products/${product.id}`}
               variant="ghost"
             >
               View in the store →
