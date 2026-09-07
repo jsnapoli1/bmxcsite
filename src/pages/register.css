@@ -4,7 +4,11 @@
 .register {
   background: var(--color-surface);
   color: var(--color-ink);
-  min-height: 100vh;
+  /* No `min-height` here. Filling the viewport is the shell's job (see the
+     `#root` sticky footer in global.css); doing it on the page padded the
+     form out to 100vh and left a 219px hole under the Continue button on
+     step 1, which has only four fields. This was the one page of eleven
+     that set it. */
   /* The top value clears the fixed site header, matching the same clamp
      .page-header uses. Anything smaller and the title renders underneath
      the nav — the header is position: fixed and 85px tall. */
