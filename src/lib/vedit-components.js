@@ -20,7 +20,7 @@
  */
 import { defineComponents } from 'vedit';
 
-import HomeIntro from '../components/sections/HomeIntro.jsx';
+import HomeIntro, { HOME_INTRO_DEFAULTS } from '../components/sections/HomeIntro.jsx';
 import HomePillars from '../components/sections/HomePillars.jsx';
 import PillarCard from '../components/sections/PillarCard.jsx';
 import HomeLocation from '../components/sections/HomeLocation.jsx';
@@ -81,10 +81,9 @@ export const components = defineComponents({
       { name: 'eyebrow', type: 'text' },
       { name: 'title', type: 'text' },
     ],
-    defaults: {
-      eyebrow: 'Since 1969',
-      title: 'The oldest and longest running XC summer camp in the Northeast',
-    },
+    // Shared with the component's own parameter defaults, so the editor and
+    // the slot fallback cannot disagree about what this section says.
+    defaults: HOME_INTRO_DEFAULTS,
   },
 
   HomePillars: {

@@ -19,7 +19,30 @@ import { CAMP } from '../../data/camp.js';
  * copies on a page get their own overrides instead of editing each other.
  * `rest` carries vedit's own props (ref, data-vedit-id) onto the root.
  */
-export default function HomeIntro({ id = 'home.intro', eyebrow, title, ...rest }) {
+/**
+ * The section's own copy, and the registry's `defaults` for it — one constant
+ * rather than two, because these must not drift apart.
+ *
+ * They are defaults on the parameters as well as in the registry because the
+ * two render paths supply props differently. A placement goes through vedit,
+ * which spreads the registry's `defaults` in; the `<VeditSlot>` fallback in
+ * Home.jsx renders `<HomeIntro />` directly and spreads nothing. Living only
+ * in the registry, this copy reached the first path and not the second, so
+ * every render without a document — which is every local render, since the
+ * editor's adapter reads /api/admin/vedit and Access answers 403 off
+ * localhost — printed "undefined" as the section's heading.
+ */
+export const HOME_INTRO_DEFAULTS = Object.freeze({
+  eyebrow: 'Since 1969',
+  title: 'The oldest and longest running XC summer camp in the Northeast',
+});
+
+export default function HomeIntro({
+  id = 'home.intro',
+  eyebrow = HOME_INTRO_DEFAULTS.eyebrow,
+  title = HOME_INTRO_DEFAULTS.title,
+  ...rest
+}) {
   // Derived from the placement id so two copies stay valid HTML.
   const headingId = `${id}-heading`;
 
