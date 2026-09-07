@@ -102,12 +102,25 @@ shouldn't spend a round trip on a feature they can't open. That request uses
 `/api/admin/*` with a cross-origin 302 that otherwise fails CORS and logs two
 red errors in every visitor's console.
 
-**Six pages are composed, five are not.** Home, Camp, Registration, Contact,
+**Six pages are composed, six are not.** Home, Camp, Registration, Contact,
 Playlists and Videos render entirely from their document: every section is a
 placed component, so it can be reordered, removed, or added to from the
 editor. Merch, Staff, FAQ, Blog and BlogPost are deliberately *not* — their
 content comes from D1 via /admin, and a slot there would be a third place to
-change the same page.
+change the same page. Register is the sixth, for a different reason.
+
+**/register is editable but not composed.** Every authored string on the
+registration form is wrapped in an `<Editable>`, so its wording can be
+changed like anywhere else; it has no `<VeditSlot>`. The four steps share
+`step`, `fields` and `quote`, and their order *is* the flow — a movable
+payment step would be a way to break checkout from a design tool. It is
+therefore in `EDITABLE_PAGES` but not in the seed's `PAGE_LAYOUTS`, which
+the seed test allows (it asserts seeded ⊆ editable, not the reverse).
+
+A test reads the `<Route>` list out of App.jsx and requires every concrete
+route to appear in `EDITABLE_PAGES`. `/register` was served for months while
+absent from that list, so its "Pay $250 deposit" button could not be selected
+at all — an omission invisible from the page itself.
 
 The registry is `src/lib/vedit-components.js`; the sections it lists live in
 `src/components/sections/`. Everything is registered `wrap: false`, because
@@ -200,10 +213,25 @@ production's `defaultEnabled() === false`. Every earlier test used
 `requireArea('design')` plus the `authorize` callback in worker/routes/vedit.js
 are what reject a write. Writes are recorded in `audit_log`; reads are not.
 
-Pinned to `v0.4.0` in devDependencies, not tracking the default branch — a
+Pinned to `v0.5.0` in devDependencies, not tracking the default branch — a
 deploy must not pick up an unreviewed editor. Since 0.4.0 `createVeditHandler`
 throws without `authorize`; a test asserts that, so dropping the callback in a
 refactor fails loudly instead of quietly opening the endpoint.
+
+**Live values interpolate; they are never stored.** An `<Editable>` takes
+`vars`, and its text is a template — `Pay {deposit} deposit`, `cover for
+{insurance}`. The override saves the template, the host substitutes on every
+render. A rewritten sentence therefore keeps quoting the current price, and a
+frozen `$250` can never come to disagree with what Stripe charges. An unknown
+name renders literally rather than blanking, and the inspector names it —
+otherwise a typo like `{insurnace}` ships looking deliberate.
+
+**The inspector's trash removes; the undo arrow reverts.** They used to be one
+trash icon that deleted an inserted node but merely reset overrides on anything
+from source code — so on an unedited element the obvious delete control did
+nothing, silently. Removing a source element writes `hidden` (`display:none`
+for visitors, dimmed and outlined in the editor), matching what Delete and
+Backspace already did.
 
 ## Merch store (OpenShop)
 
