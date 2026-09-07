@@ -96,7 +96,10 @@
   .register__row { grid-template-columns: 1fr; }
 }
 
-.register__check {
+/* Scoped to .register__form so it outranks `.register__form label` above,
+   which is also (0,1,1) and would otherwise keep these in a column and
+   strand the checkbox above its own text. */
+.register__form .register__check {
   flex-direction: row;
   align-items: flex-start;
   gap: 0.6rem;
@@ -196,3 +199,48 @@
 }
 
 .register__prices-total dt { color: var(--color-ink); font-weight: 700; }
+
+/* The explanation under a checkbox label. Inside the <span> rather than a
+   sibling <p>, so clicking the explanation still toggles the box — as a
+   separate paragraph it was dead space beside a live label. */
+.register__check-note {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.register__check > span { font-weight: 600; }
+
+/* When the money is paid, kept visually apart from what it costs. */
+.register__split {
+  margin: 0;
+}
+
+.register__split > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.register__split dt { font-weight: 400; color: var(--color-ink-soft); }
+.register__split dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+/* The one number a guardian is about to be charged. */
+.register__split-now dt,
+.register__split-now dd {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+/* A subheading that opens its step has nothing to rule off from — the
+   border drew a line under the step list with a gap either side. */
+.register__summary > .register__subheading:first-child,
+.register__form > .register__subheading:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}

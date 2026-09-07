@@ -25,6 +25,22 @@ function money(cents) {
   return `$${(cents / 100).toFixed(2).replace(/\.00$/, '')}`;
 }
 
+/**
+ * 'YYYY-MM-DD' as 'May 31' — the ISO string is what the server computes
+ * with, not what a parent reads on a bill.
+ *
+ * Parsed as UTC (the 'T00:00:00Z') to match how pricing.js built it. Left
+ * to the local timezone, a date west of Greenwich renders as the day
+ * before, and the balance would appear due on May 30.
+ */
+function readableDate(iso) {
+  const parsed = new Date(`${iso}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return iso;
+  return parsed.toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', timeZone: 'UTC',
+  });
+}
+
 async function api(path, { method = 'GET', body } = {}) {
   const res = await fetch(`/api/registration${path}`, {
     method,
@@ -161,10 +177,12 @@ export default function Register() {
             Your deposit is paid and your camper&rsquo;s place is held.
             Stripe has emailed you a receipt.
           </p>
+          {/* No mention of a balance here. It used to say "due at the end of
+              May", which is wrong from June 1, when quote() makes the whole
+              amount payable at registration and there is no balance left. */}
           <p className="register__hint">
             Your reference is <strong>{paid}</strong>. Keep it if you need to
-            ring the camp about this registration. The balance is due at the
-            end of May.
+            ring the camp about this registration.
           </p>
           <div className="register__actions">
             <a className="register__next" href="/">Back to the camp site</a>
@@ -342,22 +360,23 @@ export default function Register() {
                     ))}
                   </select>
                 </label>
+                <h2 className="register__subheading">Two things to decide</h2>
+
                 <label className="register__check">
                   <input
                     type="checkbox" name="insurance" checked={fields.insurance}
                     onChange={(e) => set('insurance', e.target.checked)}
                   />
                   <span>
-                    Add cancellation cover for ${INSURANCE}. Cancel any time
-                    before camp starts and every camp fee comes back, deposit
-                    and bus included.
+                    Add cancellation cover, ${INSURANCE}
+                    <span className="register__check-note">
+                      Cancel before camp starts and every camp fee comes back,
+                      deposit and bus included. The ${INSURANCE} is not
+                      returned. Without cover the deposit is not refundable,
+                      and nothing is refunded from July 1.
+                    </span>
                   </span>
                 </label>
-                <p className="register__hint">
-                  Without it the deposit is not refundable, and nothing is
-                  refunded from July 1. The ${INSURANCE} itself is not
-                  returned.
-                </p>
 
                 <label className="register__check">
                   <input
@@ -365,14 +384,14 @@ export default function Register() {
                     onChange={(e) => set('photoConsent', e.target.checked)}
                   />
                   <span>
-                    You may use photos of my child on the camp website, and
-                    tag them by name so we can find their pictures.
+                    Photos and name tagging
+                    <span className="register__check-note">
+                      You may use photos of my child on the camp website and
+                      tag them by name. Left unticked we tag nothing; you can
+                      change your mind by telling a director.
+                    </span>
                   </span>
                 </label>
-                <p className="register__hint">
-                  Leave this unticked and we will not tag your child in any
-                  photograph. You can change your mind by telling a director.
-                </p>
               </>
             )}
 
@@ -392,7 +411,11 @@ export default function Register() {
           </form>
         ) : (
           <div className="register__summary">
-            <h2 className="register__subheading">What you will pay</h2>
+            {/* Only when there is a price. With registration closed the
+                heading announced a table that never came. */}
+            {quote && (
+              <h2 className="register__subheading">What you will pay</h2>
+            )}
 
             {quote ? (
               <>
@@ -416,18 +439,29 @@ export default function Register() {
                   <div className="register__prices-total">
                     <dt>Total</dt><dd>{money(quote.totalCents)}</dd>
                   </div>
-                  <div><dt>Due now (deposit)</dt><dd>{money(quote.depositCents)}</dd></div>
-                  <div>
-                    <dt>Balance, due {quote.balanceDueAt}</dt>
-                    <dd>{money(quote.balanceDueCents)}</dd>
-                  </div>
                 </dl>
-                <p className="register__hint">
-                  {quote.insuranceCents > 0
-                    ? 'Your deposit holds your place, and with cancellation '
-                      + 'cover every camp fee is refundable until camp starts.'
-                    : 'The deposit is non-refundable and holds your place.'}
-                </p>
+
+                {/* The split, kept apart from the fee lines above: those say
+                    what camp costs, this says when it is paid. Run together
+                    in one list, Total read as one row among six. */}
+                <dl className="register__split">
+                  <div className="register__split-now">
+                    <dt>Due today</dt>
+                    <dd>{money(quote.depositCents)}</dd>
+                  </div>
+                  {quote.balanceDueCents > 0 && (
+                    <div>
+                      <dt>Then {readableDate(quote.balanceDueAt)}</dt>
+                      <dd>{money(quote.balanceDueCents)}</dd>
+                    </div>
+                  )}
+                </dl>
+
+                {quote.insuranceCents === 0 && (
+                  <p className="register__hint">
+                    The deposit is not refundable.
+                  </p>
+                )}
                 <div className="register__actions">
                   <button
                     type="button" className="register__back"
@@ -445,10 +479,10 @@ export default function Register() {
               </>
             ) : (
               <>
+                {/* The banner above already says registration is closed, so
+                    this only adds what is new here: the form is saved. */}
                 <p className="register__notice">
-                  Registration is closed for this year, so there is nothing to
-                  pay yet. We have kept what you filled in
-                  {reference ? ` under reference ${reference}` : ''}.
+                  There is nothing to pay yet. We have kept what you filled in.
                 </p>
                 {/* Without this there is no way back off the last step, and
                     someone who mistyped a name is stranded. */}
@@ -463,10 +497,12 @@ export default function Register() {
               </>
             )}
 
+            {/* Only the reference itself here. The sentence about ringing
+                the camp belongs on the confirmation, where it is the one
+                thing worth keeping — repeating it on both read as filler. */}
             {reference && (
               <p className="register__hint">
-                Your reference is <strong>{reference}</strong>. Keep it if you
-                need to ring the camp about this registration.
+                Reference <strong>{reference}</strong>
               </p>
             )}
           </div>
