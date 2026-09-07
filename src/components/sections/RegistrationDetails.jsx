@@ -18,7 +18,20 @@ export default function RegistrationDetails({ id = 'registration.details', ...re
     <section {...rest} className="section container registration-details" aria-labelledby={headingId}>
       <div className="registration-details__grid">
         <Reveal className="reg-panel">
-          <h2 className="reg-panel__title" id={headingId}>How payment works</h2>
+          {/* The <h2> keeps the DOM id, because the section's aria-labelledby
+              points at it and <Editable> takes `id` for its own node id — it
+              cannot carry a DOM id too. So the editable unit is the text
+              inside the heading, not the heading element. */}
+          <h2 className="reg-panel__title" id={headingId}>
+            <Editable id="registration.payment.title" as="span">
+              How payment works
+            </Editable>
+          </h2>
+          {/* The notes themselves are deliberately not wrapped, for the reason
+              the FAQ questions are not: their only handle is the string itself
+              (`key={note}`), so an id built from it would silently reattach to
+              a different note the moment someone reworded one. Edit these in
+              src/data/registration.js, where they are prose in source. */}
           <ul className="reg-panel__list">
             {PAYMENT_NOTES.map((note) => (
               <li key={note}>{note}</li>
@@ -27,12 +40,28 @@ export default function RegistrationDetails({ id = 'registration.details', ...re
         </Reveal>
 
         <Reveal delay={120} className="reg-panel">
-          <h2 className="reg-panel__title">Key dates</h2>
+          <Editable id="registration.dates.title" as="h2" className="reg-panel__title">
+            Key dates
+          </Editable>
+          {/* Keyed on the entry's label, which is what React already keys on
+              and what stays put when a date moves. */}
           <ul className="key-dates">
             {KEY_DATES.map((entry) => (
               <li key={entry.label}>
-                <span className="key-dates__date">{entry.date}</span>
-                <span className="key-dates__label">{entry.label}</span>
+                <Editable
+                  id={`registration.date.${entry.label}.when`}
+                  as="span"
+                  className="key-dates__date"
+                >
+                  {entry.date}
+                </Editable>
+                <Editable
+                  id={`registration.date.${entry.label}.label`}
+                  as="span"
+                  className="key-dates__label"
+                >
+                  {entry.label}
+                </Editable>
               </li>
             ))}
           </ul>
@@ -40,7 +69,13 @@ export default function RegistrationDetails({ id = 'registration.details', ...re
       </div>
 
       <Reveal delay={200} className="fine-print">
-        <h2 className="fine-print__title">The fine print</h2>
+        <Editable id="registration.fine-print.title" as="h2" className="fine-print__title">
+          The fine print
+        </Editable>
+        {/* Not wrapped, same reason as the payment notes: keyed on the rule's
+            own text, so an override would follow the wording rather than the
+            rule. These are refund terms — an override that silently reattached
+            to a different clause is the wrong kind of surprise. */}
         <ul className="fine-print__list">
           {FINE_PRINT.map((rule) => (
             <li key={rule}>{rule}</li>
@@ -54,10 +89,14 @@ export default function RegistrationDetails({ id = 'registration.details', ...re
           Email the directors — they answer everything.
         </Editable>
         <div className="registration-cta__actions">
-          <Button to="/register" variant="primary" size="lg">
+          {/* `id` puts the override on Button's inner label span, so the Link
+              itself keeps navigating — see Button.jsx. */}
+          <Button id="registration.cta.register" to="/register" variant="primary" size="lg">
             Register for camp
           </Button>
-          <Button to="/contact" variant="outline" size="lg">Contact the directors</Button>
+          <Button id="registration.cta.contact" to="/contact" variant="outline" size="lg">
+            Contact the directors
+          </Button>
         </div>
       </Reveal>
     </section>

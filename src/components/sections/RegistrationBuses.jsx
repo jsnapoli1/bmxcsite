@@ -30,7 +30,13 @@ export default function RegistrationBuses({ id = 'registration.buses', ...rest }
           {BUS_ROUTES.map((route, index) => (
             <Reveal as="li" key={route.region} delay={Math.min(index, 5) * 50} className="bus-route">
               <div className="bus-route__body">
-                <h3 className="bus-route__region">{route.region}</h3>
+                <Editable
+                  id={`registration.bus.${route.region}.region`}
+                  as="h3"
+                  className="bus-route__region"
+                >
+                  {route.region}
+                </Editable>
                 <Editable
                   id={`registration.bus.${route.region}.stops`}
                   as="p"

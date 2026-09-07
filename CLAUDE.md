@@ -187,6 +187,29 @@ The whole line is the right unit to rewrite, and `SectionHeading` /
 addresses it. **A bare `SplitText` with no wrapper is not editable at all** —
 wrap any new one.
 
+**The Registration page's own copy is editable, prices included.** Tier
+names and windows are keyed on `tier.name`, bus regions on `route.region`,
+key dates on `entry.label` — never loop position, so inserting a tier cannot
+slide one window's override onto another card. The deposit figure and its
+"Deposit" caption are separate handles: before this they had no id of their
+own, so clicking "$250 Deposit" selected the entire pricing section.
+
+`PAYMENT_NOTES` and `FINE_PRINT` are deliberately **not** wrapped, for the
+reason the FAQ questions are not: their only handle is the string itself
+(`key={note}`), so an id built from it would reattach to a different note the
+moment someone reworded one. Those are refund terms — edit them in
+`src/data/registration.js`.
+
+Displayed prices that `pricing.js` also charges (`tier.price`,
+`route.price`) stay unwrapped. A figure someone could retype in the editor
+would be a second, disagreeing answer, which is the one thing this page must
+not have. The deposit *is* a template (`{deposit}`) because the number stays
+live from `src/data/registration.js` either way.
+
+`<Editable>` takes `id` for its own node id and cannot also carry a DOM id.
+Where a heading is the target of `aria-labelledby`, the `<h2>` keeps the DOM
+id and the `<Editable>` wraps the text inside it.
+
 **Two sources of truth.** On CMS-backed pages (merch, staff, blog) a vedit
 override layers on top of the D1 value and wins. Edit copy in /admin; use the
 editor when the presentation is what needs changing.
