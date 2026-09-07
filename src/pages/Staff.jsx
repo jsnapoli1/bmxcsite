@@ -59,8 +59,18 @@ export default function Staff() {
                     >
                       {member.name}
                     </Editable>
+                    {/* The role gets its own handle, like the name and bio
+                        beside it. Without one, clicking "Veteran Coach · since
+                        2006" selected the whole card. `since` stays outside the
+                        editable span: it is a year from D1, and the separator
+                        belongs to the layout rather than the sentence. */}
                     <p className="staff-card__role">
-                      {member.role}
+                      <Editable
+                        id={`staff.member.${member.name}.role`}
+                        as="span"
+                      >
+                        {member.role}
+                      </Editable>
                       {member.since ? <span className="staff-card__since"> · since {member.since}</span> : null}
                     </p>
                     <Editable

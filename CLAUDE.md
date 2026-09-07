@@ -194,6 +194,24 @@ slide one window's override onto another card. The deposit figure and its
 "Deposit" caption are separate handles: before this they had no id of their
 own, so clicking "$250 Deposit" selected the entire pricing section.
 
+**What is deliberately not editable, site-wide.** An audit walked all
+eleven routes asking, of every text-bearing element, whether it resolves to
+its own vedit node or only to an ancestor — the latter being the bug where
+clicking "$250 Deposit" selected the whole pricing section. What is left:
+
+- **List items keyed by their own string** (`key={note}`): `PAYMENT_NOTES`,
+  `FINE_PRINT`, `STAFF_CREDENTIALS`, and the FAQ questions. An id built from
+  the text reattaches to a different item the moment someone rewords one.
+  Edit these in `src/data/`.
+- **Prices `pricing.js` also charges**: the three `tier.price` figures and
+  `route.price`. A retypable figure would be a second, disagreeing answer.
+- **The blog's fetch-failure message.** It renders only when the API is
+  down; an `<Editable>` in an error path is a liability, not a feature.
+
+Everything else on every page resolves to itself. When adding a section,
+check the value *beside* a wrapped label too — the recurring mistake is
+wrapping "Venue" and leaving "Camp Westmont" addressable only as its `<ul>`.
+
 `PAYMENT_NOTES` and `FINE_PRINT` are deliberately **not** wrapped, for the
 reason the FAQ questions are not: their only handle is the string itself
 (`key={note}`), so an id built from it would reattach to a different note the

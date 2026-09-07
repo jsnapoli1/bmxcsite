@@ -36,9 +36,23 @@ export default function HomeLocation({ id = 'home.location', ...rest }) {
             of educational and fun activities.
           </Editable>
           <ul className="home-location__facts">
-            <li><Editable id={`${id}.fact.venue`} as="span">Venue</Editable>{CAMP.venue.name}</li>
-            <li><Editable id={`${id}.fact.region`} as="span">Region</Editable>{CAMP.venue.region}</li>
-            <li><Editable id={`${id}.fact.buses-from`} as="span">Buses from</Editable>Buffalo, Rochester, Syracuse, Rockaway & Woodbridge</li>
+            {/* Label and value are separate handles. With only the label
+                wrapped, clicking "Camp Westmont" selected the whole <ul> —
+                the same trap the deposit figure had on /registration. */}
+            <li>
+              <Editable id={`${id}.fact.venue`} as="span">Venue</Editable>
+              <Editable id={`${id}.fact.venue.value`} as="span">{CAMP.venue.name}</Editable>
+            </li>
+            <li>
+              <Editable id={`${id}.fact.region`} as="span">Region</Editable>
+              <Editable id={`${id}.fact.region.value`} as="span">{CAMP.venue.region}</Editable>
+            </li>
+            <li>
+              <Editable id={`${id}.fact.buses-from`} as="span">Buses from</Editable>
+              <Editable id={`${id}.fact.buses-from.value`} as="span">
+                Buffalo, Rochester, Syracuse, Rockaway &amp; Woodbridge
+              </Editable>
+            </li>
           </ul>
           <Button id={`${id}.map-link`} href="https://maps.google.com/?q=Blue+Mountain+XC+Camp" variant="light">
             Open in Google Maps
