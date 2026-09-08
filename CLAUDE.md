@@ -122,6 +122,16 @@ route to appear in `EDITABLE_PAGES`. `/register` was served for months while
 absent from that list, so its "Pay $250 deposit" button could not be selected
 at all — an omission invisible from the page itself.
 
+**Embeds.** `Embed` (Elements group) takes a pasted YouTube, Spotify or
+Google Maps link. The URL is a trust boundary and is never passed through:
+`src/lib/embed.js` matches it against a fixed provider list, extracts an id,
+validates it, and **rebuilds** the embed URL from a literal template. An
+editor field reaching an `iframe src` unfiltered would let the `design`
+permission serve arbitrary content from bmxc.camp — a look-alike payment
+page, a `javascript:` URL — which is a much larger thing than changing how a
+page looks. Anything unmatched renders a message instead of an empty band.
+Adding a provider means adding a matcher there, not relaxing the check.
+
 The registry is `src/lib/vedit-components.js`; the sections it lists live in
 `src/components/sections/`. Everything is registered `wrap: false`, because
 these are full-width `<section>`s whose own class carries the padding — vedit's
