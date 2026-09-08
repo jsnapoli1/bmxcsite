@@ -39,22 +39,22 @@ export const INSURANCE = 50;
 export const SIBLING_DISCOUNT = 50;
 
 export const PAYMENT_NOTES = [
-  'The $250 deposit guarantees your spot at BMXC. Without cancellation cover it is non-refundable.',
-  'Add cancellation cover for $50 and everything you pay for camp comes back if you cancel any time before camp starts — deposit and bus included. The $50 itself is not returned.',
-  'Register before May 31 and the deposit plus bus fees are due at registration; the balance is billed at the end of May.',
-  'Register on June 1 or later and the full balance is due at registration.',
-  'Pay by card or by check — you cannot mix payment methods once you have chosen.',
-  '$50 off for the 2nd sibling, and for each sibling after that.',
-  'We offer everyone — teams and individuals — the same low price regardless of team status.',
+  { id: '250-deposit-guarantees-spot', text: 'The $250 deposit guarantees your spot at BMXC. Without cancellation cover it is non-refundable.' },
+  { id: 'add-cancellation-cover-50', text: 'Add cancellation cover for $50 and everything you pay for camp comes back if you cancel any time before camp starts — deposit and bus included. The $50 itself is not returned.' },
+  { id: 'register-before-may-31', text: 'Register before May 31 and the deposit plus bus fees are due at registration; the balance is billed at the end of May.' },
+  { id: 'register-on-june-1', text: 'Register on June 1 or later and the full balance is due at registration.' },
+  { id: 'pay-by-card-by', text: 'Pay by card or by check — you cannot mix payment methods once you have chosen.' },
+  { id: '50-off-2nd-sibling', text: '$50 off for the 2nd sibling, and for each sibling after that.' },
+  { id: 'we-offer-everyone-teams', text: 'We offer everyone — teams and individuals — the same low price regardless of team status.' },
 ];
 
 export const FINE_PRINT = [
-  'With cancellation cover: cancel any time before the first day of camp and every camp fee is refunded in full, including the deposit and any bus fee. The $50 cover itself is not refunded.',
-  'Without cancellation cover, cancellations before the end of June: all money refunded except the $250 deposit.',
-  'Without cancellation cover, cancellations on 7/1 or later: no money will be refunded.',
-  'Without cancellation cover, bus cancellations on July 1 or later: no refunds.',
-  'No transfers between campers.',
-  'No discounts, refunds, or partial refunds for arriving late or leaving early.',
+  { id: 'cancellation-cover-cancel-any', text: 'With cancellation cover: cancel any time before the first day of camp and every camp fee is refunded in full, including the deposit and any bus fee. The $50 cover itself is not refunded.' },
+  { id: 'without-cancellation-cover-cancellations', text: 'Without cancellation cover, cancellations before the end of June: all money refunded except the $250 deposit.' },
+  { id: 'without-cancellation-cover-cancellations-2', text: 'Without cancellation cover, cancellations on 7/1 or later: no money will be refunded.' },
+  { id: 'without-cancellation-cover-bus', text: 'Without cancellation cover, bus cancellations on July 1 or later: no refunds.' },
+  { id: 'transfers-between-campers', text: 'No transfers between campers.' },
+  { id: 'discounts-refunds-partial-refunds', text: 'No discounts, refunds, or partial refunds for arriving late or leaving early.' },
 ];
 
 export const KEY_DATES = [

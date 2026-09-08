@@ -179,7 +179,14 @@ export default function Merch() {
             <Editable id="merch.caveats.label" as="p">Please note:</Editable>
             <ul className="merch-caveats">
               {MERCH_CAVEATS.map((caveat) => (
-                <li key={caveat}>{caveat}</li>
+                <Editable
+                  key={caveat.id}
+                  id={`merch.caveat.${caveat.id}`}
+                  label={caveat.text}
+                  as="li"
+                >
+                  {caveat.text}
+                </Editable>
               ))}
             </ul>
           </Reveal>

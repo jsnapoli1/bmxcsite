@@ -90,9 +90,9 @@ export const INCLUDED_SHIRTS = [
 
 /** Caveats the camp states directly on its apparel page. */
 export const MERCH_CAVEATS = [
-  'Offerings may vary from what is shown without notice, including styles, colour, size, and price.',
-  'No pre-orders or reservations.',
-  'Availability is limited.',
+  { id: 'offerings-may-vary-from', text: 'Offerings may vary from what is shown without notice, including styles, colour, size, and price.' },
+  { id: 'pre-orders-reservations', text: 'No pre-orders or reservations.' },
+  { id: 'availability-limited', text: 'Availability is limited.' },
 ];
 
 /** Prizes are given away, not sold — worth distinguishing on this page. */

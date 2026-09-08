@@ -27,14 +27,22 @@ export default function RegistrationDetails({ id = 'registration.details', ...re
               How payment works
             </Editable>
           </h2>
-          {/* The notes themselves are deliberately not wrapped, for the reason
-              the FAQ questions are not: their only handle is the string itself
-              (`key={note}`), so an id built from it would silently reattach to
-              a different note the moment someone reworded one. Edit these in
-              src/data/registration.js, where they are prose in source. */}
+          {/* Keyed on the explicit ids in src/data/registration.js. These
+              were unwrapped while their only handle was the string itself —
+              an id built from the text reattaches to a different note the
+              moment someone rewords one, which is exactly what editing them
+              is for. With ids in the data, rewording keeps the override and
+              reordering cannot move one note's edit onto another. */}
           <ul className="reg-panel__list">
             {PAYMENT_NOTES.map((note) => (
-              <li key={note}>{note}</li>
+              <Editable
+                key={note.id}
+                id={`registration.payment.note.${note.id}`}
+                label={note.text}
+                as="li"
+              >
+                {note.text}
+              </Editable>
             ))}
           </ul>
         </Reveal>
@@ -72,13 +80,20 @@ export default function RegistrationDetails({ id = 'registration.details', ...re
         <Editable id="registration.fine-print.title" as="h2" className="fine-print__title">
           The fine print
         </Editable>
-        {/* Not wrapped, same reason as the payment notes: keyed on the rule's
-            own text, so an override would follow the wording rather than the
-            rule. These are refund terms — an override that silently reattached
-            to a different clause is the wrong kind of surprise. */}
+        {/* Same as the payment notes: explicit ids in the data, so an
+            override follows the rule rather than its wording. These are
+            refund terms, which is exactly why the id must not track the
+            text — a reattached clause here is the wrong kind of surprise. */}
         <ul className="fine-print__list">
           {FINE_PRINT.map((rule) => (
-            <li key={rule}>{rule}</li>
+            <Editable
+              key={rule.id}
+              id={`registration.fine-print.${rule.id}`}
+              label={rule.text}
+              as="li"
+            >
+              {rule.text}
+            </Editable>
           ))}
         </ul>
       </Reveal>

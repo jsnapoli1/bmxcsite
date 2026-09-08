@@ -4,11 +4,15 @@ import PageHeader from '../components/layout/PageHeader.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import { useContent } from '../hooks/useContent.js';
 import { FAQ_CATEGORIES, MAIL_ADDRESSES } from '../data/faq.js';
+import { withQuestionIds } from '../lib/faq-ids.js';
 import './faq.css';
 
 export default function Faq() {
   const { content } = useContent('faq', { categories: FAQ_CATEGORIES });
-  const categories = content.categories;
+  // Documents written before questions had ids still need stable handles,
+  // and a document is only rewritten when someone saves in /admin. Filling
+  // them in on read means an unmigrated FAQ is editable too.
+  const categories = withQuestionIds(content.categories);
 
   const [activeCategory, setActiveCategory] = useState(FAQ_CATEGORIES[0].id);
   const [openQuestion, setOpenQuestion] = useState(null);
@@ -89,18 +93,18 @@ export default function Faq() {
           {/* --- Questions --- */}
           <div className="faq__panel">
             <ul className="faq__list">
-              {/* The questions themselves are deliberately NOT wrapped in
-                  <Editable>. A FAQ item's only handle is its position
-                  (`${category.id}-${index}`), so an explicit id built from
-                  it would look stable while silently reattaching an
-                  override to a different question the moment someone
-                  reorders or inserts one in /admin — worse than the
-                  scanner's ids, which at least advertise their fragility.
+              {/* Keyed on the question's own id, minted once when it is
+                  created and carried in the content document. Position
+                  (`${category.id}-${index}`) was the reason these could not
+                  be wrapped: /admin offers an explicit reorder control, so
+                  moving a question would slide the one below it into its
+                  override.
 
-                  These answers are also the camp's own sentences (see
-                  CLAUDE.md); /admin is where they should be edited. */}
+                  The answers remain the camp's own sentences and /admin is
+                  still the right place to rewrite them; the editor is for
+                  when the presentation is what needs changing. */}
               {category.items.map((item, index) => {
-                const key = `${category.id}-${index}`;
+                const key = `${category.id}-${item.id ?? index}`;
                 const isOpen = openQuestion === key;
 
                 return (
@@ -114,7 +118,13 @@ export default function Faq() {
                         aria-controls={`answer-${key}`}
                         id={`question-${key}`}
                       >
-                        <span>{item.q}</span>
+                        <Editable
+                          id={`faq.item.${item.id}.q`}
+                          label={item.q}
+                          as="span"
+                        >
+                          {item.q}
+                        </Editable>
                         <span className="faq__icon" aria-hidden="true" />
                       </button>
                     </h3>
@@ -125,7 +135,13 @@ export default function Faq() {
                       aria-labelledby={`question-${key}`}
                       hidden={!isOpen}
                     >
-                      <p>{item.a}</p>
+                      <Editable
+                        id={`faq.item.${item.id}.a`}
+                        label={`${item.q} — answer`}
+                        as="p"
+                      >
+                        {item.a}
+                      </Editable>
                     </div>
                   </Reveal>
                 );

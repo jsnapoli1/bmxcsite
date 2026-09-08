@@ -3,20 +3,9 @@ import { getContent, saveContent, publishContent } from '../lib/api.js';
 import { reorder } from '../lib/reorder.js';
 import { contentMatchesPublished } from '../lib/content-diff.js';
 import OrderedList from '../components/OrderedList.jsx';
+import { slugify, mintQuestionId } from '../../lib/faq-ids.js';
 
 const EMPTY_ITEM = { q: '', a: '' };
-
-/**
- * Turns a category label into a URL/id-safe slug: lowercase, spaces and
- * punctuation collapsed to single hyphens, leading/trailing hyphens trimmed.
- * "Buses & Travel" -> "buses-travel".
- */
-function slugify(label) {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 export default function Faq() {
   const [draft, setDraft] = useState(null);
@@ -85,7 +74,14 @@ export default function Faq() {
 
   function addItem(categoryIndex) {
     const category = draft.categories[categoryIndex];
-    updateCategory(categoryIndex, { items: [...(category.items ?? []), { ...EMPTY_ITEM }] });
+    // Every question carries an id so the visual editor can key an override
+    // on it. Minted here, once, because reordering below would make any id
+    // derived from position or wording reattach to a different question.
+    const taken = new Set(
+      draft.categories.flatMap((entry) => (entry.items ?? []).map((item) => item.id)),
+    );
+    const item = { ...EMPTY_ITEM, id: mintQuestionId('question', taken) };
+    updateCategory(categoryIndex, { items: [...(category.items ?? []), item] });
   }
 
   function updateItem(categoryIndex, itemIndex, changes) {
