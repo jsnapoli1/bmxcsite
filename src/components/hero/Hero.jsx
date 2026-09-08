@@ -27,7 +27,14 @@ export default function Hero() {
             Established 1969
           </Editable>
           <span className="hero__rule" aria-hidden="true" />
-          <span className="hero__place">{CAMP.venue.town}</span>
+          <Editable
+            id="home.hero.place"
+            as="span"
+            className="hero__place"
+            vars={{ town: CAMP.venue.town }}
+          >
+            {'{town}'}
+          </Editable>
         </Reveal>
 
         {/* Each line is wrapped so the editor has one node per line to
@@ -55,19 +62,37 @@ export default function Hero() {
         </Reveal>
 
         <Reveal delay={380} className="hero__actions">
-          <Button to="/registration" variant="accent" size="lg">
-            Register for {CAMP.session.year}
+          {/* The year is a var, not baked into the label: a rewritten CTA
+              still names the current session after the year rolls over. */}
+          <Button
+            id="home.hero.cta.register"
+            to="/registration"
+            variant="accent"
+            size="lg"
+            vars={{ year: CAMP.session.year }}
+          >
+            {'Register for {year}'}
           </Button>
-          <Button to="/camp" variant="light" size="lg">
+          <Button id="home.hero.cta.week" to="/camp" variant="light" size="lg">
             See the week
           </Button>
         </Reveal>
 
         <Reveal delay={450} className="hero__session">
           <span className="hero__session-dot" aria-hidden="true" />
-          <span>
-            {CAMP.session.year} session · {CAMP.session.start} – {CAMP.session.end}
-          </span>
+          {/* Dates stay live: the override keeps the sentence, the
+              vars keep the session it names current. */}
+          <Editable
+            id="home.hero.session"
+            as="span"
+            vars={{
+              year: CAMP.session.year,
+              start: CAMP.session.start,
+              end: CAMP.session.end,
+            }}
+          >
+            {'{year} session · {start} – {end}'}
+          </Editable>
         </Reveal>
       </div>
 
@@ -78,7 +103,9 @@ export default function Hero() {
             <Editable id={`home.hero.stat.${stat.label}.value`} as="span" className="hero__stat-value">
               {stat.value}
             </Editable>
-            <span className="hero__stat-label">{stat.label}</span>
+            <Editable id={`home.hero.stat.${stat.label}.label`} as="span" className="hero__stat-label">
+              {stat.label}
+            </Editable>
             <Editable id={`home.hero.stat.${stat.label}.detail`} as="span" className="hero__stat-detail">
               {stat.detail}
             </Editable>

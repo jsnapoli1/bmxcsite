@@ -19,6 +19,7 @@ export default function RegistrationBuses({ id = 'registration.buses', ...rest }
       <div className="container">
         <SectionHeading
           id={id}
+          headingId={headingId}
           eyebrow="Getting there"
           title="Bus routes"
           lead="Round trip only — buses fill even faster than camp does, usually 80% full by early April."

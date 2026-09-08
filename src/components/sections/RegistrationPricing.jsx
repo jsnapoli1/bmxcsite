@@ -18,6 +18,7 @@ export default function RegistrationPricing({ id = 'registration.pricing', ...re
     <section {...rest} className="section container" aria-labelledby={headingId}>
       <SectionHeading
         id="registration.tuition"
+        headingId={headingId}
         eyebrow="Tuition"
         title="One price for everyone — teams and individuals alike"
         lead="Register earlier and pay less. There are no team discounts, because everyone gets the same low price regardless of team status."

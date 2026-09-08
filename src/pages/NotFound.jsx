@@ -13,7 +13,7 @@ export default function NotFound() {
       />
       <section className="section container">
         <Reveal>
-          <Button to="/" variant="primary" size="lg">Back to home</Button>
+          <Button id="notfound.cta.home" to="/" variant="primary" size="lg">Back to home</Button>
         </Reveal>
       </section>
     </>

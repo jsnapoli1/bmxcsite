@@ -87,6 +87,7 @@ export default function MerchStore({ id = 'merch.store', ...rest }) {
               <p className="merch-store__note">{product.description}</p>
             )}
             <Button
+              id={`merch.store.item.${product.id}.cta`}
               href={`${SHOP_ORIGIN}/products/${product.id}`}
               variant="ghost"
             >

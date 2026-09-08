@@ -30,9 +30,14 @@ export default function Footer() {
           <Editable id="chrome.footer.tagline" as="p" className="footer__tagline">
             {CAMP.tagline}
           </Editable>
-          <p className="footer__est">
-            Est. {CAMP.founded} · {CAMP.venue.town}
-          </p>
+          <Editable
+            id="chrome.footer.est"
+            as="p"
+            className="footer__est"
+            vars={{ founded: CAMP.founded, town: CAMP.venue.town }}
+          >
+            {'Est. {founded} · {town}'}
+          </Editable>
         </div>
 
         <nav className="footer__nav" aria-label="Footer navigation">
@@ -59,22 +64,26 @@ export default function Footer() {
           <ul className="footer__list">
             <li>
               <a href={`mailto:${CAMP.contact.email}`} className="footer__link">
-                {CAMP.contact.email}
+                <Editable id="chrome.footer.contact.email" as="span" vars={{ email: CAMP.contact.email }}>
+                  {'{email}'}
+                </Editable>
               </a>
             </li>
             <li>
               <a href={`tel:${CAMP.contact.phone.replace(/-/g, '')}`} className="footer__link">
-                {CAMP.contact.phone}
+                <Editable id="chrome.footer.contact.phone" as="span" vars={{ phone: CAMP.contact.phone }}>
+                  {'{phone}'}
+                </Editable>
               </a>
             </li>
             <li>
               <a href={CAMP.social.facebook} className="footer__link" target="_blank" rel="noopener noreferrer">
-                Facebook
+                <Editable id="chrome.footer.social.facebook" as="span">Facebook</Editable>
               </a>
             </li>
             <li>
               <a href={CAMP.social.instagram} className="footer__link" target="_blank" rel="noopener noreferrer">
-                Instagram
+                <Editable id="chrome.footer.social.instagram" as="span">Instagram</Editable>
               </a>
             </li>
           </ul>
@@ -82,7 +91,13 @@ export default function Footer() {
       </div>
 
       <div className="footer__base container-wide">
-        <p>© {CAMP.founded}–present {CAMP.name}.</p>
+        <Editable
+          id="chrome.footer.copyright"
+          as="p"
+          vars={{ founded: CAMP.founded, name: CAMP.name }}
+        >
+          {'© {founded}–present {name}.'}
+        </Editable>
         <Editable id="chrome.footer.note" as="p" className="footer__base-note">
           The oldest and longest running XC summer camp in the Northeast.
         </Editable>

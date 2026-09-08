@@ -19,9 +19,24 @@ export default function HomeCta({ id = 'home.cta', ...rest }) {
   return (
     <section {...rest} className="section container" aria-labelledby={headingId}>
       <Reveal variant="scale" className="home-cta">
-        <span className="eyebrow eyebrow-accent">{CAMP.session.year} session</span>
+        <Editable
+          id={`${id}.eyebrow`}
+          as="span"
+          className="eyebrow eyebrow-accent"
+          vars={{ year: CAMP.session.year }}
+        >
+          {'{year} session'}
+        </Editable>
+        {/* The h2 keeps the DOM id `aria-labelledby` points at; the
+            Editable wraps the text inside it. Dates stay live vars. */}
         <h2 className="home-cta__title" id={headingId}>
-          {CAMP.session.start} – {CAMP.session.end}
+          <Editable
+            id={`${id}.title`}
+            as="span"
+            vars={{ start: CAMP.session.start, end: CAMP.session.end }}
+          >
+            {'{start} – {end}'}
+          </Editable>
         </h2>
         <Editable id={`${id}.body`} as="p" className="home-cta__body">
           Registration opens January 1st at 12:01am. We are usually 80% full by early May,

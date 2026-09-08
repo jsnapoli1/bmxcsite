@@ -20,6 +20,7 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
       <div className="container">
         <SectionHeading
           id={id}
+          headingId={headingId}
           eyebrow="Before you go"
           title="What to pack"
           lead="There are 12 exercise sessions during the week, so bring at least 7 running outfits."
@@ -29,7 +30,15 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
         <div className="packing__grid">
           {PACKING_LIST.map((group, index) => (
             <Reveal key={group.category} delay={Math.min(index, 5) * 45} className="packing__card">
-              <h3 className="packing__category">{group.category}</h3>
+              {/* Keyed on the category name, which is already the
+                  React key, so an override follows its group. */}
+              <Editable
+                id={`${id}.group.${group.category}`}
+                as="h3"
+                className="packing__category"
+              >
+                {group.category}
+              </Editable>
               <ul className="packing__items">
                 {group.items.map((item) => (
                   <li key={item}>{item}</li>
@@ -46,7 +55,7 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
             There is no locked storage and no laundry, so if an item must be safeguarded,
             consider leaving it at home.
           </Editable>
-          <Button to="/faq" variant="ghost">More in the FAQ →</Button>
+          <Button id="camp.packing.cta.faq" to="/faq" variant="ghost">More in the FAQ →</Button>
         </Reveal>
       </div>
     </section>

@@ -34,7 +34,9 @@ export default function Staff() {
         {content.groups.map((group, groupIndex) => (
           <div className="staff-group" key={group.group}>
             <Reveal variant="fade" className="staff-group__label">
-              <h3>{group.group}</h3>
+              <Editable id={`staff.group.${group.group}`} as="h3">
+                {group.group}
+              </Editable>
               <span className="staff-group__count">
                 {String(group.members.length).padStart(2, '0')}
               </span>
@@ -93,6 +95,7 @@ export default function Staff() {
         <div className="container">
           <SectionHeading
             id="staff.also"
+            headingId="credentials-heading"
             eyebrow="Every week"
             title="Also on staff"
             tone="light"
@@ -115,6 +118,7 @@ export default function Staff() {
       <section className="section container" aria-labelledby="speakers-heading">
         <SectionHeading
           id="staff.speakers"
+          headingId="speakers-heading"
           eyebrow="Guest speakers"
           title="Guest Speakers"
           lead="We bring the best athletes, coaches, and educators to spend time with the campers. Some are former BMXC campers who went on to run professionally."
@@ -126,8 +130,22 @@ export default function Staff() {
             <Reveal as="li" key={speaker.name + index} delay={Math.min(index, 5) * 35} className="speaker">
               <span className="speaker__year">{speaker.year ?? '—'}</span>
               <div className="speaker__body">
-                <h3 className="speaker__name">{speaker.name}</h3>
-                <p className="speaker__credential">{speaker.credential}</p>
+                {/* Keyed on the name, as staff.member.* already is —
+                    never `index`, which the React key taints. */}
+                <Editable
+                  id={`staff.speaker.${speaker.name}.name`}
+                  as="h3"
+                  className="speaker__name"
+                >
+                  {speaker.name}
+                </Editable>
+                <Editable
+                  id={`staff.speaker.${speaker.name}.credential`}
+                  as="p"
+                  className="speaker__credential"
+                >
+                  {speaker.credential}
+                </Editable>
               </div>
             </Reveal>
           ))}

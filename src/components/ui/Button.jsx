@@ -11,10 +11,15 @@ import './button.css';
  * swallowing the element's own behaviour — a Link that became an editable
  * box would stop navigating. Without an id the label renders as before, so
  * every existing call site is unaffected.
+ *
+ * `vars` is named rather than left to `...rest` because it belongs to the
+ * Editable, not the DOM: spreading it onto an <a> or <button> would put an
+ * object on an attribute React warns about and the browser ignores.
  */
 export default function Button({
   children,
   id,
+  vars,
   to,
   href,
   variant = 'primary',
@@ -27,7 +32,7 @@ export default function Button({
   const inner = (
     <>
       {id ? (
-        <Editable id={id} as="span" className="btn__label">{children}</Editable>
+        <Editable id={id} as="span" className="btn__label" vars={vars}>{children}</Editable>
       ) : (
         <span className="btn__label">{children}</span>
       )}

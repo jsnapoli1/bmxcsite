@@ -58,7 +58,13 @@ export default function ContactChannels({ id = 'contact.channels', ...rest }) {
                 ? { target: '_blank', rel: 'noopener noreferrer' }
                 : {})}
             >
-              <span className="contact-card__label">{channel.label}</span>
+              <Editable
+                id={`${id}.channel.${channel.label}.label`}
+                as="span"
+                className="contact-card__label"
+              >
+                {channel.label}
+              </Editable>
               <Editable
                 id={`${id}.channel.${channel.label}.value`}
                 as="span"
@@ -106,7 +112,7 @@ export default function ContactChannels({ id = 'contact.channels', ...rest }) {
             <span>{CAMP.venue.name}</span>
             <span>{CAMP.venue.town}</span>
           </address>
-          <Button href="https://maps.google.com/?q=Blue+Mountain+XC+Camp" variant="ghost">
+          <Button id="contact.map.cta" href="https://maps.google.com/?q=Blue+Mountain+XC+Camp" variant="ghost">
             Open in Google Maps →
           </Button>
         </Reveal>

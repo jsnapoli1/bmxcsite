@@ -54,9 +54,9 @@ export default function Blog() {
             The blog could not be loaded. Try again in a moment.
           </p>
         ) : posts.length === 0 ? (
-          <p className="blog__empty">
+          <Editable id="blog.empty" as="p" className="blog__empty">
             Nothing posted yet. Check back soon.
-          </p>
+          </Editable>
         ) : (
           <ol className="blog-list">
             {posts.map((post, index) => (
@@ -76,7 +76,15 @@ export default function Blog() {
                     >
                       {post.title}
                     </Editable>
-                    {post.excerpt ? <p className="blog-list__excerpt">{post.excerpt}</p> : null}
+                    {post.excerpt ? (
+                      <Editable
+                        id={`blog.post.${post.slug}.excerpt`}
+                        as="p"
+                        className="blog-list__excerpt"
+                      >
+                        {post.excerpt}
+                      </Editable>
+                    ) : null}
                   </div>
                   {post.hero_media_key ? (
                     <img

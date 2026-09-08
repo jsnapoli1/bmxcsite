@@ -18,6 +18,7 @@ export default function CampSchedule({ id = 'camp.schedule', ...rest }) {
     <section {...rest} className="section container" aria-labelledby={headingId}>
       <SectionHeading
         id="camp.fullday"
+        headingId={headingId}
         eyebrow="Full day example"
         title="A full day at camp"
         lead="Here is what a full day at BMXC looks like."
@@ -27,12 +28,27 @@ export default function CampSchedule({ id = 'camp.schedule', ...rest }) {
       <ol className="schedule">
         {SCHEDULE.map((slot, index) => (
           <Reveal as="li" key={slot.time + slot.title} delay={Math.min(index, 5) * 35} className="schedule__item">
-            <div className="schedule__time">{slot.time}</div>
+            {/* The time and title already compose the body's id; they now
+                carry nodes of their own, so clicking "Morning run" selects
+                the words rather than the whole row. */}
+            <Editable
+              id={`camp.schedule.${slot.time}-${slot.title}.time`}
+              as="div"
+              className="schedule__time"
+            >
+              {slot.time}
+            </Editable>
             <div className="schedule__marker" aria-hidden="true">
               <span className="schedule__dot" />
             </div>
             <div className="schedule__content">
-              <h3 className="schedule__title">{slot.title}</h3>
+              <Editable
+                id={`camp.schedule.${slot.time}-${slot.title}.title`}
+                as="h3"
+                className="schedule__title"
+              >
+                {slot.title}
+              </Editable>
               <Editable
                 id={`camp.schedule.${slot.time}-${slot.title}.body`}
                 as="p"

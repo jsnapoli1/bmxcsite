@@ -63,6 +63,7 @@ export default function Merch() {
         <div className="container">
           <SectionHeading
             id="merch.catalog"
+            headingId="lineup-heading"
             eyebrow={`Items are $${MERCH.priceRange.min}-${MERCH.priceRange.max} each`}
             title="What we sell"
             lead="Offerings may vary from what is shown without notice, including styles, color, size, and price."
@@ -137,6 +138,7 @@ export default function Merch() {
       <section className="section container" aria-labelledby="included-heading">
         <SectionHeading
           id="merch.included"
+          headingId="included-heading"
           eyebrow="Included with camp"
           title="T-shirts you do not buy"
           as="h2"
@@ -161,6 +163,7 @@ export default function Merch() {
         <div className="merch-giveaways">
           <SectionHeading
             id="merch.giveaways"
+            headingId="giveaways-heading"
             eyebrow="Prizes"
             title="Giveaways during the week"
             as="h2"
@@ -168,7 +171,7 @@ export default function Merch() {
           />
           <Reveal delay={140} className="merch-giveaways__body">
             <p>{GIVEAWAYS.body}</p>
-            <Button to="/faq" variant="ghost">More in the FAQ →</Button>
+            <Button id="merch.cta.faq" to="/faq" variant="ghost">More in the FAQ →</Button>
           </Reveal>
         </div>
       </section>
