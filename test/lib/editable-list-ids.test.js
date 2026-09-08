@@ -1,48 +1,103 @@
 /**
- * The packing list is edited in the browser, so its ids are load-bearing.
+ * Every list a person edits in the browser is keyed on an explicit id.
  *
- * vedit keys an override on `camp.packing.item.<id>`. Renaming an item's
- * text is fine and keeps its override; changing an `id` orphans that
- * override, and reusing one moves a different item's edit onto this row —
- * the failure the ids exist to prevent. These tests make either mistake
- * fail loudly rather than silently reattaching someone's edit.
+ * vedit keys an override on that id, so it is load-bearing: renaming an
+ * item's text is fine and keeps its override, but changing an `id` orphans
+ * it, and reusing one moves a different item's edit onto this row. These
+ * lists were all unwrapped originally *because* their only handle was the
+ * string itself — an id built from the text reattaches the moment someone
+ * rewords one, which is exactly what editing them is for.
+ *
+ * Prices are deliberately absent. pricing.js and Stripe charge those
+ * figures, so a retypable number would be a second, disagreeing answer.
  */
 import { describe, it, expect } from 'vitest';
 import { PACKING_LIST } from '../../src/data/packing.js';
+import { PAYMENT_NOTES, FINE_PRINT } from '../../src/data/registration.js';
+import { MERCH_CAVEATS } from '../../src/data/merch.js';
+import { STAFF_CREDENTIALS } from '../../src/data/staff.js';
+import { FAQ_CATEGORIES } from '../../src/data/faq.js';
+import { mintQuestionId, withQuestionIds } from '../../src/lib/faq-ids.js';
 
-const items = PACKING_LIST.flatMap((group) => group.items);
+/** Flat `{ id, text }` lists: same shape, same invariants. */
+const TEXT_LISTS = {
+  PACKING_LIST: PACKING_LIST.flatMap((group) => group.items),
+  PAYMENT_NOTES,
+  FINE_PRINT,
+  MERCH_CAVEATS,
+  STAFF_CREDENTIALS,
+};
 
-describe('packing list ids', () => {
-  it('gives every category an id', () => {
-    for (const group of PACKING_LIST) {
-      expect(group.id, `category "${group.category}" has no id`).toBeTruthy();
-    }
-  });
-
-  it('gives every item an id and text', () => {
+describe.each(Object.entries(TEXT_LISTS))('%s', (name, items) => {
+  it('gives every entry an id and text', () => {
     for (const item of items) {
-      expect(item.id, `item ${JSON.stringify(item)} has no id`).toBeTruthy();
-      expect(item.text, `item ${item.id} has no text`).toBeTruthy();
+      expect(item.id, `an entry of ${name} has no id`).toBeTruthy();
+      expect(item.text, `${name} entry ${item.id} has no text`).toBeTruthy();
     }
   });
 
-  it('never repeats an item id', () => {
+  it('never repeats an id', () => {
     const ids = items.map((item) => item.id);
     const duplicates = ids.filter((id, i) => ids.indexOf(id) !== i);
-    expect(duplicates, 'duplicate ids move one item\'s override onto another').toEqual([]);
+    expect(duplicates, "duplicate ids move one entry's override onto another").toEqual([]);
   });
 
-  it('never repeats a category id', () => {
-    const ids = PACKING_LIST.map((group) => group.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it('keeps ids url-safe, so they read plainly in the editor', () => {
+  it('keeps ids readable slugs', () => {
     for (const item of items) {
       expect(item.id, `${item.id} is not a plain slug`).toMatch(/^[a-z0-9-]+$/);
     }
-    for (const group of PACKING_LIST) {
-      expect(group.id, `${group.id} is not a plain slug`).toMatch(/^[a-z0-9-]+$/);
-    }
+  });
+});
+
+describe('PACKING_LIST categories', () => {
+  it('gives every category a unique slug id', () => {
+    const ids = PACKING_LIST.map((group) => group.id);
+    for (const id of ids) expect(id).toMatch(/^[a-z0-9-]+$/);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('FAQ question ids', () => {
+  const items = FAQ_CATEGORIES.flatMap((category) => category.items);
+
+  it('gives every question an id, and never repeats one', () => {
+    for (const item of items) expect(item.id, `"${item.q}" has no id`).toBeTruthy();
+    const ids = items.map((item) => item.id);
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+  });
+
+  it('keeps question ids readable slugs', () => {
+    for (const item of items) expect(item.id).toMatch(/^[a-z0-9-]+$/);
+  });
+
+  it('mints a fresh id rather than colliding with one already taken', () => {
+    const taken = new Set(['registration-open']);
+    const id = mintQuestionId('When does registration open?', taken);
+    expect(id).not.toBe('registration-open');
+    expect(taken.has(id)).toBe(false);
+  });
+
+  it('fills in ids for documents written before questions had them', () => {
+    const legacy = [
+      { id: 'c1', items: [{ q: 'How long is camp?', a: 'A week.' }, { q: 'Cost?', a: '$555.' }] },
+    ];
+    const filled = withQuestionIds(legacy);
+    const ids = filled[0].items.map((item) => item.id);
+    expect(ids.every(Boolean)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+    // text is untouched
+    expect(filled[0].items[0].q).toBe('How long is camp?');
+  });
+
+  it('leaves a fully-migrated document alone', () => {
+    expect(withQuestionIds(FAQ_CATEGORIES)).toBe(FAQ_CATEGORIES);
+  });
+
+  it('does not reuse an id already present elsewhere in the document', () => {
+    const mixed = [
+      { id: 'c1', items: [{ id: 'cost', q: 'Cost?', a: 'x' }, { q: 'Cost?', a: 'y' }] },
+    ];
+    const ids = withQuestionIds(mixed)[0].items.map((item) => item.id);
+    expect(new Set(ids).size).toBe(2);
   });
 });

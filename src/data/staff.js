@@ -34,11 +34,11 @@ export const STAFF_GROUPS = [
 ];
 
 export const STAFF_CREDENTIALS = [
-  'A registered nurse on site',
-  'American Red Cross certified lifeguards',
-  'High school coaches with CPR, AED, and First Aid training',
-  'Current and former college athletes from Division 1, 2, and 3 schools',
-  'Running store employees who know the gear',
+  { id: 'registered-nurse-site', text: 'A registered nurse on site' },
+  { id: 'american-red-cross-certified', text: 'American Red Cross certified lifeguards' },
+  { id: 'high-school-coaches-cpr', text: 'High school coaches with CPR, AED, and First Aid training' },
+  { id: 'current-former-college-athletes', text: 'Current and former college athletes from Division 1, 2, and 3 schools' },
+  { id: 'running-store-employees-know', text: 'Running store employees who know the gear' },
 ];
 
 /** A selection of past guest speakers. */

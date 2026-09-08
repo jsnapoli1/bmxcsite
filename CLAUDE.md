@@ -161,9 +161,13 @@ item's override onto another product. `SectionHeading` and `PageHeader` take an
 call site. Anything unwrapped falls back to the DOM scanner, whose positional
 ids (`auto:#root>section>h1`) break when the markup moves.
 
-FAQ questions are deliberately **not** wrapped: their only handle is
-`${category.id}-${index}`, so an explicit id would look stable while silently
-reattaching on reorder.
+FAQ questions carry an explicit `id`, minted once when the question is
+created. `${category.id}-${index}` was the problem: /admin offers a reorder
+control, so a position-derived id slid a question's override onto its
+neighbour the first time anyone moved one. `src/lib/faq-ids.js` mints ids and
+fills them in on read, since a D1 document is only rewritten when someone
+saves. Keep that module free of React and editor imports — the admin panel
+imports it, and the reason `visual-editor-pages.js` exists applies here too.
 
 `SplitText`'s word spans are excluded from the scanner by the `autoSelector`
 passed to VeditProvider, not by `data-vedit-ui`. The scanner matches `span`
@@ -194,35 +198,45 @@ slide one window's override onto another card. The deposit figure and its
 "Deposit" caption are separate handles: before this they had no id of their
 own, so clicking "$250 Deposit" selected the entire pricing section.
 
-**What is deliberately not editable, site-wide.** An audit walked all
-eleven routes asking, of every text-bearing element, whether it resolves to
-its own vedit node or only to an ancestor — the latter being the bug where
-clicking "$250 Deposit" selected the whole pricing section. What is left:
+**Every list that reads as prose carries ids in its data.** `PACKING_LIST`,
+`PAYMENT_NOTES`, `FINE_PRINT`, `MERCH_CAVEATS`, `STAFF_CREDENTIALS` and the
+FAQ questions are all `{ id, text }` (or `{ id, q, a }`), and each entry is
+wrapped and keyed on its own id.
 
-- **List items keyed by their own string** (`key={note}`): `PAYMENT_NOTES`,
-  `FINE_PRINT`, `STAFF_CREDENTIALS`, and the FAQ questions. An id built from
-  the text reattaches to a different item the moment someone rewords one.
-  Edit these in `src/data/`.
-- **Prices `pricing.js` also charges**: the three `tier.price` figures and
-  `route.price`. A retypable figure would be a second, disagreeing answer.
+These were unwrapped for years because their only handle was the string
+itself (`key={note}`) — an id built from the text reattaches to a different
+row the moment someone rewords one, which is exactly what editing them is
+for. That is a reason to fix the data, not to leave the copy uneditable.
+
+**The ids are load-bearing.** Rewording an entry keeps its override;
+*changing* an `id` orphans that override, and reusing one moves another
+entry's edit onto that row. `test/lib/editable-list-ids.test.js` pins it:
+every entry has an id and text, no id repeats, ids are plain slugs, and the
+FAQ migration fills gaps without touching text.
+
+**What is still deliberately not editable, site-wide:**
+
+- **Prices anything also charges**: `tier.price`, `route.price`, and the
+  OpenShop store figures. A retypable number would be a second, disagreeing
+  answer, which is the one thing these pages must not have. The deposit *is*
+  a template (`{deposit}`) because the number stays live from
+  `src/data/registration.js` either way.
 - **The blog's fetch-failure message.** It renders only when the API is
-  down; an `<Editable>` in an error path is a liability, not a feature.
+  down; an `<Editable>` in an error path is a liability, not a feature. The
+  blog's *empty* state is wrapped — that is a normal state, not an error.
+- **Derived thumbnails.** The two YouTube posters take their `src` from the
+  video's own id, so a swappable source would let the poster disagree with
+  the video it plays.
+- **Decoration**: counter numerals, arrows, and `SplitText`'s word spans.
 
 Everything else on every page resolves to itself. When adding a section,
 check the value *beside* a wrapped label too — the recurring mistake is
 wrapping "Venue" and leaving "Camp Westmont" addressable only as its `<ul>`.
 
-`PAYMENT_NOTES` and `FINE_PRINT` are deliberately **not** wrapped, for the
-reason the FAQ questions are not: their only handle is the string itself
-(`key={note}`), so an id built from it would reattach to a different note the
-moment someone reworded one. Those are refund terms — edit them in
-`src/data/registration.js`.
-
-Displayed prices that `pricing.js` also charges (`tier.price`,
-`route.price`) stay unwrapped. A figure someone could retype in the editor
-would be a second, disagreeing answer, which is the one thing this page must
-not have. The deposit *is* a template (`{deposit}`) because the number stays
-live from `src/data/registration.js` either way.
+**Pass `label` to anything that repeats.** vedit names a layer from the id's
+last segment, so 26 nav and footer links all read "Label" and ten schedule
+rows all read "time" — the layers panel was unusable for finding anything.
+`label={item.text}` gives each row its own name.
 
 `<Editable>` takes `id` for its own node id and cannot also carry a DOM id.
 Where a heading is the target of `aria-labelledby`, the `<h2>` keeps the DOM

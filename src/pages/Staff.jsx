@@ -105,11 +105,17 @@ export default function Staff() {
           />
           <ul className="credentials__list">
             {STAFF_CREDENTIALS.map((credential, index) => (
-              <Reveal as="li" key={credential} delay={Math.min(index, 5) * 45} className="credentials__item">
+              <Reveal as="li" key={credential.id} delay={Math.min(index, 5) * 45} className="credentials__item">
                 <span className="credentials__index" aria-hidden="true">
                   {String(index + 1).padStart(2, '0')}
                 </span>
-                {credential}
+                <Editable
+                  id={`staff.credential.${credential.id}`}
+                  label={credential.text}
+                  as="span"
+                >
+                  {credential.text}
+                </Editable>
               </Reveal>
             ))}
           </ul>
