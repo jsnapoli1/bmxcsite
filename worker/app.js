@@ -70,54 +70,36 @@ app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
 // asset handler below and 404'd. Left as two explicit registrations rather
 // than risk that regressing silently.
 /**
- * Send /merch to the store, but only once the store has something to sell.
+ * Merch lives at shop.bmxc.camp. These paths are how people get there.
  *
- * While the catalogue is empty — which is the state until products are added
- * and Stripe keys exist — this falls through to the informational merch page,
- * which is still accurate: merch is sold in person at camp, cash only. A
- * redirect to an empty storefront would lose that and offer nothing instead.
+ * This used to redirect only once the store had stock, falling back to an
+ * informational merch page while the catalogue was empty. The store is
+ * stocked and is now the single place merch is described and sold, so the
+ * conditional is gone: a page that says "cash only, sold at camp" beside a
+ * storefront that ships is two answers to the same question.
+ *
+ * `/store` and `/shop` are here because they are what people type. Without
+ * them the SPA fallback would serve index.html and the router would render
+ * the 404 page for a URL that plainly means the store.
  *
  * Server-side rather than in the React app so there is no flash of the wrong
- * page, and no redirect at all for a visitor whose JavaScript has not run.
+ * page, and so it still works for a visitor whose JavaScript has not run.
  *
- * 302, not 301: this flips based on stock, and a permanently-cached redirect
- * would strand browsers on the store the first time it ever sold out.
+ * 302, not 301: a permanently-cached redirect is unusually hard to take back
+ * — it lives in browsers this deploy will never reach again — and where the
+ * store lives is not a promise worth making irreversible.
  */
-let stockedUntil = 0;
-let stocked = false;
+const SHOP_PATHS = ['/merch', '/store', '/shop'];
 
-/** Only for tests: forget the cached stock check between cases. */
-export function resetShopStockCache() {
-  stockedUntil = 0;
-  stocked = false;
+for (const path of SHOP_PATHS) {
+  app.get(path, (c) => {
+    const origin = c.env.SHOP_ORIGIN;
+    // Without SHOP_ORIGIN there is nowhere to send anyone, so fall through
+    // to the React page rather than redirect to undefined.
+    if (!origin) return c.notFound();
+    return c.redirect(origin, 302);
+  });
 }
-
-app.get('/merch', async (c, next) => {
-  const origin = c.env.SHOP_ORIGIN;
-  if (!origin) return next();
-
-  // Cached for a minute per isolate. Without it every visit to /merch waits
-  // on a second network round trip before rendering anything — a real cost on
-  // a page most people reach from the nav. A minute is short enough that
-  // adding the first product takes effect while you are still looking.
-  if (Date.now() < stockedUntil) {
-    return stocked ? c.redirect(origin, 302) : next();
-  }
-
-  try {
-    const response = await fetch(`${origin.replace(/\/$/, '')}/api/products`);
-    if (!response.ok) return next();
-    const products = await response.json();
-    stocked = Array.isArray(products) && products.length > 0;
-    stockedUntil = Date.now() + 60_000;
-    if (stocked) return c.redirect(origin, 302);
-  } catch (error) {
-    // The store being unreachable must not take the merch page with it.
-    console.error(`Shop check failed for /merch: ${error?.message ?? error}`);
-  }
-
-  return next();
-});
 
 app.get('/admin', (c) =>
   c.env.ASSETS.fetch(new Request(new URL('/admin.html', c.req.url), c.req.raw)));

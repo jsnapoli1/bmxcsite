@@ -3,14 +3,12 @@ import { getMe } from './lib/api.js';
 import Users from './pages/Users.jsx';
 import Staff from './pages/Staff.jsx';
 import Faq from './pages/Faq.jsx';
-import Merch from './pages/Merch.jsx';
 import Media from './pages/Media.jsx';
 import Blog from './pages/Blog.jsx';
 import Design from './pages/Design.jsx';
 import Email from './pages/Email.jsx';
 import Faces from './pages/Faces.jsx';
 import Registrations from './pages/Registrations.jsx';
-import Store from './pages/Store.jsx';
 import { Busy, Failure } from './components/States.jsx';
 // CampInfo.jsx is intentionally not imported here — see the PAGES comment
 // below for why the tab stays hidden.
@@ -41,11 +39,11 @@ const PAGES = [
   // details and children's names, not site copy.
   { id: 'registrations', label: 'Registrations', permission: 'registrations', Component: Registrations },
   { id: 'email', label: 'Email', permission: 'campinfo', Component: Email },
-  { id: 'merch', label: 'Merch', permission: 'merch', Component: Merch },
-  // The online store, served by a separate OpenShop worker and proxied
-  // through worker/routes/shop.js. Shares the `merch` permission with the
-  // tab above: same person, same area, different backend.
-  { id: 'store', label: 'Store', permission: 'merch', Component: Store },
+  // No merch tab. /merch, /store and /shop all redirect to shop.bmxc.camp
+  // (worker/app.js), so the catalogue is edited in OpenShop's own admin and
+  // there is one place merch is described rather than two. The `merch`
+  // permission still exists and still gates worker/routes/shop.js; nothing
+  // in this panel uses it today.
   { id: 'media', label: 'Photos & videos', permission: 'media', Component: Media },
   // The camp roster and its consent record. Its own permission, not
   // `media`: tagging asserts that a named child is in a photograph.

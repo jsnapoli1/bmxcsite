@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { env } from 'cloudflare:test';
-import app, { resetShopStockCache } from '../../worker/app.js';
+import app from '../../worker/app.js';
 import * as jwt from '../../worker/auth/jwt.js';
 import { AuthError } from '../../worker/auth/jwt.js';
 import { resetShopSession } from '../../worker/shop/client.js';
@@ -243,49 +243,62 @@ describe('shop proxy behaviour', () => {
   });
 });
 
-describe('the /merch redirect', () => {
-  /** /merch with a stubbed catalogue; no Access session, as a visitor. */
-  beforeEach(() => { resetShopStockCache(); });
+describe('the storefront redirects', () => {
+  /**
+   * Merch lives at shop.bmxc.camp, and these paths are how people get there.
+   *
+   * This used to depend on whether the store had stock, falling back to an
+   * informational merch page while the catalogue was empty. That page is no
+   * longer reachable, so what is worth pinning now is that the redirect does
+   * not depend on the store being up: a storefront that is slow, erroring or
+   * empty must still not strand someone on a page this site no longer serves.
+   */
+  const SHOP = 'https://shop.example';
 
-  async function visitMerch(products) {
-    vi.stubGlobal('fetch', async (input) => {
-      const url = typeof input === 'string' ? input : input.url;
-      if (url.endsWith('/api/products')) {
-        return new Response(JSON.stringify(products), { status: 200 });
-      }
-      return new Response('[]', { status: 200 });
+  for (const path of ['/merch', '/store', '/shop']) {
+    it(`redirects ${path} to the store`, async () => {
+      const res = await app.fetch(
+        new Request(`https://bmxc.camp${path}`),
+        { ...env, SHOP_ORIGIN: SHOP },
+      );
+      expect(res.status).toBe(302);
+      expect(res.headers.get('location')).toBe(SHOP);
     });
-    return app.fetch(
-      new Request('https://bmxc.camp/merch'),
-      { ...env, SHOP_ORIGIN: 'https://shop.example' },
-    );
   }
 
-  it('does not redirect while the store is empty', async () => {
-    // The informational page is still accurate — merch is sold at camp, cash
-    // only — and an empty storefront offers nothing in its place.
-    const res = await visitMerch([]);
-    expect(res.status).not.toBe(302);
-  });
-
-  it('redirects once the store has something to sell', async () => {
-    const res = await visitMerch([{ id: 'tee', name: 'BMXC Tee' }]);
+  it('redirects without asking the store anything', async () => {
+    // The old handler fetched /api/products first, which put the store's
+    // availability on the critical path of a nav click. Nothing is fetched now.
+    const fetchSpy = vi.fn(async () => new Response('[]', { status: 200 }));
+    vi.stubGlobal('fetch', fetchSpy);
+    const res = await app.fetch(
+      new Request('https://bmxc.camp/merch'),
+      { ...env, SHOP_ORIGIN: SHOP },
+    );
     expect(res.status).toBe(302);
-    expect(res.headers.get('location')).toBe('https://shop.example');
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('serves the page when the store cannot be reached', async () => {
-    // The store being down must not take the merch page with it.
+  it('redirects even when the store is unreachable', async () => {
     vi.stubGlobal('fetch', async () => { throw new Error('offline'); });
     const res = await app.fetch(
       new Request('https://bmxc.camp/merch'),
-      { ...env, SHOP_ORIGIN: 'https://shop.example' },
+      { ...env, SHOP_ORIGIN: SHOP },
     );
-    expect(res.status).not.toBe(302);
+    expect(res.status).toBe(302);
   });
 
-  it('serves the page when no store is configured', async () => {
+  it('302, never 301, so where the store lives stays reversible', async () => {
+    const res = await app.fetch(
+      new Request('https://bmxc.camp/merch'),
+      { ...env, SHOP_ORIGIN: SHOP },
+    );
+    expect(res.status).toBe(302);
+  });
+
+  it('does not redirect to undefined when no store is configured', async () => {
     const res = await app.fetch(new Request('https://bmxc.camp/merch'), env);
     expect(res.status).not.toBe(302);
+    expect(res.headers.get('location')).toBeNull();
   });
 });

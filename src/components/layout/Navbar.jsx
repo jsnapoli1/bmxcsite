@@ -8,7 +8,12 @@ const LINKS = [
   { to: '/camp', label: 'The Week' },
   { to: '/playlists', label: 'Playlists' },
   { to: '/videos', label: 'Videos' },
-  { to: '/merch', label: 'Merch' },
+  // `external` renders a plain <a>, so the browser makes a real request the
+  // Worker can answer with its redirect to shop.bmxc.camp. A <NavLink> here
+  // is handled by React Router, which has no /merch route and would render
+  // the 404 page — the redirect would work for a bookmark and not for the
+  // nav, which is how most people reach it.
+  { to: '/merch', label: 'Merch', external: true },
   { to: '/staff', label: 'Staff' },
   { to: '/faq', label: 'FAQ' },
   { to: '/blog', label: 'Blog' },
@@ -84,21 +89,35 @@ export default function Navbar() {
           <ul className="navbar__list">
             {LINKS.map((link) => (
               <li key={link.to}>
-                <NavLink
-                  to={link.to}
-                  end={link.to === '/'}
-                  className={({ isActive }) => `navbar__link${isActive ? ' is-active' : ''}`}
-                >
-                  <Editable
-                    id={`chrome.navbar.link.${link.to}.label`}
-                    label={`Nav — ${link.label}`}
-                    as="span"
-                    className="navbar__link-text"
+                {link.external ? (
+                  <a href={link.to} className="navbar__link">
+                    <Editable
+                      id={`chrome.navbar.link.${link.to}.label`}
+                      label={`Nav — ${link.label}`}
+                      as="span"
+                      className="navbar__link-text"
+                    >
+                      {link.label}
+                    </Editable>
+                    <span className="navbar__link-lane" aria-hidden="true" />
+                  </a>
+                ) : (
+                  <NavLink
+                    to={link.to}
+                    end={link.to === '/'}
+                    className={({ isActive }) => `navbar__link${isActive ? ' is-active' : ''}`}
                   >
-                    {link.label}
-                  </Editable>
-                  <span className="navbar__link-lane" aria-hidden="true" />
-                </NavLink>
+                    <Editable
+                      id={`chrome.navbar.link.${link.to}.label`}
+                      label={`Nav — ${link.label}`}
+                      as="span"
+                      className="navbar__link-text"
+                    >
+                      {link.label}
+                    </Editable>
+                    <span className="navbar__link-lane" aria-hidden="true" />
+                  </NavLink>
+                )}
               </li>
             ))}
           </ul>
@@ -133,20 +152,33 @@ export default function Navbar() {
         <ul className="navbar__drawer-list">
           {LINKS.map((link, index) => (
             <li key={link.to} style={{ '--item-index': index }}>
-              <NavLink
-                to={link.to}
-                end={link.to === '/'}
-                className={({ isActive }) => `navbar__drawer-link${isActive ? ' is-active' : ''}`}
-              >
-                <span className="navbar__drawer-index">{String(index + 1).padStart(2, '0')}</span>
-                <Editable
-                  id={`chrome.navbar.drawer.${link.to}.label`}
-                  label={`Menu — ${link.label}`}
-                  as="span"
+              {link.external ? (
+                <a href={link.to} className="navbar__drawer-link">
+                  <span className="navbar__drawer-index">{String(index + 1).padStart(2, '0')}</span>
+                  <Editable
+                    id={`chrome.navbar.drawer.${link.to}.label`}
+                    label={`Menu — ${link.label}`}
+                    as="span"
+                  >
+                    {link.label}
+                  </Editable>
+                </a>
+              ) : (
+                <NavLink
+                  to={link.to}
+                  end={link.to === '/'}
+                  className={({ isActive }) => `navbar__drawer-link${isActive ? ' is-active' : ''}`}
                 >
-                  {link.label}
-                </Editable>
-              </NavLink>
+                  <span className="navbar__drawer-index">{String(index + 1).padStart(2, '0')}</span>
+                  <Editable
+                    id={`chrome.navbar.drawer.${link.to}.label`}
+                    label={`Menu — ${link.label}`}
+                    as="span"
+                  >
+                    {link.label}
+                  </Editable>
+                </NavLink>
+              )}
             </li>
           ))}
         </ul>

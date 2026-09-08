@@ -23,7 +23,13 @@
     // Listing the API paths here opts them out of that Sec-Fetch-Mode
     // interpretation. Everything else keeps asset-first routing, so the
     // SPA still handles its own client-side routes.
-    "run_worker_first": ["/api/*", "/media/*"]
+    //
+    // /merch, /store and /shop are here for the same reason: they are
+    // Worker redirects to shop.bmxc.camp, and a navigation is the only way
+    // anyone ever reaches them. Without this a click in the nav is answered
+    // with index.html and React Router renders the 404 page — the redirect
+    // would test clean under curl and be broken for every actual visitor.
+    "run_worker_first": ["/api/*", "/media/*", "/merch", "/store", "/shop"]
   },
   "d1_databases": [
     {

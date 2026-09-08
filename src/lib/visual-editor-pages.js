@@ -39,7 +39,6 @@ export const EDITABLE_PAGES = Object.freeze([
   { path: '/camp', label: 'Camp' },
   { path: '/playlists', label: 'Playlists' },
   { path: '/videos', label: 'Videos' },
-  { path: '/merch', label: 'Merch' },
   { path: '/staff', label: 'Staff' },
   { path: '/faq', label: 'FAQ' },
   { path: '/blog', label: 'Blog' },

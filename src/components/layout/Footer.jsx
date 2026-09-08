@@ -7,7 +7,8 @@ const SITEMAP = [
   { to: '/camp', label: 'The Week' },
   { to: '/playlists', label: 'Playlists' },
   { to: '/videos', label: 'Videos' },
-  { to: '/merch', label: 'Merch' },
+  // A plain <a>, so the Worker redirect runs — see Navbar.jsx.
+  { to: '/merch', label: 'Merch', external: true },
   { to: '/staff', label: 'Staff' },
   { to: '/faq', label: 'FAQ' },
   { to: '/registration', label: 'Registration' },
@@ -47,15 +48,27 @@ export default function Footer() {
           <ul className="footer__list">
             {SITEMAP.map((item) => (
               <li key={item.to}>
-                <Link to={item.to} className="footer__link">
-                  <Editable
-                    id={`chrome.footer.sitemap.${item.to}.label`}
-                    label={`Footer — ${item.label}`}
-                    as="span"
-                  >
-                    {item.label}
-                  </Editable>
-                </Link>
+                {item.external ? (
+                  <a href={item.to} className="footer__link">
+                    <Editable
+                      id={`chrome.footer.sitemap.${item.to}.label`}
+                      label={`Footer — ${item.label}`}
+                      as="span"
+                    >
+                      {item.label}
+                    </Editable>
+                  </a>
+                ) : (
+                  <Link to={item.to} className="footer__link">
+                    <Editable
+                      id={`chrome.footer.sitemap.${item.to}.label`}
+                      label={`Footer — ${item.label}`}
+                      as="span"
+                    >
+                      {item.label}
+                    </Editable>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
