@@ -244,6 +244,22 @@ FAQ migration fills gaps without touching text.
   a screen reader can jump to it; they are never read as prose, and a
   renamed landmark is a worse page, not a redesigned one.
 
+**The scanner does not exist for visitors.** `visual-editor-reader.jsx`
+passes `auto={false}`, so in production only explicitly wrapped `<Editable>`
+nodes are registered — the DOM scanner's positional `auto:` ids are an
+editor-time convenience and nothing more. An override recorded against one
+never reaches the public site. Before this was closed the home page had 83
+explicit nodes and 97 scanner ids; it now has 107 explicit and zero scanner
+ids on the deployed build, which is the number worth checking after a
+change:
+
+```js
+// on https://bmxc.camp, in the console
+const ids = [...document.querySelectorAll('[data-vedit-id]')]
+  .map(n => n.getAttribute('data-vedit-id'));
+ids.filter(i => i.startsWith('auto:')).length;  // must be 0
+```
+
 **Audit the states, not just the page as it loads.** Every sweep before
 this one read each route in its default state, so anything behind an
 interaction was invisible to it. The camper mail addresses on /faq render
