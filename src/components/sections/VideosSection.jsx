@@ -30,7 +30,9 @@ export default function VideosSection({ id, ...rest }) {
 
   return (
     <section {...rest} className="section container videos" aria-labelledby="videos-heading">
-        <h2 className="sr-only" id="videos-heading">Videos from camp</h2>
+        <h2 className="sr-only" id="videos-heading">
+          <Editable id="videos.sr.heading" as="span">Videos from camp</Editable>
+        </h2>
 
         {/* --- Stage --- */}
         <Reveal variant="scale" className="video-stage">

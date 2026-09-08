@@ -32,8 +32,10 @@ export default function Faq() {
           lead="If your question is not answered here, email Camp Directors Ken and Sarah."
         />
         <section className="section container faq" aria-labelledby="faq-heading">
-          <h2 className="sr-only" id="faq-heading">Frequently asked questions</h2>
-          <p>Nothing to show yet. Check back soon.</p>
+          <h2 className="sr-only" id="faq-heading">
+            <Editable id="faq.sr.heading" as="span">Frequently asked questions</Editable>
+          </h2>
+          <Editable id="faq.empty" as="p">Nothing to show yet. Check back soon.</Editable>
         </section>
       </>
     );
@@ -54,7 +56,9 @@ export default function Faq() {
       />
 
       <section className="section container faq" aria-labelledby="faq-heading">
-        <h2 className="sr-only" id="faq-heading">Frequently asked questions</h2>
+        <h2 className="sr-only" id="faq-heading">
+          <Editable id="faq.sr.heading" as="span">Frequently asked questions</Editable>
+        </h2>
 
         <div className="faq__layout">
           {/* --- Category rail --- */}

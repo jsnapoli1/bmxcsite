@@ -34,22 +34,54 @@ export default function Merch() {
       {/* --- The one thing everyone needs to know --- */}
       <section className="section container" aria-labelledby="essentials-heading">
         <Reveal variant="scale" className="merch-alert">
-          <span className="merch-alert__badge">Cash only</span>
-          <p className="merch-alert__body">
-            There is no ATM at camp, so bring cash if you plan to buy anything. Canteen
-            snacks are ${MERCH.canteenPrice.min}-{MERCH.canteenPrice.max} each, and most
-            campers spend about ${MERCH.typicalSpend.min}-{MERCH.typicalSpend.max} over
-            the week on merch and snacks.
-          </p>
+          <Editable id="merch.alert.badge" as="span" className="merch-alert__badge">
+            Cash only
+          </Editable>
+          {/* The four figures stay live as vars, so a reworded warning keeps
+              quoting what the canteen actually charges. */}
+          <Editable
+            id="merch.alert.body"
+            as="p"
+            className="merch-alert__body"
+            vars={{
+              canteenMin: String(MERCH.canteenPrice.min),
+              canteenMax: String(MERCH.canteenPrice.max),
+              spendMin: String(MERCH.typicalSpend.min),
+              spendMax: String(MERCH.typicalSpend.max),
+            }}
+          >
+            {'There is no ATM at camp, so bring cash if you plan to buy anything. Canteen snacks are ${canteenMin}-{canteenMax} each, and most campers spend about ${spendMin}-{spendMax} over the week on merch and snacks.'}
+          </Editable>
         </Reveal>
 
-        <h2 className="sr-only" id="essentials-heading">How merch works</h2>
+        <h2 className="sr-only" id="essentials-heading">
+          <Editable id="merch.sr.essentials" as="span">How merch works</Editable>
+        </h2>
         <ul className="merch-facts">
           {content.facts.map((fact, index) => (
             <Reveal as="li" key={fact.title} delay={Math.min(index, 5) * 45} className="merch-fact">
-              <span className="merch-fact__tag">{fact.tag}</span>
-              <h3 className="merch-fact__title">{fact.title}</h3>
-              <p className="merch-fact__body">{fact.body}</p>
+              {/* Keyed on fact.title, already this list's React key. */}
+              <Editable
+                id={`merch.fact.${fact.title}.tag`}
+                as="span"
+                className="merch-fact__tag"
+              >
+                {fact.tag}
+              </Editable>
+              <Editable
+                id={`merch.fact.${fact.title}.title`}
+                as="h3"
+                className="merch-fact__title"
+              >
+                {fact.title}
+              </Editable>
+              <Editable
+                id={`merch.fact.${fact.title}.body`}
+                as="p"
+                className="merch-fact__body"
+              >
+                {fact.body}
+              </Editable>
               <span className="merch-fact__index" aria-hidden="true">
                 {String(index + 1).padStart(2, '0')}
               </span>
@@ -87,7 +119,13 @@ export default function Merch() {
                     height="600"
                     loading="lazy"
                   />
-                  <span className="merch-item__flag">{item.tag}</span>
+                  <Editable
+                    id={`merch.item.${item.id}.tag`}
+                    as="span"
+                    className="merch-item__flag"
+                  >
+                    {item.tag}
+                  </Editable>
                 </div>
 
                 <div className="merch-item__body">
@@ -108,16 +146,28 @@ export default function Merch() {
 
                   <dl className="merch-item__specs">
                     <div>
-                      <dt>Fit</dt>
-                      <dd>{item.fit}</dd>
+                      <Editable id={`merch.item.${item.id}.fit.label`} as="dt">
+                        Fit
+                      </Editable>
+                      <Editable id={`merch.item.${item.id}.fit`} as="dd">
+                        {item.fit}
+                      </Editable>
                     </div>
                     <div>
-                      <dt>Fabric</dt>
-                      <dd>{item.material}</dd>
+                      <Editable id={`merch.item.${item.id}.material.label`} as="dt">
+                        Fabric
+                      </Editable>
+                      <Editable id={`merch.item.${item.id}.material`} as="dd">
+                        {item.material}
+                      </Editable>
                     </div>
                     <div>
-                      <dt>Colour</dt>
-                      <dd>{item.color}</dd>
+                      <Editable id={`merch.item.${item.id}.color.label`} as="dt">
+                        Colour
+                      </Editable>
+                      <Editable id={`merch.item.${item.id}.color`} as="dd">
+                        {item.color}
+                      </Editable>
                     </div>
                   </dl>
                 </div>
@@ -126,7 +176,7 @@ export default function Merch() {
           </Carousel>
 
           <Reveal delay={140} className="merch-lineup__disclaimer">
-            <p>Please note:</p>
+            <Editable id="merch.caveats.label" as="p">Please note:</Editable>
             <ul className="merch-caveats">
               {MERCH_CAVEATS.map((caveat) => (
                 <li key={caveat}>{caveat}</li>
@@ -153,8 +203,21 @@ export default function Merch() {
               delay={Math.min(index, 5) * 45}
               className="included-shirt"
             >
-              <h3 className="included-shirt__title">{shirt.title}</h3>
-              <p className="included-shirt__body">{shirt.body}</p>
+              {/* Keyed on shirt.title, already this list's React key. */}
+              <Editable
+                id={`merch.included.${shirt.title}.title`}
+                as="h3"
+                className="included-shirt__title"
+              >
+                {shirt.title}
+              </Editable>
+              <Editable
+                id={`merch.included.${shirt.title}.body`}
+                as="p"
+                className="included-shirt__body"
+              >
+                {shirt.body}
+              </Editable>
             </Reveal>
           ))}
         </ul>
@@ -172,7 +235,7 @@ export default function Merch() {
             className="merch-giveaways__heading"
           />
           <Reveal delay={140} className="merch-giveaways__body">
-            <p>{GIVEAWAYS.body}</p>
+            <Editable id="merch.giveaways.body" as="p">{GIVEAWAYS.body}</Editable>
             <Button id="merch.cta.faq" to="/faq" variant="ghost">More in the FAQ →</Button>
           </Reveal>
         </div>

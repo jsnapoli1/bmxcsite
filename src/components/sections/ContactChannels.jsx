@@ -46,7 +46,9 @@ export default function ContactChannels({ id = 'contact.channels', ...rest }) {
 
   return (
     <section {...rest} className="section container contact" aria-labelledby={headingId}>
-      <h2 className="sr-only" id={headingId}>Ways to reach us</h2>
+      <h2 className="sr-only" id={headingId}>
+        <Editable id={`${id}.sr.heading`} as="span">Ways to reach us</Editable>
+      </h2>
 
       <ul className="contact__channels">
         {CHANNELS.map((channel, index) => (
@@ -93,10 +95,32 @@ export default function ContactChannels({ id = 'contact.channels', ...rest }) {
           <Editable id="contact.mailing.note" as="p" className="contact-address__note">
             For checks and paperwork. This is not the camp location.
           </Editable>
+          {/* Each line its own node. <address> is not in the scanner's
+              selector, so unwrapped these resolved to nothing at all —
+              not even an ancestor. Values stay live as vars, so a
+              reworded line cannot freeze last year's address. */}
           <address>
-            <span>{CAMP.contact.mailing.line1}</span>
-            <span>{CAMP.contact.mailing.line2}</span>
-            <span>{CAMP.contact.mailing.line3}</span>
+            <Editable
+              id="contact.mailing.line1"
+              as="span"
+              vars={{ line: CAMP.contact.mailing.line1 }}
+            >
+              {'{line}'}
+            </Editable>
+            <Editable
+              id="contact.mailing.line2"
+              as="span"
+              vars={{ line: CAMP.contact.mailing.line2 }}
+            >
+              {'{line}'}
+            </Editable>
+            <Editable
+              id="contact.mailing.line3"
+              as="span"
+              vars={{ line: CAMP.contact.mailing.line3 }}
+            >
+              {'{line}'}
+            </Editable>
           </address>
         </Reveal>
 
@@ -109,8 +133,20 @@ export default function ContactChannels({ id = 'contact.channels', ...rest }) {
             {CAMP.venue.region}. The driving address differs from the mailing address.
           </Editable>
           <address>
-            <span>{CAMP.venue.name}</span>
-            <span>{CAMP.venue.town}</span>
+            <Editable
+              id="contact.location.venue"
+              as="span"
+              vars={{ venue: CAMP.venue.name }}
+            >
+              {'{venue}'}
+            </Editable>
+            <Editable
+              id="contact.location.town"
+              as="span"
+              vars={{ town: CAMP.venue.town }}
+            >
+              {'{town}'}
+            </Editable>
           </address>
           <Button id="contact.map.cta" href="https://maps.google.com/?q=Blue+Mountain+XC+Camp" variant="ghost">
             Open in Google Maps →

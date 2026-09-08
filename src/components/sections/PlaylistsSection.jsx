@@ -21,7 +21,9 @@ export default function PlaylistsSection({ id, ...rest }) {
 
   return (
     <section {...rest} className="section container playlists" aria-labelledby="playlists-heading">
-        <h2 className="sr-only" id="playlists-heading">Spotify playlists</h2>
+        <h2 className="sr-only" id="playlists-heading">
+          <Editable id="playlists.sr.heading" as="span">Spotify playlists</Editable>
+        </h2>
 
         <div className="playlists__layout">
           {/* --- Selector --- */}

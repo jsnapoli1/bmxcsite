@@ -47,7 +47,9 @@ export default function Blog() {
       />
 
       <section className="section container blog" aria-labelledby="blog-heading">
-        <h2 className="sr-only" id="blog-heading">Blog posts</h2>
+        <h2 className="sr-only" id="blog-heading">
+          <Editable id="blog.sr.heading" as="span">Blog posts</Editable>
+        </h2>
 
         {isLoading ? null : hasError ? (
           <p className="blog__empty">

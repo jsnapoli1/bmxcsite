@@ -29,7 +29,9 @@ export default function Staff() {
       />
 
       <section className="section container" aria-labelledby="staff-heading">
-        <h2 className="sr-only" id="staff-heading">Camp staff</h2>
+        <h2 className="sr-only" id="staff-heading">
+          <Editable id="staff.sr.heading" as="span">Camp staff</Editable>
+        </h2>
 
         {content.groups.map((group, groupIndex) => (
           <div className="staff-group" key={group.group}>
