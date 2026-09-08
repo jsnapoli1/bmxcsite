@@ -45,6 +45,10 @@ CREATE UNIQUE INDEX idx_staff_members_slug
 CREATE TABLE staff_accolades (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   member_id  INTEGER NOT NULL REFERENCES staff_members(id) ON DELETE CASCADE,
+  -- The handle an override is keyed on, for the reason every list on this
+  -- site carries one: an id built from the text reattaches to a different
+  -- line the moment someone rewords it.
+  slug       TEXT,
   text       TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
   status     TEXT NOT NULL DEFAULT 'draft',

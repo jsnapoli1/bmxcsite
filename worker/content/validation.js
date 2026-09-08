@@ -41,8 +41,46 @@ function validateStaff(payload) {
       if (!isPlainObject(member) || !isNonEmptyString(member.name)) {
         return 'Each staff member requires a non-empty "name".';
       }
+      // A photo is a reference into the media library, so a key is the whole
+      // of it. Checked because an arbitrary string 404s at /media/<key> with
+      // no feedback anywhere — the row saves, and the headshot is silently
+      // missing on the public page.
+      if (member.photo !== undefined && member.photo !== null) {
+        if (!isPlainObject(member.photo) || !isNonEmptyString(member.photo.key)) {
+          return 'A staff photo requires a media "key".';
+        }
+      }
+      if (member.accolades !== undefined && !Array.isArray(member.accolades)) {
+        return 'A staff member\'s "accolades" must be an array.';
+      }
+      for (const accolade of member.accolades ?? []) {
+        if (!isPlainObject(accolade) || !isNonEmptyString(accolade.text)) {
+          return 'Each accolade requires non-empty "text".';
+        }
+      }
     }
   }
+
+  // Speakers and credentials are optional: a payload that predates them is
+  // still valid, and saving one simply leaves those tables empty.
+  if (payload.speakers !== undefined && !Array.isArray(payload.speakers)) {
+    return 'Payload "speakers" must be an array.';
+  }
+  for (const speaker of payload.speakers ?? []) {
+    if (!isPlainObject(speaker) || !isNonEmptyString(speaker.name)) {
+      return 'Each guest speaker requires a non-empty "name".';
+    }
+  }
+
+  if (payload.credentials !== undefined && !Array.isArray(payload.credentials)) {
+    return 'Payload "credentials" must be an array.';
+  }
+  for (const credential of payload.credentials ?? []) {
+    if (!isPlainObject(credential) || !isNonEmptyString(credential.text)) {
+      return 'Each staff credential requires non-empty "text".';
+    }
+  }
+
   return null;
 }
 

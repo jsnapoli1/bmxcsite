@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { env } from 'cloudflare:test';
 import { buildSeedPayload } from '../../scripts/seed-content.js';
 import { saveArea, publishArea, getPublished } from '../../worker/content/repository.js';
-import { STAFF_GROUPS } from '../../src/data/staff.js';
+import { STAFF_GROUPS, GUEST_SPEAKERS, STAFF_CREDENTIALS } from '../../src/data/staff.js';
 import { FAQ_CATEGORIES } from '../../src/data/faq.js';
 import { MERCH_ITEMS, MERCH_FACTS } from '../../src/data/merch.js';
 import { CAMP } from '../../src/data/camp.js';
@@ -14,6 +14,47 @@ async function seed(area) {
 }
 
 describe('round trip is lossless', () => {
+  /**
+   * The roster fields, checked across the whole save → publish → read path.
+   *
+   * These are the ones a new column can silently swallow: `saveStaff` binds a
+   * fixed column list and `readStaff` projects a fixed shape, so a field added
+   * to the payload and to neither reaches the editor, saves without error, and
+   * is simply gone on the next load. Only a round trip catches that — which is
+   * how the missing `staff_accolades.slug` column was found.
+   */
+  it('staff: slug, education and accolades survive save and publish', async () => {
+    const { groups } = await seed('staff');
+    const bySlug = new Map(
+      groups.flatMap((g) => g.members).map((m) => [m.slug, m]),
+    );
+
+    for (const source of STAFF_GROUPS.flatMap((g) => g.members)) {
+      const stored = bySlug.get(source.slug);
+      expect(stored, `${source.name} did not survive the round trip`).toBeTruthy();
+      expect(stored.education ?? null).toBe(source.education ?? null);
+      expect(stored.hometown ?? null).toBe(source.hometown ?? null);
+      expect(stored.accolades.map((a) => a.text))
+        .toEqual((source.accolades ?? []).map((a) => a.text));
+      // Accolade ids are the override handles, so they must come back too.
+      expect(stored.accolades.map((a) => a.id))
+        .toEqual((source.accolades ?? []).map((a) => a.id));
+    }
+  });
+
+  it('staff: speakers and credentials round trip, in order', async () => {
+    // Both were static-only before the redesign; seeding is the first time
+    // either reaches D1 at all.
+    const { speakers, credentials } = await seed('staff');
+    expect(speakers.map((s) => s.name)).toEqual(GUEST_SPEAKERS.map((s) => s.name));
+    expect(speakers.map((s) => s.credential))
+      .toEqual(GUEST_SPEAKERS.map((s) => s.credential));
+    expect(speakers.map((s) => s.year ?? null))
+      .toEqual(GUEST_SPEAKERS.map((s) => s.year ?? null));
+    expect(credentials.map((c) => c.text)).toEqual(STAFF_CREDENTIALS.map((c) => c.text));
+    expect(credentials.map((c) => c.id)).toEqual(STAFF_CREDENTIALS.map((c) => c.id));
+  });
+
   it('staff: every group and member, in order, bios byte-identical', async () => {
     const { groups } = await seed('staff');
     expect(groups.map(g => g.group)).toEqual(STAFF_GROUPS.map(g => g.group));
