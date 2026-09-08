@@ -244,6 +244,15 @@ FAQ migration fills gaps without touching text.
   a screen reader can jump to it; they are never read as prose, and a
   renamed landmark is a worse page, not a redesigned one.
 
+**Audit the states, not just the page as it loads.** Every sweep before
+this one read each route in its default state, so anything behind an
+interaction was invisible to it. The camper mail addresses on /faq render
+only when "Mail & Photos" is selected, and nothing had ever looked at them:
+the heading, both carrier labels and all eight lines had no handle. Drive
+the page — every FAQ category with its questions expanded, all four steps
+of /register, the `?paid=` confirmation screen — or a whole block stays
+unaddressable while the audit reports clean.
+
 **Attributes are content too, and were audited separately.** An `alt` or an
 `aria-label` is what a screen reader announces, and a text-only sweep never
 looks at one. Product `alt` text is editable through `EditableImage`, which
