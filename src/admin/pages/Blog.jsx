@@ -25,7 +25,8 @@ function slugify(title) {
 /**
  * Blog post list and editor. A slug is a permanent public URL (see
  * worker/content/blog.js), so it is shown but never editable once a post
- * exists — the same reasoning Faq.jsx applies to its Category ID field.
+ * exists. Unlike the FAQ's category ids, a slug is worth showing: it is the
+ * public URL someone will share, not an internal handle.
  * A hero image can only be chosen from already-published media: an editor
  * cannot pick a private photo here, because worker/content/blog.js refuses
  * to publish a post whose hero image isn't public, and letting someone

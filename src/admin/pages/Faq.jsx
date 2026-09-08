@@ -53,6 +53,16 @@ export default function Faq() {
     ));
   }
 
+  /**
+   * Ids are minted here and never shown or edited.
+   *
+   * They are load-bearing — `src/pages/Faq.jsx` renders the camper mailing
+   * addresses only under the category whose id is `mail`, so changing one
+   * would make those addresses vanish from the public site. That is a reason
+   * to keep an id unchangeable, not a reason to put it in front of a camp
+   * director: it is an internal handle, and a readonly field explaining why
+   * it cannot be touched is noise on a page about questions and answers.
+   */
   function addCategory() {
     const existingIds = new Set(categories.map((category) => category.id));
     const base = slugify('New category') || 'category';
@@ -69,10 +79,19 @@ export default function Faq() {
   function removeCategory(categoryIndex) {
     const category = categories[categoryIndex];
     const itemCount = category.items?.length ?? 0;
-    const warning = itemCount > 0
-      ? `Delete "${category.label}" and its ${itemCount} question${itemCount === 1 ? '' : 's'}? This cannot be undone.`
-      : `Delete "${category.label}"? This cannot be undone.`;
-    if (!window.confirm(warning)) return;
+    const lines = [
+      itemCount > 0
+        ? `Delete "${category.label}" and its ${itemCount} question${itemCount === 1 ? '' : 's'}? This cannot be undone.`
+        : `Delete "${category.label}"? This cannot be undone.`,
+    ];
+    // The one consequence nobody could guess from the page: the camper
+    // mailing addresses are shown under this category and nowhere else, so
+    // deleting it takes them off the public site too. Said here rather than
+    // in a field about ids, which is where it used to live.
+    if (category.id === 'mail') {
+      lines.push('', 'The camper mailing addresses are shown under this category. Deleting it removes them from the FAQ page.');
+    }
+    if (!window.confirm(lines.join('\n'))) return;
     updateCategories(categories.filter((_, i) => i !== categoryIndex));
     setActiveId(null);
   }
@@ -211,18 +230,6 @@ export default function Faq() {
               >
                 Delete category
               </button>
-            </div>
-
-            <div className="admin-field admin-field--readonly">
-              Category ID
-              <span className="admin-field__value">{active.id || '(none)'}</span>
-              <span className="admin-field__hint">
-                Set automatically when a category is added and cannot be
-                changed here. The &ldquo;Mail &amp; Photos&rdquo; category
-                uses this to show the camper mailing addresses on the FAQ
-                page &mdash; if this ID were editable and got changed, those
-                addresses would silently disappear from the public site.
-              </span>
             </div>
 
             <p className="admin-help">
