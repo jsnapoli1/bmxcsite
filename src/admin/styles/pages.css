@@ -71,6 +71,20 @@
 .staff-group .ordered-list,
 .faq-category .ordered-list { grid-column: 1 / -1; }
 
+/* The roster table and the button under it are full-width rows, not columns.
+   Without this they become siblings in the auto-fit grid above and the "Add
+   someone" button lands on top of the table's last column. */
+.staff-group > .admin-table,
+.staff-group > .admin-add { grid-column: 1 / -1; }
+
+/* The member editor is a single column of fields, not the auto-fit grid the
+   roster uses — one person's details read as a form, not a row. */
+.staff-member-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .staff-member,
 .faq-item {
   display: grid;
@@ -417,4 +431,66 @@
 .admin-invite + .admin-subheading {
   border-top: none;
   padding-top: 0;
+}
+
+/* --- Q&A editor: a category rail beside one open category ----------------
+   Every category used to render expanded at once — seven of them, 44
+   questions in one scroll. The rail mirrors the public FAQ page, which is
+   also how a director thinks about this content. */
+
+.faq-editor {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Below the panel's own breakpoint the rail stacks above the questions,
+   rather than squeezing two columns into a phone. */
+@media (max-width: 48rem) {
+  .faq-editor { grid-template-columns: minmax(0, 1fr); }
+}
+
+.faq-editor__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.faq-editor__tab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font: inherit;
+  color: var(--color-ink);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.faq-editor__tab:hover { background: var(--color-surface-raised); }
+
+.faq-editor__tab--active {
+  background: var(--color-surface-raised);
+  border-color: var(--color-line);
+  font-weight: 600;
+}
+
+/* The count is a reference figure, not a label — muted, and never the thing
+   you read first. */
+.faq-editor__count {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.faq-editor__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
 }

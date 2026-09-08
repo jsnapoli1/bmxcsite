@@ -58,19 +58,55 @@ async function readStaff(db, { publishedOnly }) {
     ? "SELECT * FROM staff_members WHERE status = 'published' ORDER BY group_id, sort_order"
     : 'SELECT * FROM staff_members ORDER BY group_id, sort_order';
 
-  const [{ results: groupRows }, { results: memberRows }] = await Promise.all([
+  const accoladeSql = publishedOnly
+    ? "SELECT * FROM staff_accolades WHERE status = 'published' ORDER BY member_id, sort_order"
+    : 'SELECT * FROM staff_accolades ORDER BY member_id, sort_order';
+  const speakerSql = publishedOnly
+    ? "SELECT * FROM staff_speakers WHERE status = 'published' ORDER BY sort_order"
+    : 'SELECT * FROM staff_speakers ORDER BY sort_order';
+  const credentialSql = publishedOnly
+    ? "SELECT * FROM staff_credentials WHERE status = 'published' ORDER BY sort_order"
+    : 'SELECT * FROM staff_credentials ORDER BY sort_order';
+
+  const [
+    { results: groupRows },
+    { results: memberRows },
+    { results: accoladeRows },
+    { results: speakerRows },
+    { results: credentialRows },
+  ] = await Promise.all([
     db.prepare(groupSql).all(),
     db.prepare(memberSql).all(),
+    db.prepare(accoladeSql).all(),
+    db.prepare(speakerSql).all(),
+    db.prepare(credentialSql).all(),
   ]);
+
+  const accoladesByMember = new Map();
+  for (const accolade of accoladeRows) {
+    const list = accoladesByMember.get(accolade.member_id) ?? [];
+    list.push({ id: accolade.slug ?? String(accolade.id), text: accolade.text });
+    accoladesByMember.set(accolade.member_id, list);
+  }
 
   const membersByGroup = new Map();
   for (const member of memberRows) {
     const list = membersByGroup.get(member.group_id) ?? [];
+    // Key order matters here: contentMatchesPublished JSON.stringify-compares
+    // draft against published, and both sides are built by this one function,
+    // so they agree only because the shape is written once.
     list.push({
+      slug: member.slug,
       name: member.name,
       role: member.role,
       bio: member.bio,
       since: member.since,
+      photo: member.photo_key
+        ? { key: member.photo_key, alt: member.photo_alt ?? '' }
+        : null,
+      education: member.education,
+      hometown: member.hometown,
+      accolades: accoladesByMember.get(member.id) ?? [],
     });
     membersByGroup.set(member.group_id, list);
   }
@@ -89,16 +125,69 @@ async function readStaff(db, { publishedOnly }) {
     // this only ever removes rows in the published (public) read path.
     .filter((group) => !publishedOnly || group.members.length > 0);
 
-  return { groups };
+  const speakers = speakerRows.map((row) => ({
+    id: row.slug ?? String(row.id),
+    name: row.name,
+    year: row.year,
+    credential: row.credential,
+  }));
+
+  const credentials = credentialRows.map((row) => ({
+    id: row.slug ?? String(row.id),
+    text: row.text,
+  }));
+
+  return { groups, speakers, credentials };
+}
+
+/**
+ * A url-safe handle for a member who has none yet.
+ *
+ * Only used to fill a gap — a slug that already exists is never regenerated,
+ * because it addresses a person: it is their /staff/<slug> URL and the key
+ * vedit stores an override against. Renaming someone must not move either.
+ */
+function slugFor(name, taken) {
+  const base = String(name ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'member';
+  let slug = base;
+  let suffix = 2;
+  while (taken.has(slug)) {
+    slug = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  taken.add(slug);
+  return slug;
 }
 
 function saveStaffStatements(db, payload, editorEmail) {
   const groups = payload?.groups ?? [];
+  const speakers = payload?.speakers ?? [];
+  const credentials = payload?.credentials ?? [];
 
   const statements = [
+    // Accolades first: the FK cascade would take them anyway, but deleting
+    // the child explicitly keeps the order of these statements readable.
+    db.prepare('DELETE FROM staff_accolades'),
     db.prepare('DELETE FROM staff_members'),
     db.prepare('DELETE FROM staff_groups'),
+    db.prepare('DELETE FROM staff_speakers'),
+    db.prepare('DELETE FROM staff_credentials'),
   ];
+
+  // Member ids are assigned here rather than left to AUTOINCREMENT, because
+  // an accolade has to name its member in the same batch — there is no
+  // RETURNING to read back from mid-batch. Counting from 1 in payload order
+  // mirrors how group ids are already derived from `groupIndex + 1`.
+  let memberId = 0;
+  const takenSlugs = new Set();
+  for (const group of groups) {
+    for (const member of group.members ?? []) {
+      if (member.slug) takenSlugs.add(member.slug);
+    }
+  }
 
   // Payload key is `group` (the legacy page shape); the DB column is
   // still `title` — only the repository boundary shape changed.
@@ -111,22 +200,75 @@ function saveStaffStatements(db, payload, editorEmail) {
     );
 
     (group.members ?? []).forEach((member, memberIndex) => {
+      memberId += 1;
+      const slug = member.slug || slugFor(member.name, takenSlugs);
       statements.push(
         db.prepare(
           `INSERT INTO staff_members
-             (group_id, name, role, bio, since, sort_order, status, updated_at, updated_by)
-           VALUES (?, ?, ?, ?, ?, ?, 'draft', unixepoch(), ?)`,
+             (id, group_id, slug, name, role, bio, since,
+              photo_key, photo_alt, education, hometown,
+              sort_order, status, updated_at, updated_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', unixepoch(), ?)`,
         ).bind(
+          memberId,
           groupIndex + 1,
+          slug,
           member.name,
           member.role ?? null,
           member.bio ?? null,
           member.since ?? null,
+          member.photo?.key ?? null,
+          member.photo?.alt ?? null,
+          member.education ?? null,
+          member.hometown ?? null,
           memberIndex,
           editorEmail,
         ),
       );
+
+      (member.accolades ?? []).forEach((accolade, accoladeIndex) => {
+        statements.push(
+          db.prepare(
+            `INSERT INTO staff_accolades
+               (member_id, slug, text, sort_order, status, updated_at, updated_by)
+             VALUES (?, ?, ?, ?, 'draft', unixepoch(), ?)`,
+          ).bind(
+            memberId,
+            accolade.id ?? null,
+            accolade.text,
+            accoladeIndex,
+            editorEmail,
+          ),
+        );
+      });
     });
+  });
+
+  speakers.forEach((speaker, index) => {
+    statements.push(
+      db.prepare(
+        `INSERT INTO staff_speakers
+           (slug, name, year, credential, sort_order, status, updated_at, updated_by)
+         VALUES (?, ?, ?, ?, ?, 'draft', unixepoch(), ?)`,
+      ).bind(
+        speaker.id ?? null,
+        speaker.name,
+        speaker.year ?? null,
+        speaker.credential ?? null,
+        index,
+        editorEmail,
+      ),
+    );
+  });
+
+  credentials.forEach((credential, index) => {
+    statements.push(
+      db.prepare(
+        `INSERT INTO staff_credentials
+           (slug, text, sort_order, status, updated_at, updated_by)
+         VALUES (?, ?, ?, 'draft', unixepoch(), ?)`,
+      ).bind(credential.id ?? null, credential.text, index, editorEmail),
+    );
   });
 
   return statements;
@@ -139,6 +281,17 @@ function publishStaffStatements(db, editorEmail) {
     ).bind(editorEmail),
     db.prepare(
       "UPDATE staff_members SET status = 'published', updated_at = unixepoch(), updated_by = ?",
+    ).bind(editorEmail),
+    // Publish is area-wide, so every table the area owns has to be listed
+    // here. A missing one would save happily and never appear in public.
+    db.prepare(
+      "UPDATE staff_accolades SET status = 'published', updated_at = unixepoch(), updated_by = ?",
+    ).bind(editorEmail),
+    db.prepare(
+      "UPDATE staff_speakers SET status = 'published', updated_at = unixepoch(), updated_by = ?",
+    ).bind(editorEmail),
+    db.prepare(
+      "UPDATE staff_credentials SET status = 'published', updated_at = unixepoch(), updated_by = ?",
     ).bind(editorEmail),
   ];
 }

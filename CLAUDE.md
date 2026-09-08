@@ -164,7 +164,7 @@ vite.config.js proxies `/api` and `/media` to it. Without the worker running,
 the editor loads but cannot save.
 
 **Ids.** Explicit `<Editable id="...">` ids are keyed on stable fields
-(`merch.item.${item.id}`, `staff.member.${member.name}`, `blog.post.${slug}`),
+(`merch.item.${item.id}`, `staff.member.${member.slug}`, `blog.post.${slug}`),
 never loop position — reordering the catalogue in /admin must not slide one
 item's override onto another product. `SectionHeading` and `PageHeader` take an
 `id` prop, so a page opts its headings in with one prop instead of a wrapper per
@@ -289,6 +289,21 @@ rows all read "time" — the layers panel was unusable for finding anything.
 Where a heading is the target of `aria-labelledby`, the `<h2>` keeps the DOM
 id and the `<Editable>` wraps the text inside it.
 
+**The staff roster.** `/staff` is a grouped table of name and title, and
+`/staff/<slug>` is the person's page — photo, education, hometown, bio and
+accolades. That split is what every NCAA programme surveyed does (Oregon,
+Colorado, NC State, Washington on SIDEARM; Arkansas on WMT): headshots live on
+the detail page, never in the list, and card grids are for athlete rosters
+rather than staff. It also keeps the page ruled rather than a grid of cards,
+so it needs no exception to the design direction above.
+
+`/staff/<slug>` is not in `EDITABLE_PAGES`, for the reason `/blog/:slug` is
+not: a parameterised route has no single URL for the editor to open.
+
+Tenure renders as a sentence — "In their 33rd summer at Blue Mountain" —
+computed from the stored year, so it is deliberately **not** an `<Editable>`:
+an override would freeze one summer's wording and be wrong the next June.
+
 **Two sources of truth.** On CMS-backed pages (merch, staff, blog) a vedit
 override layers on top of the D1 value and wins. Edit copy in /admin; use the
 editor when the presentation is what needs changing.
@@ -403,6 +418,24 @@ PATCH merge and the list response — and `faces` was added to the schema
 and the permission module while all five still listed only the first
 five. The API accepted the grant and persisted it nowhere. Keep it
 derived; a seventh area must not need five edits.
+
+**Staff and Q&A are master/detail, and should stay that way.** Both used to
+render everything expanded — seven FAQ categories and 44 questions in one
+scroll, every staff group with every member's fields inline — so adding one
+item meant scrolling past all of them. Staff is now a roster table per group
+with an editor panel for the person you pick; Q&A is a category rail with one
+category's questions beside it. `Blog.jsx` is the pattern both follow.
+
+`usePending` (`src/admin/lib/use-pending.js`) replaces the ten lines of
+pending-set bookkeeping that were copied into five editors. Its reentrancy
+guard reads a ref rather than the `pending` state: updates are batched, so a
+flag set inside an updater is not reliably readable on the next line, and a
+stale closure over `pending` lets a double click through.
+
+**Media pickers want `{ media }`, not an array.** `listMedia()` answers
+`{ media: [...] }`; filtering the wrapper yields an empty picker with no error
+anywhere. Offer published images only — a private one 404s at `/media/<key>`
+for every visitor, and the library holds video too.
 
 The panel is responsive: a sidebar above 48rem, a drawer below it, and
 tables that stack into labelled rows. Every `<td>` in an `.admin-table`

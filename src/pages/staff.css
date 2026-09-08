@@ -157,3 +157,146 @@
   .credentials__list { grid-template-columns: repeat(2, 1fr); gap: 0 var(--space-2xl); }
   .speaker { grid-template-columns: 5rem 1fr; gap: var(--space-xl); }
 }
+
+/* --- Roster table -------------------------------------------------------
+   Name and title only. Headshots belong on the person's own page, which is
+   what every NCAA staff page surveyed does — and it keeps this page ruled
+   rather than a grid of cards. */
+
+.staff-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  margin-block-start: var(--space-md);
+}
+
+.staff-table th {
+  text-align: start;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  padding-block-end: var(--space-xs);
+  border-block-end: 1px solid var(--color-ink);
+}
+
+.staff-table td {
+  padding-block: var(--space-sm);
+  border-block-end: 1px solid var(--color-line);
+  vertical-align: baseline;
+}
+
+.staff-table__name { font-weight: 600; }
+.staff-table__name a { color: inherit; }
+
+/* Below this the table stacks into labelled rows, reading each cell's
+   data-label — the same contract the admin tables use. A horizontal scroll
+   would be the weaker answer. */
+@media (max-width: 34rem) {
+  .staff-table thead { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
+  .staff-table tr { display: block; padding-block: var(--space-sm); border-block-end: 1px solid var(--color-line); }
+  .staff-table td { display: flex; gap: var(--space-sm); border: 0; padding-block: 0.15rem; }
+  .staff-table td::before {
+    content: attr(data-label);
+    inline-size: 5rem;
+    flex: none;
+    font-size: var(--text-sm);
+    color: var(--color-ink-soft);
+  }
+}
+
+/* --- One person's page -------------------------------------------------- */
+
+/* Every other route opens with a PageHeader band tall enough to sit under
+   the fixed navbar. This page has none, so it clears the navbar itself —
+   without this the name renders behind it. */
+.staff-member {
+  padding-block-start: calc(clamp(4rem, 8vw, 5.25rem) + var(--space-xl));
+}
+
+
+.staff-member__back { font-size: var(--text-sm); margin-block-end: var(--space-lg); }
+
+.staff-member__head {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+@media (max-width: 40rem) {
+  .staff-member__head { grid-template-columns: minmax(0, 1fr); }
+  .staff-member__portrait { max-inline-size: 9rem; }
+}
+
+/* 2:3 portrait, cropped from the top so a head is never cut off. The ratio
+   every roster page surveyed uses. */
+.staff-member__portrait {
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  display: grid;
+  place-items: center;
+}
+
+.staff-member__portrait img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.staff-member__initials {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-ink-soft);
+}
+
+.staff-member__name { margin: 0; }
+
+.staff-member__role {
+  margin-block: var(--space-xs) var(--space-md);
+  color: var(--color-ink-soft);
+}
+
+.staff-member__facts { margin: 0; display: grid; gap: var(--space-xs); }
+.staff-member__facts div { display: flex; gap: var(--space-sm); }
+.staff-member__facts dt {
+  inline-size: 6rem;
+  flex: none;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+.staff-member__facts dd { margin: 0; }
+
+.staff-member__tenure {
+  margin-block-start: var(--space-xl);
+  margin-block-end: 0;
+  font-style: italic;
+  color: var(--color-ink-soft);
+}
+
+.staff-member__bio {
+  max-inline-size: 60ch;
+  margin-block-start: var(--space-md);
+  line-height: var(--leading-relaxed);
+}
+
+.staff-member__accolades { margin-block-start: var(--space-2xl); }
+
+.staff-member__accolades-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  padding-block-end: var(--space-xs);
+  border-block-end: 1px solid var(--color-line);
+}
+
+.staff-member__accolades ul {
+  margin-block-start: var(--space-sm);
+  padding-inline-start: 1.1rem;
+  max-inline-size: 60ch;
+}
+
+.staff-member__accolades li { margin-block-end: var(--space-xs); }

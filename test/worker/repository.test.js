@@ -99,14 +99,41 @@ describe('repository', () => {
     const { groups } = await getPublished(env.DB, 'staff');
     // src/pages/Staff.jsx reads group.group as both the heading and the
     // React key — not group.title, which is only the DB column name.
+    // Every field the roster and the /staff/<slug> page read. Absent detail
+    // comes back as null rather than being omitted, so the shape is the same
+    // whether or not anyone has filled it in — which is what lets
+    // contentMatchesPublished compare draft against published by value.
     expect(groups[0]).toEqual({
       group: 'Camp Directors',
       members: [
-        { name: 'Ken Crawford', role: 'Camp Director', bio: 'Bio.', since: null },
-        { name: 'Sarah Schnitter', role: 'Camp Director', bio: 'Bio.', since: null },
+        {
+          slug: 'ken-crawford',
+          name: 'Ken Crawford',
+          role: 'Camp Director',
+          bio: 'Bio.',
+          since: null,
+          photo: null,
+          education: null,
+          hometown: null,
+          accolades: [],
+        },
+        {
+          slug: 'sarah-schnitter',
+          name: 'Sarah Schnitter',
+          role: 'Camp Director',
+          bio: 'Bio.',
+          since: null,
+          photo: null,
+          education: null,
+          hometown: null,
+          accolades: [],
+        },
       ],
     });
     expect(groups[0].title).toBeUndefined();
+    // A slug is derived from the name only when one is absent; it is never
+    // recomputed, since it addresses the person.
+    expect(groups[0].members[0].slug).toBe('ken-crawford');
   });
 
   it('returns the FAQ shape the live page reads, not the DB column names', async () => {

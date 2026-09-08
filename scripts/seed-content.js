@@ -35,7 +35,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { stripJsonComments } from './jsonc.js';
 import { saveArea, publishArea } from '../worker/content/repository.js';
-import { STAFF_GROUPS } from '../src/data/staff.js';
+import { STAFF_GROUPS, GUEST_SPEAKERS, STAFF_CREDENTIALS } from '../src/data/staff.js';
 import { FAQ_CATEGORIES } from '../src/data/faq.js';
 import { MERCH_ITEMS, MERCH_FACTS } from '../src/data/merch.js';
 import { CAMP } from '../src/data/camp.js';
@@ -128,11 +128,28 @@ function buildStaffPayload() {
     groups: STAFF_GROUPS.map((group) => ({
       group: group.group,
       members: group.members.map((member) => ({
+        slug: member.slug,
         name: member.name,
         role: member.role,
         bio: member.bio,
         since: member.since,
+        photo: member.photo ?? null,
+        education: member.education,
+        hometown: member.hometown,
+        accolades: member.accolades ?? [],
       })),
+    })),
+    // Both areas were static-only until the roster redesign, so seeding is
+    // the first time they reach D1 at all.
+    speakers: GUEST_SPEAKERS.map((speaker) => ({
+      id: speaker.id,
+      name: speaker.name,
+      year: speaker.year,
+      credential: speaker.credential,
+    })),
+    credentials: STAFF_CREDENTIALS.map((credential) => ({
+      id: credential.id,
+      text: credential.text,
     })),
   };
 }

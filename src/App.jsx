@@ -11,6 +11,7 @@ const Camp = lazy(() => import('./pages/Camp.jsx'));
 const Playlists = lazy(() => import('./pages/Playlists.jsx'));
 const Videos = lazy(() => import('./pages/Videos.jsx'));
 const Staff = lazy(() => import('./pages/Staff.jsx'));
+const StaffMember = lazy(() => import('./pages/StaffMember.jsx'));
 const Faq = lazy(() => import('./pages/Faq.jsx'));
 const Registration = lazy(() => import('./pages/Registration.jsx'));
 const Register = lazy(() => import('./pages/Register.jsx'));
@@ -55,6 +56,10 @@ export default function App() {
                 made a request the Worker could answer — the redirect
                 would work for a bookmark and not for the nav. */}
             <Route path="/staff" element={<Staff />} />
+            {/* Not in EDITABLE_PAGES: a parameterised route has no
+                single URL for the editor to open, same as
+                /blog/:slug. The roster at /staff is editable. */}
+            <Route path="/staff/:slug" element={<StaffMember />} />
             <Route path="/faq" element={<Faq />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

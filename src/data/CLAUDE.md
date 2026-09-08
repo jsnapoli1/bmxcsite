@@ -27,3 +27,18 @@ ID field is needed.
 
 **`videos.js` descriptions are written, not from the channel** — they describe
 footage that was never watched. Unverified.
+
+**`staff.js` members carry a `slug`, and it is load-bearing.** It is the
+person's `/staff/<slug>` URL and the key vedit stores an override against, so
+it must survive a name being corrected: mint one for a new member, then leave
+it alone. Accolades carry their own ids for the reason every list here does —
+an id built from the text reattaches the moment someone rewords it.
+
+Staff groups have no id. A group is a title and a sort order in D1 and nothing
+more, so renaming one orphans its override. Worth fixing if groups ever gain
+an id column; until then, do not add one to this file — it would not reach the
+database and would imply a stability it does not have.
+
+**Guest speakers and credentials are CMS-backed now.** They were static, which
+meant a director could not add a speaker without a deploy. What is here is the
+fallback `useContent` renders before the API answers, and if the API is empty.
