@@ -103,7 +103,7 @@ export default function Merch() {
             as="h2"
           />
 
-          <Carousel label="BMXC apparel" className="carousel--light merch-carousel">
+          <Carousel id="merch.carousel" label="BMXC apparel" className="carousel--light merch-carousel">
             {content.items.map((item) => (
               <article
                 key={item.id}
