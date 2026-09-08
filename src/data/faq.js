@@ -90,7 +90,31 @@ export const FAQ_CATEGORIES = [
 ];
 
 /** Camper mail addresses during camp week. */
+/**
+ * Each address line carries an `id` for the same reason the packing list
+ * does: keyed on its own text, an override would reattach to a different
+ * line the moment someone reworded one — and two of these lines are
+ * identical across both carriers, so the text is not even unique.
+ */
 export const MAIL_ADDRESSES = [
-  { label: 'USPS', lines: ['<Camper Name / Team Name>', 'BMXC ℅ Camp Westmont', 'PO Box 15', 'Poyntelle, PA 18454'] },
-  { label: 'UPS, FedEx & other carriers', lines: ['<Camper Name / Team Name>', 'BMXC ℅ Camp Westmont', '81 Spruce Lake Rd.', 'Poyntelle, PA 18454'] },
+  {
+    id: 'usps',
+    label: 'USPS',
+    lines: [
+      { id: 'usps-name', text: '<Camper Name / Team Name>' },
+      { id: 'usps-care-of', text: 'BMXC ℅ Camp Westmont' },
+      { id: 'usps-box', text: 'PO Box 15' },
+      { id: 'usps-town', text: 'Poyntelle, PA 18454' },
+    ],
+  },
+  {
+    id: 'carriers',
+    label: 'UPS, FedEx & other carriers',
+    lines: [
+      { id: 'carriers-name', text: '<Camper Name / Team Name>' },
+      { id: 'carriers-care-of', text: 'BMXC ℅ Camp Westmont' },
+      { id: 'carriers-street', text: '81 Spruce Lake Rd.' },
+      { id: 'carriers-town', text: 'Poyntelle, PA 18454' },
+    ],
+  },
 ];

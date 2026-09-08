@@ -151,14 +151,34 @@ export default function Faq() {
             {/* Mail addresses are easier to read as blocks than as Q&A. */}
             {category.id === 'mail' ? (
               <Reveal delay={120} className="faq__addresses">
-                <h3 className="faq__addresses-title">Where to send camper mail</h3>
+                <Editable id="faq.mail.title" as="h3" className="faq__addresses-title">
+                  Where to send camper mail
+                </Editable>
                 <div className="faq__addresses-grid">
                   {MAIL_ADDRESSES.map((address) => (
-                    <div className="faq__address" key={address.label}>
-                      <span className="faq__address-label">{address.label}</span>
+                    <div className="faq__address" key={address.id}>
+                      <Editable
+                        id={`faq.mail.${address.id}.label`}
+                        label={address.label}
+                        as="span"
+                        className="faq__address-label"
+                      >
+                        {address.label}
+                      </Editable>
+                      {/* <address> is not in the scanner's selector, so these
+                          lines resolved to no node at all — not even an
+                          ancestor's. Keyed on ids from src/data/faq.js because
+                          two lines are identical across both carriers. */}
                       <address>
                         {address.lines.map((line) => (
-                          <span key={line}>{line}</span>
+                          <Editable
+                            key={line.id}
+                            id={`faq.mail.${address.id}.${line.id}`}
+                            label={line.text}
+                            as="span"
+                          >
+                            {line.text}
+                          </Editable>
                         ))}
                       </address>
                     </div>

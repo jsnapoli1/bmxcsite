@@ -522,6 +522,12 @@ export default function Register() {
             {quote ? (
               <>
                 <dl className="register__prices">
+                  {/* The tier name comes back with the quote the server
+                      computed, so it stays unwrapped for the reason the
+                      figures beside it do: a retypable tier would be a
+                      second, disagreeing answer about what is being
+                      charged. Rename a tier in src/data/registration.js,
+                      where pricing.js reads it. */}
                   <div><dt>{quote.tier}</dt><dd>{money(quote.baseCents)}</dd></div>
                   {quote.busCents > 0 && (
                     <div>

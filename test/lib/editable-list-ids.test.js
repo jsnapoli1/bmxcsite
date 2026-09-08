@@ -16,7 +16,7 @@ import { PACKING_LIST } from '../../src/data/packing.js';
 import { PAYMENT_NOTES, FINE_PRINT } from '../../src/data/registration.js';
 import { MERCH_CAVEATS } from '../../src/data/merch.js';
 import { STAFF_CREDENTIALS } from '../../src/data/staff.js';
-import { FAQ_CATEGORIES } from '../../src/data/faq.js';
+import { FAQ_CATEGORIES, MAIL_ADDRESSES } from '../../src/data/faq.js';
 import { mintQuestionId, withQuestionIds } from '../../src/lib/faq-ids.js';
 
 /** Flat `{ id, text }` lists: same shape, same invariants. */
@@ -99,5 +99,33 @@ describe('FAQ question ids', () => {
     ];
     const ids = withQuestionIds(mixed)[0].items.map((item) => item.id);
     expect(new Set(ids).size).toBe(2);
+  });
+});
+
+describe('MAIL_ADDRESSES', () => {
+  const lines = MAIL_ADDRESSES.flatMap((address) => address.lines);
+
+  it('gives every address and every line an id', () => {
+    for (const address of MAIL_ADDRESSES) {
+      expect(address.id, `"${address.label}" has no id`).toBeTruthy();
+      for (const line of address.lines) {
+        expect(line.id, `a line of "${address.label}" has no id`).toBeTruthy();
+        expect(line.text).toBeTruthy();
+      }
+    }
+  });
+
+  it('never repeats a line id', () => {
+    const ids = lines.map((line) => line.id);
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+  });
+
+  it('is the case that proves text cannot be the key', () => {
+    // Two lines are identical across both carriers, so an id derived from
+    // the text would not even be unique, let alone survive a rewording.
+    const texts = lines.map((line) => line.text);
+    expect(new Set(texts).size).toBeLessThan(texts.length);
+    // ...while the ids are.
+    expect(new Set(lines.map((l) => l.id)).size).toBe(lines.length);
   });
 });
