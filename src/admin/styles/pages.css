@@ -71,6 +71,20 @@
 .staff-group .ordered-list,
 .faq-category .ordered-list { grid-column: 1 / -1; }
 
+/* The roster table and the button under it are full-width rows, not columns.
+   Without this they become siblings in the auto-fit grid above and the "Add
+   someone" button lands on top of the table's last column. */
+.staff-group > .admin-table,
+.staff-group > .admin-add { grid-column: 1 / -1; }
+
+/* The member editor is a single column of fields, not the auto-fit grid the
+   roster uses — one person's details read as a form, not a row. */
+.staff-member-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .staff-member,
 .faq-item {
   display: grid;
