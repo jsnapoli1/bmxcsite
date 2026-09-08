@@ -2,8 +2,19 @@ import { useEffect, useState } from 'react';
 import { getContent, saveContent, publishContent } from '../lib/api.js';
 import { reorder } from '../lib/reorder.js';
 import { contentMatchesPublished } from '../lib/content-diff.js';
+import { usePending } from '../lib/use-pending.js';
 import OrderedList from '../components/OrderedList.jsx';
+import { Busy, Failure } from '../components/States.jsx';
 import { slugify, mintQuestionId } from '../../lib/faq-ids.js';
+
+/**
+ * The Q&A editor: one category at a time, chosen from a rail.
+ *
+ * Every category used to render expanded at once — seven of them, 44
+ * questions, one unbroken scroll with no way to collapse anything or jump to
+ * a category. The rail mirrors the public FAQ page, which is also how a
+ * director thinks about this content.
+ */
 
 const EMPTY_ITEM = { q: '', a: '' };
 
@@ -12,19 +23,10 @@ export default function Faq() {
   const [published, setPublished] = useState(null);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState(null);
-  const [pending, setPending] = useState(() => new Set());
-
-  function markPending(key) {
-    setPending((prev) => new Set(prev).add(key));
-  }
-
-  function clearPending(key) {
-    setPending((prev) => {
-      const next = new Set(prev);
-      next.delete(key);
-      return next;
-    });
-  }
+  // Which category is open, by id. Falls back to the first below, so the
+  // page is never showing nothing.
+  const [activeId, setActiveId] = useState(null);
+  const { isPending, run } = usePending();
 
   async function refresh() {
     const data = await getContent('faq');
@@ -34,20 +36,25 @@ export default function Faq() {
 
   useEffect(() => { refresh().catch((err) => setError(err.message)); }, []);
 
-  const hasUnpublishedChanges = draft && published && !contentMatchesPublished('faq', draft, published);
+  const hasUnpublishedChanges =
+    draft && published && !contentMatchesPublished('faq', draft, published);
+
+  const categories = draft?.categories ?? [];
+  const activeIndex = Math.max(0, categories.findIndex((c) => c.id === activeId));
+  const active = categories[activeIndex] ?? null;
 
   function updateCategories(nextCategories) {
-    setDraft({ ...draft, categories: nextCategories });
+    setDraft((prev) => ({ ...prev, categories: nextCategories }));
   }
 
   function updateCategory(categoryIndex, changes) {
-    updateCategories(draft.categories.map(
+    updateCategories(categories.map(
       (category, i) => (i === categoryIndex ? { ...category, ...changes } : category),
     ));
   }
 
   function addCategory() {
-    const existingIds = new Set(draft.categories.map((category) => category.id));
+    const existingIds = new Set(categories.map((category) => category.id));
     const base = slugify('New category') || 'category';
     let id = base;
     let suffix = 2;
@@ -55,110 +62,84 @@ export default function Faq() {
       id = `${base}-${suffix}`;
       suffix += 1;
     }
-    updateCategories([...draft.categories, { id, label: 'New category', items: [] }]);
+    updateCategories([...categories, { id, label: 'New category', items: [] }]);
+    setActiveId(id);
   }
 
   function removeCategory(categoryIndex) {
-    const category = draft.categories[categoryIndex];
+    const category = categories[categoryIndex];
     const itemCount = category.items?.length ?? 0;
     const warning = itemCount > 0
       ? `Delete "${category.label}" and its ${itemCount} question${itemCount === 1 ? '' : 's'}? This cannot be undone.`
       : `Delete "${category.label}"? This cannot be undone.`;
     if (!window.confirm(warning)) return;
-    updateCategories(draft.categories.filter((_, i) => i !== categoryIndex));
-  }
-
-  function reorderCategories(fromIndex, toIndex) {
-    updateCategories(reorder(draft.categories, fromIndex, toIndex));
+    updateCategories(categories.filter((_, i) => i !== categoryIndex));
+    setActiveId(null);
   }
 
   function addItem(categoryIndex) {
-    const category = draft.categories[categoryIndex];
+    const category = categories[categoryIndex];
     // Every question carries an id so the visual editor can key an override
     // on it. Minted here, once, because reordering below would make any id
     // derived from position or wording reattach to a different question.
     const taken = new Set(
-      draft.categories.flatMap((entry) => (entry.items ?? []).map((item) => item.id)),
+      categories.flatMap((entry) => (entry.items ?? []).map((item) => item.id)),
     );
     const item = { ...EMPTY_ITEM, id: mintQuestionId('question', taken) };
     updateCategory(categoryIndex, { items: [...(category.items ?? []), item] });
   }
 
   function updateItem(categoryIndex, itemIndex, changes) {
-    const category = draft.categories[categoryIndex];
-    const items = category.items.map(
-      (item, i) => (i === itemIndex ? { ...item, ...changes } : item),
-    );
-    updateCategory(categoryIndex, { items });
+    const category = categories[categoryIndex];
+    updateCategory(categoryIndex, {
+      items: category.items.map((item, i) => (i === itemIndex ? { ...item, ...changes } : item)),
+    });
   }
 
   function removeItem(categoryIndex, itemIndex) {
-    const category = draft.categories[categoryIndex];
-    const item = category.items[itemIndex];
+    const item = categories[categoryIndex].items[itemIndex];
     if (!window.confirm(`Delete the question "${item.q || '(untitled)'}"? This cannot be undone.`)) return;
-    updateCategory(categoryIndex, { items: category.items.filter((_, i) => i !== itemIndex) });
-  }
-
-  function reorderItems(categoryIndex, fromIndex, toIndex) {
-    const category = draft.categories[categoryIndex];
-    updateCategory(categoryIndex, { items: reorder(category.items, fromIndex, toIndex) });
+    updateCategory(categoryIndex, {
+      items: categories[categoryIndex].items.filter((_, i) => i !== itemIndex),
+    });
   }
 
   async function handleSave() {
-    const key = 'save';
-    if (pending.has(key)) return;
     setError(null);
     setStatus(null);
-    markPending(key);
-    try {
-      await saveContent('faq', draft);
-      await refresh();
-      setStatus('Saved as a draft. The public site has not changed yet.');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      clearPending(key);
-    }
+    await run('save', async () => {
+      try {
+        await saveContent('faq', draft);
+        await refresh();
+        setStatus('Saved as a draft. The public site has not changed yet.');
+      } catch (err) {
+        setError(err.message);
+      }
+    });
   }
 
   async function handlePublish() {
-    const key = 'publish';
-    if (pending.has(key)) return;
     setError(null);
     setStatus(null);
-    markPending(key);
-    try {
-      await publishContent('faq');
-      await refresh();
-      setStatus('Published. The public site now shows this.');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      clearPending(key);
-    }
+    await run('publish', async () => {
+      try {
+        await publishContent('faq');
+        await refresh();
+        setStatus('Published. The public site now shows this.');
+      } catch (err) {
+        setError(err.message);
+      }
+    });
   }
 
-  if (!draft) {
-    return (
-      <section className="admin-section" aria-labelledby="faq-heading">
-        <h2 id="faq-heading">Questions & answers</h2>
-        {error
-          ? <p className="admin-error" role="alert">{error}</p>
-          : <p className="admin-notice" aria-busy="true">Loading…</p>}
-      </section>
-    );
-  }
+  if (error && !draft) return <Failure message={error} />;
+  if (!draft) return <Busy label="Loading questions…" />;
 
   return (
     <section className="admin-section" aria-labelledby="faq-heading">
-      <h2 id="faq-heading">Questions & answers</h2>
-      <p className="admin-help">
-        Categories appear in this order, and questions appear in this order
-        within each category. Answers are used exactly as typed here, so
-        keep the camp&rsquo;s own wording.
-      </p>
+      <h2 id="faq-heading">Questions &amp; answers</h2>
 
-      {error && <p className="admin-error" role="alert">{error}</p>}
+      <Failure message={error} />
       {status && <p className="admin-status" role="status">{status}</p>}
 
       <p className="admin-draft-state">
@@ -171,8 +152,8 @@ export default function Faq() {
         <button
           type="button"
           className="admin-save"
-          disabled={pending.has('save')}
-          aria-busy={pending.has('save')}
+          disabled={isPending('save')}
+          aria-busy={isPending('save')}
           onClick={handleSave}
         >
           Save draft
@@ -180,53 +161,83 @@ export default function Faq() {
         <button
           type="button"
           className="admin-publish"
-          disabled={pending.has('publish')}
-          aria-busy={pending.has('publish')}
+          disabled={isPending('publish')}
+          aria-busy={isPending('publish')}
           onClick={handlePublish}
         >
           Publish
         </button>
       </div>
 
-      <OrderedList
-        items={draft.categories}
-        getKey={(category, i) => `category-${i}`}
-        onReorder={reorderCategories}
-        renderItem={(category, categoryIndex) => (
-          <div className="faq-category">
+      <div className="faq-editor">
+        <nav className="faq-editor__rail" aria-label="Question categories">
+          <p className="admin-nav__label" aria-hidden="true">Categories</p>
+          {categories.map((category, index) => (
+            <button
+              key={category.id ?? `category-${index}`}
+              type="button"
+              className={
+                index === activeIndex
+                  ? 'faq-editor__tab faq-editor__tab--active'
+                  : 'faq-editor__tab'
+              }
+              aria-current={index === activeIndex ? 'true' : undefined}
+              onClick={() => setActiveId(category.id)}
+            >
+              <span>{category.label}</span>
+              <span className="faq-editor__count">{category.items?.length ?? 0}</span>
+            </button>
+          ))}
+          <button type="button" className="admin-add" onClick={addCategory}>
+            Add a category
+          </button>
+        </nav>
+
+        {active ? (
+          <div className="faq-editor__panel">
             <div className="faq-category__header">
               <label className="admin-field">
                 Category name
                 <input
                   type="text"
-                  value={category.label}
-                  onChange={(e) => updateCategory(categoryIndex, { label: e.target.value })}
+                  value={active.label}
+                  onChange={(e) => updateCategory(activeIndex, { label: e.target.value })}
                 />
               </label>
-              <div className="admin-field admin-field--readonly">
-                Category ID
-                <span className="admin-field__value">{category.id || '(none)'}</span>
-                <span className="admin-field__hint">
-                  Set automatically when a category is added and cannot be
-                  changed here. The &ldquo;Mail &amp; Photos&rdquo; category
-                  uses this to show the camper mailing addresses on the FAQ
-                  page &mdash; if this ID were editable and got changed, those
-                  addresses would silently disappear from the public site.
-                </span>
-              </div>
               <button
                 type="button"
                 className="admin-remove"
-                onClick={() => removeCategory(categoryIndex)}
+                onClick={() => removeCategory(activeIndex)}
               >
                 Delete category
               </button>
             </div>
 
+            <div className="admin-field admin-field--readonly">
+              Category ID
+              <span className="admin-field__value">{active.id || '(none)'}</span>
+              <span className="admin-field__hint">
+                Set automatically when a category is added and cannot be
+                changed here. The &ldquo;Mail &amp; Photos&rdquo; category
+                uses this to show the camper mailing addresses on the FAQ
+                page &mdash; if this ID were editable and got changed, those
+                addresses would silently disappear from the public site.
+              </span>
+            </div>
+
+            <p className="admin-help">
+              Questions appear in this order under {active.label}.
+            </p>
+
             <OrderedList
-              items={category.items ?? []}
-              getKey={(item, i) => `item-${i}`}
-              onReorder={(from, to) => reorderItems(categoryIndex, from, to)}
+              items={active.items ?? []}
+              // Keyed on the question's own minted id, not its position: this
+              // panel reorders, and a positional key would carry one row's
+              // focus onto another.
+              getKey={(item, i) => item.id ?? `item-${i}`}
+              onReorder={(from, to) => updateCategory(activeIndex, {
+                items: reorder(active.items, from, to),
+              })}
               renderItem={(item, itemIndex) => (
                 <div className="faq-item">
                   <label className="admin-field admin-field--wide">
@@ -234,36 +245,43 @@ export default function Faq() {
                     <input
                       type="text"
                       value={item.q}
-                      onChange={(e) => updateItem(categoryIndex, itemIndex, { q: e.target.value })}
+                      onChange={(e) => updateItem(activeIndex, itemIndex, { q: e.target.value })}
                     />
                   </label>
                   <label className="admin-field admin-field--wide">
                     Answer
                     <textarea
                       value={item.a}
-                      onChange={(e) => updateItem(categoryIndex, itemIndex, { a: e.target.value })}
+                      onChange={(e) => updateItem(activeIndex, itemIndex, { a: e.target.value })}
                     />
                   </label>
                   <button
                     type="button"
                     className="admin-remove"
-                    onClick={() => removeItem(categoryIndex, itemIndex)}
+                    onClick={() => removeItem(activeIndex, itemIndex)}
                   >
                     Delete question
                   </button>
                 </div>
               )}
             />
-            <button type="button" className="admin-add" onClick={() => addItem(categoryIndex)}>
-              Add a question to {category.label}
+
+            <button
+              type="button"
+              className="admin-add"
+              onClick={() => addItem(activeIndex)}
+            >
+              Add a question to {active.label}
             </button>
           </div>
+        ) : (
+          <div className="faq-editor__panel">
+            <p className="admin-notice">
+              There are no categories yet. Add one to start.
+            </p>
+          </div>
         )}
-      />
-
-      <button type="button" className="admin-add" onClick={addCategory}>
-        Add a category
-      </button>
+      </div>
     </section>
   );
 }
