@@ -20,6 +20,7 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
       <div className="container">
         <SectionHeading
           id={id}
+          headingId={headingId}
           eyebrow="Before you go"
           title="What to pack"
           lead="There are 12 exercise sessions during the week, so bring at least 7 running outfits."
@@ -28,11 +29,28 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
 
         <div className="packing__grid">
           {PACKING_LIST.map((group, index) => (
-            <Reveal key={group.category} delay={Math.min(index, 5) * 45} className="packing__card">
-              <h3 className="packing__category">{group.category}</h3>
+            <Reveal key={group.id} delay={Math.min(index, 5) * 45} className="packing__card">
+              {/* Keyed on the explicit ids in src/data/packing.js, not on the
+                  text and not on loop position. Rewording an item keeps its
+                  override; reordering the list cannot slide one item's edit
+                  onto another. */}
+              <Editable
+                id={`${id}.group.${group.id}`}
+                as="h3"
+                className="packing__category"
+              >
+                {group.category}
+              </Editable>
               <ul className="packing__items">
                 {group.items.map((item) => (
-                  <li key={item}>{item}</li>
+                  <Editable
+                    key={item.id}
+                    id={`${id}.item.${item.id}`}
+                    label={item.text}
+                    as="li"
+                  >
+                    {item.text}
+                  </Editable>
                 ))}
               </ul>
             </Reveal>
@@ -46,7 +64,7 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
             There is no locked storage and no laundry, so if an item must be safeguarded,
             consider leaving it at home.
           </Editable>
-          <Button to="/faq" variant="ghost">More in the FAQ →</Button>
+          <Button id="camp.packing.cta.faq" to="/faq" variant="ghost">More in the FAQ →</Button>
         </Reveal>
       </div>
     </section>

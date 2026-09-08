@@ -1,3 +1,4 @@
+import { Editable, EditableImage } from 'vedit';
 import { useEffect, useState } from 'react';
 import SectionHeading from '../ui/SectionHeading.jsx';
 import Reveal from '../motion/Reveal.jsx';
@@ -70,7 +71,9 @@ export default function MerchStore({ id = 'merch.store', ...rest }) {
             className="merch-store__item"
           >
             {product.images?.[0] && (
-              <img
+              <EditableImage
+                id={`merch.store.item.${product.id}.image`}
+                as="img"
                 className="merch-store__image"
                 src={shopUrl(product.images[0])}
                 alt={product.name}
@@ -79,14 +82,31 @@ export default function MerchStore({ id = 'merch.store', ...rest }) {
                 loading="lazy"
               />
             )}
-            <h3 className="merch-store__name">{product.name}</h3>
+            {/* Keyed on product.id from the store's own catalogue.
+                The price stays unwrapped for the reason tier.price is:
+                OpenShop charges it, and a retypable figure would be a
+                second, disagreeing answer. */}
+            <Editable
+              id={`merch.store.item.${product.id}.name`}
+              as="h3"
+              className="merch-store__name"
+            >
+              {product.name}
+            </Editable>
             {typeof product.price === 'number' && (
               <p className="merch-store__price">${(product.price / 100).toFixed(2)}</p>
             )}
             {product.description && (
-              <p className="merch-store__note">{product.description}</p>
+              <Editable
+                id={`merch.store.item.${product.id}.description`}
+                as="p"
+                className="merch-store__note"
+              >
+                {product.description}
+              </Editable>
             )}
             <Button
+              id={`merch.store.item.${product.id}.cta`}
               href={`${SHOP_ORIGIN}/products/${product.id}`}
               variant="ghost"
             >

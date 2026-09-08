@@ -56,6 +56,43 @@ const PAGES = [
   { id: 'design', label: 'Site design', permission: 'design', Component: Design },
 ];
 
+/**
+ * The camp's mark and wordmark, the same brand block the public site opens
+ * with. Rendered on every path the panel can take — including the loading,
+ * signed-out and no-access states, which previously showed a bare serif
+ * "Admin" over a hairline and did not look like this site at all.
+ *
+ * `bandRight` is what sits opposite the brand on the band itself (identity
+ * and the drawer toggle); `children` is the page beneath it.
+ */
+function Masthead({ children, bandRight }) {
+  return (
+    <>
+      <header className="admin-header">
+        {/* The masthead spans the viewport; this inner element holds its
+            contents to the same measure as the page body below it. */}
+        <div className="admin-header__bar admin-measure">
+          <a className="admin-brand" href="/">
+            <img
+              className="admin-brand__mark"
+              src="/bmxc-logo.png"
+              alt=""
+              width="40"
+              height="40"
+            />
+            <span className="admin-brand__wordmark">
+              <span className="admin-brand__name">BMXC</span>
+              <span className="admin-brand__sub">Est. 1969</span>
+            </span>
+          </a>
+          {bandRight}
+        </div>
+      </header>
+      {children}
+    </>
+  );
+}
+
 export default function AdminApp() {
   const [me, setMe] = useState(null);
   const [error, setError] = useState(null);
@@ -69,32 +106,39 @@ export default function AdminApp() {
     getMe().then(setMe).catch((err) => setError(err.message));
   }, []);
 
+  // The three pre-panel states share the masthead, so a signed-out or
+  // still-loading page is recognisably the same site rather than an
+  // unstyled paragraph on blank paper.
   if (error) {
     return (
-      <main className="admin-shell">
-        <h1>Admin</h1>
-        <Failure message="We could not confirm your access. Try reloading the page." />
-      </main>
+      <Masthead>
+        <main className="admin-shell admin-measure">
+          <Failure message="We could not confirm your access. Try reloading the page." />
+        </main>
+      </Masthead>
     );
   }
 
   if (!me) {
     return (
-      <main className="admin-shell">
-        <Busy />
-      </main>
+      <Masthead>
+        <main className="admin-shell admin-measure">
+          <Busy />
+        </main>
+      </Masthead>
     );
   }
 
   if (!me.registered) {
     return (
-      <main className="admin-shell">
-        <h1>Admin</h1>
-        <p className="admin-notice">
-          You are signed in as <strong>{me.email}</strong>, but you have not
-          been given access to anything yet. Ask a camp director to add you.
-        </p>
-      </main>
+      <Masthead>
+        <main className="admin-shell admin-measure">
+          <p className="admin-notice">
+            You are signed in as <strong>{me.email}</strong>, but you have not
+            been given access to anything yet. Ask a camp director to add you.
+          </p>
+        </main>
+      </Masthead>
     );
   }
 
@@ -117,10 +161,13 @@ export default function AdminApp() {
   const activeContentPage = availablePages.find((page) => page.id === selected);
 
   return (
-    <div className="admin-shell">
-      <header className="admin-header">
-        <div className="admin-header__bar">
-          <h1>Admin</h1>
+    <Masthead
+      bandRight={
+        <div className="admin-header__right">
+          <p className="admin-identity">
+            {me.name ?? me.email}
+            {me.isAdmin && <span className="admin-identity__role">Administrator</span>}
+          </p>
           {navItems.length > 1 && (
             <button
               type="button"
@@ -133,19 +180,19 @@ export default function AdminApp() {
             </button>
           )}
         </div>
-        <p className="admin-identity">
-          Signed in as {me.name ?? me.email}
-          {me.isAdmin ? ' · Administrator' : ''}
-        </p>
-      </header>
-
-      <div className="admin-layout">
+      }
+    >
+      <div className="admin-shell admin-layout admin-measure">
         {navItems.length > 1 && (
           <nav
             id="admin-nav"
             className={navOpen ? 'admin-nav admin-nav--open' : 'admin-nav'}
             aria-label="Admin sections"
           >
+            {/* A ruled index, in the handbook language the site uses: the
+                label names the column rather than leaving the list floating
+                against the page. */}
+            <p className="admin-nav__label" aria-hidden="true">Sections</p>
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -174,6 +221,6 @@ export default function AdminApp() {
           {activeContentPage && <activeContentPage.Component key={activeContentPage.id} />}
         </main>
       </div>
-    </div>
+    </Masthead>
   );
 }

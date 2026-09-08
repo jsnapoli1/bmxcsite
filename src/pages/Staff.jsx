@@ -29,12 +29,16 @@ export default function Staff() {
       />
 
       <section className="section container" aria-labelledby="staff-heading">
-        <h2 className="sr-only" id="staff-heading">Camp staff</h2>
+        <h2 className="sr-only" id="staff-heading">
+          <Editable id="staff.sr.heading" as="span">Camp staff</Editable>
+        </h2>
 
         {content.groups.map((group, groupIndex) => (
           <div className="staff-group" key={group.group}>
             <Reveal variant="fade" className="staff-group__label">
-              <h3>{group.group}</h3>
+              <Editable id={`staff.group.${group.group}`} as="h3">
+                {group.group}
+              </Editable>
               <span className="staff-group__count">
                 {String(group.members.length).padStart(2, '0')}
               </span>
@@ -59,9 +63,32 @@ export default function Staff() {
                     >
                       {member.name}
                     </Editable>
+                    {/* The role gets its own handle, like the name and bio
+                        beside it. Without one, clicking "Veteran Coach · since
+                        2006" selected the whole card. `since` stays outside the
+                        editable span: it is a year from D1, and the separator
+                        belongs to the layout rather than the sentence. */}
                     <p className="staff-card__role">
-                      {member.role}
-                      {member.since ? <span className="staff-card__since"> · since {member.since}</span> : null}
+                      <Editable
+                        id={`staff.member.${member.name}.role`}
+                        as="span"
+                      >
+                        {member.role}
+                      </Editable>
+                      {member.since ? (
+                        // The separator and the word "since" are authored copy;
+                        // the year is live from D1, so it interpolates rather
+                        // than being stored.
+                        <Editable
+                          id={`staff.member.${member.name}.since`}
+                          label={`${member.name} — since`}
+                          as="span"
+                          className="staff-card__since"
+                          vars={{ year: String(member.since) }}
+                        >
+                          {' · since {year}'}
+                        </Editable>
+                      ) : null}
                     </p>
                     <Editable
                       id={`staff.member.${member.name}.bio`}
@@ -83,6 +110,7 @@ export default function Staff() {
         <div className="container">
           <SectionHeading
             id="staff.also"
+            headingId="credentials-heading"
             eyebrow="Every week"
             title="Also on staff"
             tone="light"
@@ -90,11 +118,17 @@ export default function Staff() {
           />
           <ul className="credentials__list">
             {STAFF_CREDENTIALS.map((credential, index) => (
-              <Reveal as="li" key={credential} delay={Math.min(index, 5) * 45} className="credentials__item">
+              <Reveal as="li" key={credential.id} delay={Math.min(index, 5) * 45} className="credentials__item">
                 <span className="credentials__index" aria-hidden="true">
                   {String(index + 1).padStart(2, '0')}
                 </span>
-                {credential}
+                <Editable
+                  id={`staff.credential.${credential.id}`}
+                  label={credential.text}
+                  as="span"
+                >
+                  {credential.text}
+                </Editable>
               </Reveal>
             ))}
           </ul>
@@ -105,6 +139,7 @@ export default function Staff() {
       <section className="section container" aria-labelledby="speakers-heading">
         <SectionHeading
           id="staff.speakers"
+          headingId="speakers-heading"
           eyebrow="Guest speakers"
           title="Guest Speakers"
           lead="We bring the best athletes, coaches, and educators to spend time with the campers. Some are former BMXC campers who went on to run professionally."
@@ -114,10 +149,33 @@ export default function Staff() {
         <ul className="speakers">
           {GUEST_SPEAKERS.map((speaker, index) => (
             <Reveal as="li" key={speaker.name + index} delay={Math.min(index, 5) * 35} className="speaker">
-              <span className="speaker__year">{speaker.year ?? '—'}</span>
+              {/* The em-dash fallback is authored; the year is data. */}
+              <Editable
+                id={`staff.speaker.${speaker.name}.year`}
+                label={`${speaker.name} — year`}
+                as="span"
+                className="speaker__year"
+                vars={{ year: String(speaker.year ?? '—') }}
+              >
+                {'{year}'}
+              </Editable>
               <div className="speaker__body">
-                <h3 className="speaker__name">{speaker.name}</h3>
-                <p className="speaker__credential">{speaker.credential}</p>
+                {/* Keyed on the name, as staff.member.* already is —
+                    never `index`, which the React key taints. */}
+                <Editable
+                  id={`staff.speaker.${speaker.name}.name`}
+                  as="h3"
+                  className="speaker__name"
+                >
+                  {speaker.name}
+                </Editable>
+                <Editable
+                  id={`staff.speaker.${speaker.name}.credential`}
+                  as="p"
+                  className="speaker__credential"
+                >
+                  {speaker.credential}
+                </Editable>
               </div>
             </Reveal>
           ))}

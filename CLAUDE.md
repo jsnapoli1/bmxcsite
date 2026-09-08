@@ -122,6 +122,16 @@ route to appear in `EDITABLE_PAGES`. `/register` was served for months while
 absent from that list, so its "Pay $250 deposit" button could not be selected
 at all — an omission invisible from the page itself.
 
+**Embeds.** `Embed` (Elements group) takes a pasted YouTube, Spotify or
+Google Maps link. The URL is a trust boundary and is never passed through:
+`src/lib/embed.js` matches it against a fixed provider list, extracts an id,
+validates it, and **rebuilds** the embed URL from a literal template. An
+editor field reaching an `iframe src` unfiltered would let the `design`
+permission serve arbitrary content from bmxc.camp — a look-alike payment
+page, a `javascript:` URL — which is a much larger thing than changing how a
+page looks. Anything unmatched renders a message instead of an empty band.
+Adding a provider means adding a matcher there, not relaxing the check.
+
 The registry is `src/lib/vedit-components.js`; the sections it lists live in
 `src/components/sections/`. Everything is registered `wrap: false`, because
 these are full-width `<section>`s whose own class carries the padding — vedit's
@@ -161,9 +171,13 @@ item's override onto another product. `SectionHeading` and `PageHeader` take an
 call site. Anything unwrapped falls back to the DOM scanner, whose positional
 ids (`auto:#root>section>h1`) break when the markup moves.
 
-FAQ questions are deliberately **not** wrapped: their only handle is
-`${category.id}-${index}`, so an explicit id would look stable while silently
-reattaching on reorder.
+FAQ questions carry an explicit `id`, minted once when the question is
+created. `${category.id}-${index}` was the problem: /admin offers a reorder
+control, so a position-derived id slid a question's override onto its
+neighbour the first time anyone moved one. `src/lib/faq-ids.js` mints ids and
+fills them in on read, since a D1 document is only rewritten when someone
+saves. Keep that module free of React and editor imports — the admin panel
+imports it, and the reason `visual-editor-pages.js` exists applies here too.
 
 `SplitText`'s word spans are excluded from the scanner by the `autoSelector`
 passed to VeditProvider, not by `data-vedit-ui`. The scanner matches `span`
@@ -186,6 +200,78 @@ The whole line is the right unit to rewrite, and `SectionHeading` /
 `PageHeader` / the Hero each wrap their `SplitText` in an `<Editable>` that
 addresses it. **A bare `SplitText` with no wrapper is not editable at all** —
 wrap any new one.
+
+**The Registration page's own copy is editable, prices included.** Tier
+names and windows are keyed on `tier.name`, bus regions on `route.region`,
+key dates on `entry.label` — never loop position, so inserting a tier cannot
+slide one window's override onto another card. The deposit figure and its
+"Deposit" caption are separate handles: before this they had no id of their
+own, so clicking "$250 Deposit" selected the entire pricing section.
+
+**Every list that reads as prose carries ids in its data.** `PACKING_LIST`,
+`PAYMENT_NOTES`, `FINE_PRINT`, `MERCH_CAVEATS`, `STAFF_CREDENTIALS` and the
+FAQ questions are all `{ id, text }` (or `{ id, q, a }`), and each entry is
+wrapped and keyed on its own id.
+
+These were unwrapped for years because their only handle was the string
+itself (`key={note}`) — an id built from the text reattaches to a different
+row the moment someone rewords one, which is exactly what editing them is
+for. That is a reason to fix the data, not to leave the copy uneditable.
+
+**The ids are load-bearing.** Rewording an entry keeps its override;
+*changing* an `id` orphans that override, and reusing one moves another
+entry's edit onto that row. `test/lib/editable-list-ids.test.js` pins it:
+every entry has an id and text, no id repeats, ids are plain slugs, and the
+FAQ migration fills gaps without touching text.
+
+**What is still deliberately not editable, site-wide:**
+
+- **Prices anything also charges**: `tier.price`, `route.price`, and the
+  OpenShop store figures. A retypable number would be a second, disagreeing
+  answer, which is the one thing these pages must not have. The deposit *is*
+  a template (`{deposit}`) because the number stays live from
+  `src/data/registration.js` either way.
+- **The blog's fetch-failure message.** It renders only when the API is
+  down; an `<Editable>` in an error path is a liability, not a feature. The
+  blog's *empty* state is wrapped — that is a normal state, not an error.
+- **Derived thumbnails.** The two YouTube posters take their `src` from the
+  video's own id, so a swappable source would let the poster disagree with
+  the video it plays.
+- **Decoration**: counter numerals, arrows, and `SplitText`'s word spans.
+- **Landmark names.** The `aria-label` on each `<nav>` ("Main navigation",
+  "Footer navigation", "FAQ categories"), the `<ol>` of registration steps,
+  and the brand link's "Blue Mountain XC Camp — home". These name a region so
+  a screen reader can jump to it; they are never read as prose, and a
+  renamed landmark is a worse page, not a redesigned one.
+
+**Audit the states, not just the page as it loads.** Every sweep before
+this one read each route in its default state, so anything behind an
+interaction was invisible to it. The camper mail addresses on /faq render
+only when "Mail & Photos" is selected, and nothing had ever looked at them:
+the heading, both carrier labels and all eight lines had no handle. Drive
+the page — every FAQ category with its questions expanded, all four steps
+of /register, the `?paid=` confirmation screen — or a whole block stays
+unaddressable while the audit reports clean.
+
+**Attributes are content too, and were audited separately.** An `alt` or an
+`aria-label` is what a screen reader announces, and a text-only sweep never
+looks at one. Product `alt` text is editable through `EditableImage`, which
+sets `kind="image"` and gives the inspector an Alt field. The carousel's
+control names needed `useEditable` instead — see `Carousel.jsx`, since
+`<Editable>` cannot wrap an attribute.
+
+Everything else on every page resolves to itself. When adding a section,
+check the value *beside* a wrapped label too — the recurring mistake is
+wrapping "Venue" and leaving "Camp Westmont" addressable only as its `<ul>`.
+
+**Pass `label` to anything that repeats.** vedit names a layer from the id's
+last segment, so 26 nav and footer links all read "Label" and ten schedule
+rows all read "time" — the layers panel was unusable for finding anything.
+`label={item.text}` gives each row its own name.
+
+`<Editable>` takes `id` for its own node id and cannot also carry a DOM id.
+Where a heading is the target of `aria-labelledby`, the `<h2>` keeps the DOM
+id and the `<Editable>` wraps the text inside it.
 
 **Two sources of truth.** On CMS-backed pages (merch, staff, blog) a vedit
 override layers on top of the D1 value and wins. Edit copy in /admin; use the
@@ -298,6 +384,22 @@ pages}.css`. The panel does not import `global.css` (that carries the
 public site's base typography), so `shell.css` restates the
 `box-sizing: border-box` reset. Without it, anything with an explicit
 width plus a border overflows its grid track.
+
+**The panel is its own HTML entry point, so it must load the fonts
+itself.** `admin.html` linked no stylesheet at all while `tokens.css`
+asked for Source Serif 4, Inter and JetBrains Mono — so every rule
+silently resolved to its fallback and the whole panel rendered in Iowan
+Old Style and Times. Nothing failed: the build passed, the tokens were
+correct, and the CSS was the same CSS the public site uses. It simply
+looked a decade older than bmxc.camp, and the cause was invisible in
+every file except the one that had no font link in it. `admin-preview.html`
+loads the same fonts, or the preview is not a picture of the panel.
+
+**The masthead is the panel's one dark band**, carrying the camp's mark
+and wordmark like the public navbar, closed by the gold rule. It renders
+on all four paths — loading, access error, no-permissions and the panel
+itself — via the `Masthead` component, so a director who cannot sign in
+still lands on something that looks like this site.
 
 **`admin-preview.html` is gitignored and local only.** The panel needs a
 Cloudflare Access JWT that does not exist on localhost, so

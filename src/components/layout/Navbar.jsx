@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Editable } from 'vedit';
+import { Editable, EditableImage } from 'vedit';
 import './navbar.css';
 
 const LINKS = [
@@ -60,7 +60,9 @@ export default function Navbar() {
     <header className={`navbar${isScrolled ? ' is-scrolled' : ''}${isMenuOpen ? ' is-open' : ''}`}>
       <div className="navbar__inner container-wide">
         <NavLink to="/" className="navbar__brand" aria-label="Blue Mountain XC Camp — home">
-          <img
+          <EditableImage
+            id="chrome.navbar.mark"
+            as="img"
             className="navbar__mark"
             src="/bmxc-logo.png"
             alt=""
@@ -89,6 +91,7 @@ export default function Navbar() {
                 >
                   <Editable
                     id={`chrome.navbar.link.${link.to}.label`}
+                    label={`Nav — ${link.label}`}
                     as="span"
                     className="navbar__link-text"
                   >
@@ -108,7 +111,19 @@ export default function Navbar() {
           aria-controls="mobile-menu"
           onClick={() => setIsMenuOpen((open) => !open)}
         >
-          <span className="sr-only">{isMenuOpen ? 'Close menu' : 'Open menu'}</span>
+          {/* Two ids rather than one: the label is a state ternary, and a
+              single node would let one wording overwrite the other. Only the
+              current state renders, so only one is ever addressable at a
+              time — which is also how it reads in the layers panel. */}
+          {isMenuOpen ? (
+            <Editable id="chrome.navbar.menu.close" as="span" className="sr-only">
+              Close menu
+            </Editable>
+          ) : (
+            <Editable id="chrome.navbar.menu.open" as="span" className="sr-only">
+              Open menu
+            </Editable>
+          )}
           <span className="navbar__toggle-bar navbar__toggle-bar--top" aria-hidden="true" />
           <span className="navbar__toggle-bar navbar__toggle-bar--bottom" aria-hidden="true" />
         </button>
@@ -124,7 +139,11 @@ export default function Navbar() {
                 className={({ isActive }) => `navbar__drawer-link${isActive ? ' is-active' : ''}`}
               >
                 <span className="navbar__drawer-index">{String(index + 1).padStart(2, '0')}</span>
-                <Editable id={`chrome.navbar.drawer.${link.to}.label`} as="span">
+                <Editable
+                  id={`chrome.navbar.drawer.${link.to}.label`}
+                  label={`Menu — ${link.label}`}
+                  as="span"
+                >
                   {link.label}
                 </Editable>
               </NavLink>

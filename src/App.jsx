@@ -1,3 +1,4 @@
+import { Editable } from 'vedit';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Suspense, lazy, useEffect } from 'react';
 import Navbar from './components/layout/Navbar.jsx';
@@ -37,7 +38,9 @@ function RouteFallback() {
 export default function App() {
   return (
     <>
-      <a className="skip-link" href="#main">Skip to content</a>
+      <a className="skip-link" href="#main">
+        <Editable id="chrome.skip-link" as="span">Skip to content</Editable>
+      </a>
       <ScrollToTop />
       <Navbar />
       <main id="main">

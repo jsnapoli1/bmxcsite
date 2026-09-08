@@ -275,3 +275,95 @@
   outline-offset: 2px;
 }
 
+/* --- Form controls in the camp's own colour ---------------------------
+   Checkboxes and radios otherwise render in the browser's default blue,
+   which is the one colour on the page that belongs to no palette. */
+.admin-shell input[type='checkbox'],
+.admin-shell input[type='radio'] {
+  accent-color: var(--color-primary);
+  width: 0.95rem;
+  height: 0.95rem;
+  cursor: pointer;
+}
+
+.admin-shell input[type='checkbox']:disabled,
+.admin-shell input[type='radio']:disabled { cursor: default; }
+
+/* Fields sit on raised paper against the sunken page, and mark focus with
+   the navy rather than the UA's focus ring. */
+.admin-invite input:focus,
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-field select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* Selects were left to the UA entirely — the one control still rendering
+   in system chrome next to fields that had been styled. */
+.admin-field select,
+.admin-invite select {
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  font-size: 0.925rem;
+  font-weight: 400;
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  cursor: pointer;
+}
+
+.admin-field select:focus-visible,
+.admin-invite select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* Buttons carry the label's weight rather than the browser's default, and
+   respond on hover the way the rest of the panel does. */
+.admin-invite button,
+.admin-save,
+.admin-publish,
+.admin-remove,
+.album-chip {
+  transition:
+    background-color var(--duration-instant) ease,
+    border-color var(--duration-instant) ease,
+    color var(--duration-instant) ease;
+}
+
+.admin-invite button:hover:not(:disabled) {
+  background: var(--color-primary-deep);
+  border-color: var(--color-primary-deep);
+}
+
+/* --- Export links ------------------------------------------------------
+   `.admin-add` is the dashed "add another one" affordance, and the two CSV
+   exports borrowed it for want of anything better — so a download rendered
+   as an empty dashed slot inviting you to create something. A download is
+   a real, solid control that acts immediately. */
+.admin-export {
+  display: inline-block;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 2px;
+  background: var(--color-surface-raised);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  transition: border-color var(--duration-instant) ease, color var(--duration-instant) ease;
+}
+
+.admin-export:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-deep);
+}
+
+.admin-export:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}

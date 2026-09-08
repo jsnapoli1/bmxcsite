@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Editable } from 'vedit';
 import Reveal from '../motion/Reveal.jsx';
 import { PLAYLISTS, getSpotifyEmbedId } from '../../data/playlists.js';
 import '../../pages/playlists.css';
@@ -20,7 +21,9 @@ export default function PlaylistsSection({ id, ...rest }) {
 
   return (
     <section {...rest} className="section container playlists" aria-labelledby="playlists-heading">
-        <h2 className="sr-only" id="playlists-heading">Spotify playlists</h2>
+        <h2 className="sr-only" id="playlists-heading">
+          <Editable id="playlists.sr.heading" as="span">Spotify playlists</Editable>
+        </h2>
 
         <div className="playlists__layout">
           {/* --- Selector --- */}
@@ -44,14 +47,39 @@ export default function PlaylistsSection({ id, ...rest }) {
                       ))}
                     </span>
 
+                    {/* Keyed on `playlist.id`, never loop position: reordering
+                        or adding a year in src/data/playlists.js must not slide
+                        one playlist's override onto another. */}
                     <span className="playlist-row__text">
-                      <span className="playlist-row__title">{playlist.title}</span>
-                      <span className="playlist-row__desc">{playlist.description}</span>
+                      <Editable
+                        id={`playlists.item.${playlist.id}.title`}
+                        as="span"
+                        className="playlist-row__title"
+                      >
+                        {playlist.title}
+                      </Editable>
+                      <Editable
+                        id={`playlists.item.${playlist.id}.description`}
+                        as="span"
+                        className="playlist-row__desc"
+                      >
+                        {playlist.description}
+                      </Editable>
                     </span>
 
                     <span className="playlist-row__meta">
-                      <span className="playlist-row__year">{playlist.year}</span>
-                      {!isReady ? <span className="playlist-row__soon">Link soon</span> : null}
+                      <Editable
+                        id={`playlists.item.${playlist.id}.year`}
+                        as="span"
+                        className="playlist-row__year"
+                      >
+                        {playlist.year}
+                      </Editable>
+                      {!isReady ? (
+                        <Editable id="playlists.row.soon" as="span" className="playlist-row__soon">
+                          Link soon
+                        </Editable>
+                      ) : null}
                     </span>
                   </button>
                 </Reveal>
@@ -84,13 +112,21 @@ export default function PlaylistsSection({ id, ...rest }) {
                       <span key={bar} style={{ '--bar': bar }} />
                     ))}
                   </span>
-                  <p className="playlists__empty-title">
-                    {active ? active.title : 'Nothing selected'}
-                  </p>
-                  <p className="playlists__empty-body">
+                  {/* The title is a template rather than a stored string: the
+                      selected playlist changes on every click, so the override
+                      keeps the name live instead of freezing one year's. */}
+                  <Editable
+                    id="playlists.empty.title"
+                    as="p"
+                    className="playlists__empty-title"
+                    vars={{ playlist: active ? active.title : 'Nothing selected' }}
+                  >
+                    {'{playlist}'}
+                  </Editable>
+                  <Editable id="playlists.empty.body" as="p" className="playlists__empty-body">
                     Add this playlist’s Spotify share link to <code>src/data/playlists.js</code> and
                     the player will appear here automatically.
-                  </p>
+                  </Editable>
                 </div>
               )}
             </div>

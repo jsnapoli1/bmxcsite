@@ -1,0 +1,44 @@
+/* A placed embed. Ruled and flat, like the rest of the field guide: no
+   shadow, a hairline rule, and the small radius the other surfaces use. */
+
+.embed-section__frame {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+.embed-section__iframe {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+}
+
+/* Shown when the link is missing or not embeddable. Sized by the frame's
+   aspect-ratio, so the band does not collapse while someone is editing. */
+.embed-section__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: var(--space-6);
+  max-inline-size: 46ch;
+  margin-inline: auto;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+}
+
+.embed-section__caption {
+  margin-block-start: var(--space-3);
+  margin-inline: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}

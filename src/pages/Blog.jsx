@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Editable } from 'vedit';
+import { Editable, EditableImage } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import './blog.css';
@@ -47,16 +47,18 @@ export default function Blog() {
       />
 
       <section className="section container blog" aria-labelledby="blog-heading">
-        <h2 className="sr-only" id="blog-heading">Blog posts</h2>
+        <h2 className="sr-only" id="blog-heading">
+          <Editable id="blog.sr.heading" as="span">Blog posts</Editable>
+        </h2>
 
         {isLoading ? null : hasError ? (
           <p className="blog__empty">
             The blog could not be loaded. Try again in a moment.
           </p>
         ) : posts.length === 0 ? (
-          <p className="blog__empty">
+          <Editable id="blog.empty" as="p" className="blog__empty">
             Nothing posted yet. Check back soon.
-          </p>
+          </Editable>
         ) : (
           <ol className="blog-list">
             {posts.map((post, index) => (
@@ -76,10 +78,20 @@ export default function Blog() {
                     >
                       {post.title}
                     </Editable>
-                    {post.excerpt ? <p className="blog-list__excerpt">{post.excerpt}</p> : null}
+                    {post.excerpt ? (
+                      <Editable
+                        id={`blog.post.${post.slug}.excerpt`}
+                        as="p"
+                        className="blog-list__excerpt"
+                      >
+                        {post.excerpt}
+                      </Editable>
+                    ) : null}
                   </div>
                   {post.hero_media_key ? (
-                    <img
+                    <EditableImage
+                      id={`blog.post.${post.slug}.thumb`}
+                      as="img"
                       className="blog-list__thumb"
                       src={`/media/${post.hero_media_key}`}
                       alt={post.hero_media_alt || ''}

@@ -1,3 +1,4 @@
+import { EditableImage } from 'vedit';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageHeader from '../components/layout/PageHeader.jsx';
@@ -94,7 +95,9 @@ export default function BlogPost() {
       <article className="section container blog-post">
         {post.hero_media_key ? (
           <Reveal className="blog-post__hero">
-            <img
+            <EditableImage
+              id={`blogpost.${post.slug}.hero`}
+              as="img"
               src={`/media/${post.hero_media_key}`}
               alt={post.hero_media_alt || ''}
               width="1200"

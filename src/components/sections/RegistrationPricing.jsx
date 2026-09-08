@@ -18,6 +18,7 @@ export default function RegistrationPricing({ id = 'registration.pricing', ...re
     <section {...rest} className="section container" aria-labelledby={headingId}>
       <SectionHeading
         id="registration.tuition"
+        headingId={headingId}
         eyebrow="Tuition"
         title="One price for everyone — teams and individuals alike"
         lead="Register earlier and pay less. There are no team discounts, because everyone gets the same low price regardless of team status."
@@ -32,26 +33,66 @@ export default function RegistrationPricing({ id = 'registration.pricing', ...re
             delay={Math.min(index, 5) * 50}
             className={`tier${tier.highlight ? ' tier--highlight' : ''}`}
           >
-            {tier.highlight ? <span className="tier__flag">Best price</span> : null}
-            <h3 className="tier__name">{tier.name}</h3>
-            <p className="tier__window">{tier.window}</p>
+            {/* Keyed on the tier's name, never its index: PRICE_TIERS is
+                ordered by date, and inserting a tier must not slide one
+                window's override onto another's card. */}
+            {tier.highlight ? (
+              <Editable id={`registration.tier.${tier.name}.flag`} as="span" className="tier__flag">
+                Best price
+              </Editable>
+            ) : null}
+            <Editable id={`registration.tier.${tier.name}.name`} as="h3" className="tier__name">
+              {tier.name}
+            </Editable>
+            <Editable id={`registration.tier.${tier.name}.window`} as="p" className="tier__window">
+              {tier.window}
+            </Editable>
+            {/* The price is left alone. It is what pricing.js charges, and a
+                figure someone could retype here would be a second, disagreeing
+                answer — the one thing this page must not have. */}
             <p className="tier__price">
               <span className="tier__currency">$</span>
               {tier.price}
             </p>
             {tier.discount ? (
-              <p className="tier__save">${tier.discount} off the full rate</p>
+              <Editable
+                id={`registration.tier.${tier.name}.save`}
+                as="p"
+                className="tier__save"
+                vars={{ discount: `$${tier.discount}` }}
+              >
+                {'{discount} off the full rate'}
+              </Editable>
             ) : (
-              <p className="tier__save tier__save--muted">Full rate</p>
+              <Editable
+                id={`registration.tier.${tier.name}.save`}
+                as="p"
+                className="tier__save tier__save--muted"
+              >
+                Full rate
+              </Editable>
             )}
           </Reveal>
         ))}
       </ul>
 
       <Reveal delay={220} className="deposit">
+        {/* The figure and its caption are separate handles. The amount is a
+            template so `{deposit}` keeps following src/data/registration.js —
+            a rewrite here must not be able to advertise a deposit the
+            registration form would then charge differently. */}
         <div className="deposit__figure">
-          <span className="deposit__amount">${DEPOSIT}</span>
-          <span className="deposit__label">Deposit</span>
+          <Editable
+            id="registration.deposit.amount"
+            as="span"
+            className="deposit__amount"
+            vars={{ deposit: `$${DEPOSIT}` }}
+          >
+            {'{deposit}'}
+          </Editable>
+          <Editable id="registration.deposit.label" as="span" className="deposit__label">
+            Deposit
+          </Editable>
         </div>
         {/* A template, not a sentence with the price baked in. Someone rewording
             this in the editor keeps `{insurance}`, and the number stays whatever

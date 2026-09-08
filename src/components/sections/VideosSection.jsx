@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Editable } from 'vedit';
 import Reveal from '../motion/Reveal.jsx';
 import Button from '../ui/Button.jsx';
 import { CHANNEL, VIDEOS, VIDEO_YEARS, getYouTubeId } from '../../data/videos.js';
@@ -29,7 +30,9 @@ export default function VideosSection({ id, ...rest }) {
 
   return (
     <section {...rest} className="section container videos" aria-labelledby="videos-heading">
-        <h2 className="sr-only" id="videos-heading">Videos from camp</h2>
+        <h2 className="sr-only" id="videos-heading">
+          <Editable id="videos.sr.heading" as="span">Videos from camp</Editable>
+        </h2>
 
         {/* --- Stage --- */}
         <Reveal variant="scale" className="video-stage">
@@ -46,6 +49,10 @@ export default function VideosSection({ id, ...rest }) {
             <div className="video-stage__poster">
               {activeYouTubeId ? (
                 <>
+                  {/* Not an EditableImage: the src is derived from the video's
+                      own YouTube id, so a swappable source would let the poster
+                      disagree with the video it plays. Change the video in
+                      src/data/videos.js instead. */}
                   <img
                     className="video-stage__thumb"
                     src={`https://i.ytimg.com/vi/${activeYouTubeId}/maxresdefault.jpg`}
@@ -60,18 +67,33 @@ export default function VideosSection({ id, ...rest }) {
                     onClick={() => setIsPlaying(true)}
                   >
                     <span className="video-stage__play-icon" aria-hidden="true" />
-                    <span className="sr-only">Play {active.title}</span>
+                    <Editable
+                      id="videos.stage.play"
+                      as="span"
+                      className="sr-only"
+                      vars={{ video: active.title }}
+                    >
+                      {'Play {video}'}
+                    </Editable>
                   </button>
                 </>
               ) : (
                 <div className="video-stage__empty">
                   <span className="video-stage__empty-mark" aria-hidden="true" />
-                  <p className="video-stage__empty-title">
-                    {active ? active.title : 'No video selected'}
-                  </p>
-                  <p className="video-stage__empty-body">
+                  {/* A template, not a stored string: the selected video
+                      changes on every click, so the override keeps the live
+                      title rather than freezing one. */}
+                  <Editable
+                    id="videos.empty.title"
+                    as="p"
+                    className="video-stage__empty-title"
+                    vars={{ video: active ? active.title : 'No video selected' }}
+                  >
+                    {'{video}'}
+                  </Editable>
+                  <Editable id="videos.empty.body" as="p" className="video-stage__empty-body">
                     Paste a YouTube link into <code>src/data/videos.js</code> and it will play here.
-                  </p>
+                  </Editable>
                 </div>
               )}
             </div>
@@ -80,14 +102,35 @@ export default function VideosSection({ id, ...rest }) {
 
         {active ? (
           <Reveal delay={120} className="video-stage__caption">
-            <h3 className="video-stage__caption-title">{active.title}</h3>
-            <p className="video-stage__caption-body">{active.description}</p>
+            {/* Keyed on `video.id` so an override follows its video rather
+                than whatever happens to be selected. */}
+            <Editable
+              id={`videos.item.${active.id}.title`}
+              as="h3"
+              className="video-stage__caption-title"
+            >
+              {active.title}
+            </Editable>
+            <Editable
+              id={`videos.item.${active.id}.description`}
+              as="p"
+              className="video-stage__caption-body"
+            >
+              {active.description}
+            </Editable>
           </Reveal>
         ) : null}
 
         {/* --- Year filter --- */}
         <Reveal delay={140} className="videos__filters">
-          <span className="videos__filters-label" id="year-filter-label">Filter by year</span>
+          {/* The span keeps the DOM id `aria-labelledby` points at; the
+              Editable wraps the text inside it, since one element cannot
+              carry both a DOM id and a vedit node id. */}
+          <span className="videos__filters-label" id="year-filter-label">
+            <Editable id="videos.filters.label" as="span">
+              Filter by year
+            </Editable>
+          </span>
           <div className="videos__chips" role="group" aria-labelledby="year-filter-label">
             {['All', ...VIDEO_YEARS].map((option) => (
               <button
@@ -97,7 +140,13 @@ export default function VideosSection({ id, ...rest }) {
                 onClick={() => setYear(option)}
                 aria-pressed={year === option}
               >
-                {option}
+                {/* "All" is authored copy; the years are derived from the
+                    catalogue, so only the first chip takes a handle. */}
+                {option === 'All' ? (
+                  <Editable id="videos.filters.all" as="span">All</Editable>
+                ) : (
+                  option
+                )}
               </button>
             ))}
           </div>
@@ -119,6 +168,7 @@ export default function VideosSection({ id, ...rest }) {
                 >
                   <span className="video-card__media">
                     {youTubeId ? (
+                      /* Derived from the video id — see the stage poster above. */
                       <img
                         src={`https://i.ytimg.com/vi/${youTubeId}/hqdefault.jpg`}
                         alt=""
@@ -131,9 +181,27 @@ export default function VideosSection({ id, ...rest }) {
                     )}
                   </span>
                   <span className="video-card__body">
-                    <span className="video-card__year">{video.year}</span>
-                    <span className="video-card__title">{video.title}</span>
-                    <span className="video-card__desc">{video.description}</span>
+                    <Editable
+                      id={`videos.card.${video.id}.year`}
+                      as="span"
+                      className="video-card__year"
+                    >
+                      {video.year}
+                    </Editable>
+                    <Editable
+                      id={`videos.card.${video.id}.title`}
+                      as="span"
+                      className="video-card__title"
+                    >
+                      {video.title}
+                    </Editable>
+                    <Editable
+                      id={`videos.card.${video.id}.desc`}
+                      as="span"
+                      className="video-card__desc"
+                    >
+                      {video.description}
+                    </Editable>
                   </span>
                 </button>
               </Reveal>
@@ -143,15 +211,15 @@ export default function VideosSection({ id, ...rest }) {
 
         {CHANNEL.url ? (
           <Reveal delay={200} className="videos__channel">
-            <Button href={CHANNEL.url} variant="outline" size="lg">
+            <Button id="videos.channel.cta" href={CHANNEL.url} variant="outline" size="lg">
               Visit the channel on YouTube
             </Button>
           </Reveal>
         ) : (
           <Reveal delay={200} className="videos__channel videos__channel--pending">
-            <p>
+            <Editable id="videos.channel.pending" as="p">
               Add the channel URL to <code>src/data/videos.js</code> to link the full channel here.
-            </p>
+            </Editable>
           </Reveal>
         )}
     </section>
