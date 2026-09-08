@@ -360,22 +360,36 @@ belong to the `merch` permission, so `ALLOWED` in shop.js names the exact
 method+path pairs that pass. Adding a capability should be deliberate, not a
 side effect of OpenShop shipping a route.
 
-**Two tabs, on purpose.** *Merch* edits the informational merch page in D1
-(cash only, sold at camp) — still what the public site shows. *Store* is the
-catalogue behind it. They share the `merch` permission.
+**There is no merch tab.** `/merch`, `/store` and `/shop` all redirect to
+shop.bmxc.camp (`worker/app.js`), so the catalogue is edited in OpenShop's
+own admin and there is one place merch is described rather than two. This
+used to be two tabs and a stock-conditional redirect: *Merch* edited an
+informational D1 page and *Store* proxied the catalogue, which meant "cash
+only, sold at camp" sat above a storefront that ships.
 
-Needs `SHOP_ORIGIN` and `SHOP_ADMIN_PASSWORD`. Until both are set the Store
-tab reports the store is unavailable; nothing else is affected.
+`src/pages/Merch.jsx`, `src/data/merch.js` and the `merch` content area are
+still in the tree but unreachable. The `merch` permission still exists and
+still gates `worker/routes/shop.js`.
 
-**`/merch` redirects to the store only when the store has products** — see
-the handler in `worker/app.js`. While the catalogue is empty it serves the
-existing cash-only page, which is still accurate. Adding the first product
-starts the redirect on its own, within a minute.
+**Three things have to agree, and two of them only fail in a browser.**
 
-**The store cannot be stocked without Stripe.** Creating a product syncs to
-Stripe before writing to KV, so with no `STRIPE_SECRET_KEY` it fails with
-`Neither apiKey nor config.authenticator provided`. That means no products,
-so no redirect, so `/merch` stays as it is until real keys are added.
+1. `wrangler.jsonc` lists the paths in `run_worker_first`. With
+   `not_found_handling` set, Cloudflare answers anything carrying
+   `Sec-Fetch-Mode: navigate` with index.html, so the Worker never sees a
+   real visit — `curl` reports a clean 302 while every actual click gets the
+   page. Same trap as the email link that once shipped broken.
+2. The nav and footer entries are marked `external: true` and render a plain
+   `<a>`. A `<NavLink>` is handled by React Router, which never lets the
+   browser make a request: the redirect then works for a bookmark and not
+   for the nav, which is how most people arrive.
+3. There is no `/merch` route in App.jsx and it is out of `EDITABLE_PAGES`.
+   Removing the route *alone* makes it worse — the router matches nothing
+   and renders the 404 page.
+
+`test/lib/shop-links.test.jsx` pins all three, asserting the link entries
+against source rather than rendered markup: both forms render the same
+`<a href="/merch">` on the server, so an HTML check passes with the bug
+present and verifies nothing.
 
 ## Admin panel
 
