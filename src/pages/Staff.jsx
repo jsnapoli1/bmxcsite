@@ -44,14 +44,12 @@ export default function Staff() {
         </h2>
 
         {content.groups.map((group) => (
-          // Keyed on the group's name: it is the only handle a group has.
-          // The members below carry a persisted slug, but a group is a title
-          // and a sort order in D1 and nothing more, so renaming one orphans
-          // its override — the same trade the member ids were added to avoid,
-          // and worth fixing if groups ever gain an id column.
-          <div className="staff-group" key={group.group}>
+          // Keyed on the group's persisted slug, as members are. Falls back to
+          // the name only for a document written before groups had one, which
+          // the next save fills in.
+          <div className="staff-group" key={group.slug ?? group.group}>
             <Reveal variant="fade" className="staff-group__label">
-              <Editable id={`staff.group.${group.group}`} as="h3">
+              <Editable id={`staff.group.${group.slug ?? group.group}`} as="h3">
                 {group.group}
               </Editable>
               <span className="staff-group__count">

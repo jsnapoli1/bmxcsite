@@ -42,6 +42,15 @@ describe('round trip is lossless', () => {
     }
   });
 
+  it('staff: group slugs round trip, so a rename cannot orphan an override', async () => {
+    // Groups were left out of the first pass and keyed on their title, which
+    // meant renaming "Medical & Support" orphaned whatever was written against
+    // it. Same failure the member slugs exist to prevent, one level up.
+    const { groups } = await seed('staff');
+    expect(groups.map((g) => g.slug)).toEqual(STAFF_GROUPS.map((g) => g.slug));
+    expect(new Set(groups.map((g) => g.slug)).size).toBe(groups.length);
+  });
+
   it('staff: speakers and credentials round trip, in order', async () => {
     // Both were static-only before the redesign; seeding is the first time
     // either reaches D1 at all.

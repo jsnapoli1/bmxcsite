@@ -126,6 +126,7 @@ export function evaluateRemoteGuard({ counts, force }) {
 function buildStaffPayload() {
   return {
     groups: STAFF_GROUPS.map((group) => ({
+      slug: group.slug,
       group: group.group,
       members: group.members.map((member) => ({
         slug: member.slug,

@@ -116,6 +116,7 @@ async function readStaff(db, { publishedOnly }) {
     // uses as its React key. The DB column stays `title`; only this
     // boundary shape is renamed.
     .map((row) => ({
+      slug: row.slug,
       group: row.title,
       members: membersByGroup.get(row.id) ?? [],
     }))
@@ -189,14 +190,19 @@ function saveStaffStatements(db, payload, editorEmail) {
     }
   }
 
+  // Groups get the same treatment as members: an existing slug is never
+  // regenerated, because it is what an override is keyed on.
+  const takenGroupSlugs = new Set(groups.map((g) => g.slug).filter(Boolean));
+
   // Payload key is `group` (the legacy page shape); the DB column is
   // still `title` — only the repository boundary shape changed.
   groups.forEach((group, groupIndex) => {
+    const groupSlug = group.slug || slugFor(group.group, takenGroupSlugs);
     statements.push(
       db.prepare(
-        `INSERT INTO staff_groups (id, title, sort_order, status, updated_at, updated_by)
-         VALUES (?, ?, ?, 'draft', unixepoch(), ?)`,
-      ).bind(groupIndex + 1, group.group, groupIndex, editorEmail),
+        `INSERT INTO staff_groups (id, slug, title, sort_order, status, updated_at, updated_by)
+         VALUES (?, ?, ?, ?, 'draft', unixepoch(), ?)`,
+      ).bind(groupIndex + 1, groupSlug, group.group, groupIndex, editorEmail),
     );
 
     (group.members ?? []).forEach((member, memberIndex) => {

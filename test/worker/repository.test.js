@@ -104,6 +104,7 @@ describe('repository', () => {
     // whether or not anyone has filled it in — which is what lets
     // contentMatchesPublished compare draft against published by value.
     expect(groups[0]).toEqual({
+      slug: 'camp-directors',
       group: 'Camp Directors',
       members: [
         {
@@ -134,6 +135,8 @@ describe('repository', () => {
     // A slug is derived from the name only when one is absent; it is never
     // recomputed, since it addresses the person.
     expect(groups[0].members[0].slug).toBe('ken-crawford');
+    // Groups get one too, so renaming a group does not orphan its override.
+    expect(groups[0].slug).toBe('camp-directors');
   });
 
   it('returns the FAQ shape the live page reads, not the DB column names', async () => {
