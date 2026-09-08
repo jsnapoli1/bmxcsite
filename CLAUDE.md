@@ -330,7 +330,18 @@ production's `defaultEnabled() === false`. Every earlier test used
 `requireArea('design')` plus the `authorize` callback in worker/routes/vedit.js
 are what reject a write. Writes are recorded in `audit_log`; reads are not.
 
-Pinned to `v0.5.0` in devDependencies, not tracking the default branch — a
+**0.7.0 brings forms and `repeat`, neither used here yet.** A form is one of
+your components with a `fields` prop; `useVeditForm` supplies validation,
+error state and the a11y wiring, submissions go to your own endpoint, and
+vedit stores none of them. `repeat` renders `<Editable>` children once per row
+of host data, keyed on the item's own id — which is the same rule this repo
+already follows by hand for the roster, packing list and FAQ.
+
+Worth reaching for when a section next needs a form or a repeated card. Note
+that /register stays hand-built regardless: its four steps share state and
+their order *is* the checkout flow, not an arrangement.
+
+Pinned to `v0.7.0` in devDependencies, not tracking the default branch — a
 deploy must not pick up an unreviewed editor. Since 0.4.0 `createVeditHandler`
 throws without `authorize`; a test asserts that, so dropping the callback in a
 refactor fails loudly instead of quietly opening the endpoint.
