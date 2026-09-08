@@ -111,7 +111,19 @@ export default function Navbar() {
           aria-controls="mobile-menu"
           onClick={() => setIsMenuOpen((open) => !open)}
         >
-          <span className="sr-only">{isMenuOpen ? 'Close menu' : 'Open menu'}</span>
+          {/* Two ids rather than one: the label is a state ternary, and a
+              single node would let one wording overwrite the other. Only the
+              current state renders, so only one is ever addressable at a
+              time — which is also how it reads in the layers panel. */}
+          {isMenuOpen ? (
+            <Editable id="chrome.navbar.menu.close" as="span" className="sr-only">
+              Close menu
+            </Editable>
+          ) : (
+            <Editable id="chrome.navbar.menu.open" as="span" className="sr-only">
+              Open menu
+            </Editable>
+          )}
           <span className="navbar__toggle-bar navbar__toggle-bar--top" aria-hidden="true" />
           <span className="navbar__toggle-bar navbar__toggle-bar--bottom" aria-hidden="true" />
         </button>

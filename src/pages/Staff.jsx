@@ -75,7 +75,20 @@ export default function Staff() {
                       >
                         {member.role}
                       </Editable>
-                      {member.since ? <span className="staff-card__since"> · since {member.since}</span> : null}
+                      {member.since ? (
+                        // The separator and the word "since" are authored copy;
+                        // the year is live from D1, so it interpolates rather
+                        // than being stored.
+                        <Editable
+                          id={`staff.member.${member.name}.since`}
+                          label={`${member.name} — since`}
+                          as="span"
+                          className="staff-card__since"
+                          vars={{ year: String(member.since) }}
+                        >
+                          {' · since {year}'}
+                        </Editable>
+                      ) : null}
                     </p>
                     <Editable
                       id={`staff.member.${member.name}.bio`}
@@ -136,7 +149,16 @@ export default function Staff() {
         <ul className="speakers">
           {GUEST_SPEAKERS.map((speaker, index) => (
             <Reveal as="li" key={speaker.name + index} delay={Math.min(index, 5) * 35} className="speaker">
-              <span className="speaker__year">{speaker.year ?? '—'}</span>
+              {/* The em-dash fallback is authored; the year is data. */}
+              <Editable
+                id={`staff.speaker.${speaker.name}.year`}
+                label={`${speaker.name} — year`}
+                as="span"
+                className="speaker__year"
+                vars={{ year: String(speaker.year ?? '—') }}
+              >
+                {'{year}'}
+              </Editable>
               <div className="speaker__body">
                 {/* Keyed on the name, as staff.member.* already is —
                     never `index`, which the React key taints. */}

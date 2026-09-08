@@ -67,7 +67,14 @@ export default function VideosSection({ id, ...rest }) {
                     onClick={() => setIsPlaying(true)}
                   >
                     <span className="video-stage__play-icon" aria-hidden="true" />
-                    <span className="sr-only">Play {active.title}</span>
+                    <Editable
+                      id="videos.stage.play"
+                      as="span"
+                      className="sr-only"
+                      vars={{ video: active.title }}
+                    >
+                      {'Play {video}'}
+                    </Editable>
                   </button>
                 </>
               ) : (
@@ -133,7 +140,13 @@ export default function VideosSection({ id, ...rest }) {
                 onClick={() => setYear(option)}
                 aria-pressed={year === option}
               >
-                {option}
+                {/* "All" is authored copy; the years are derived from the
+                    catalogue, so only the first chip takes a handle. */}
+                {option === 'All' ? (
+                  <Editable id="videos.filters.all" as="span">All</Editable>
+                ) : (
+                  option
+                )}
               </button>
             ))}
           </div>
