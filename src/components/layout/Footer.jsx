@@ -48,7 +48,11 @@ export default function Footer() {
             {SITEMAP.map((item) => (
               <li key={item.to}>
                 <Link to={item.to} className="footer__link">
-                  <Editable id={`chrome.footer.sitemap.${item.to}.label`} as="span">
+                  <Editable
+                    id={`chrome.footer.sitemap.${item.to}.label`}
+                    label={`Footer — ${item.label}`}
+                    as="span"
+                  >
                     {item.label}
                   </Editable>
                 </Link>

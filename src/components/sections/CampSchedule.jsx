@@ -33,6 +33,7 @@ export default function CampSchedule({ id = 'camp.schedule', ...rest }) {
                 the words rather than the whole row. */}
             <Editable
               id={`camp.schedule.${slot.time}-${slot.title}.time`}
+              label={`${slot.title} — time`}
               as="div"
               className="schedule__time"
             >
@@ -44,6 +45,7 @@ export default function CampSchedule({ id = 'camp.schedule', ...rest }) {
             <div className="schedule__content">
               <Editable
                 id={`camp.schedule.${slot.time}-${slot.title}.title`}
+                label={`${slot.title} — title`}
                 as="h3"
                 className="schedule__title"
               >
@@ -51,6 +53,7 @@ export default function CampSchedule({ id = 'camp.schedule', ...rest }) {
               </Editable>
               <Editable
                 id={`camp.schedule.${slot.time}-${slot.title}.body`}
+                label={`${slot.title} — body`}
                 as="p"
                 className="schedule__body"
               >

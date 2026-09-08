@@ -91,6 +91,7 @@ export default function Navbar() {
                 >
                   <Editable
                     id={`chrome.navbar.link.${link.to}.label`}
+                    label={`Nav — ${link.label}`}
                     as="span"
                     className="navbar__link-text"
                   >
@@ -126,7 +127,11 @@ export default function Navbar() {
                 className={({ isActive }) => `navbar__drawer-link${isActive ? ' is-active' : ''}`}
               >
                 <span className="navbar__drawer-index">{String(index + 1).padStart(2, '0')}</span>
-                <Editable id={`chrome.navbar.drawer.${link.to}.label`} as="span">
+                <Editable
+                  id={`chrome.navbar.drawer.${link.to}.label`}
+                  label={`Menu — ${link.label}`}
+                  as="span"
+                >
                   {link.label}
                 </Editable>
               </NavLink>

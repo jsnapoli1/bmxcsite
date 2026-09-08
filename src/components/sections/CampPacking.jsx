@@ -29,11 +29,13 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
 
         <div className="packing__grid">
           {PACKING_LIST.map((group, index) => (
-            <Reveal key={group.category} delay={Math.min(index, 5) * 45} className="packing__card">
-              {/* Keyed on the category name, which is already the
-                  React key, so an override follows its group. */}
+            <Reveal key={group.id} delay={Math.min(index, 5) * 45} className="packing__card">
+              {/* Keyed on the explicit ids in src/data/packing.js, not on the
+                  text and not on loop position. Rewording an item keeps its
+                  override; reordering the list cannot slide one item's edit
+                  onto another. */}
               <Editable
-                id={`${id}.group.${group.category}`}
+                id={`${id}.group.${group.id}`}
                 as="h3"
                 className="packing__category"
               >
@@ -41,7 +43,14 @@ export default function CampPacking({ id = 'camp.packing', ...rest }) {
               </Editable>
               <ul className="packing__items">
                 {group.items.map((item) => (
-                  <li key={item}>{item}</li>
+                  <Editable
+                    key={item.id}
+                    id={`${id}.item.${item.id}`}
+                    label={item.text}
+                    as="li"
+                  >
+                    {item.text}
+                  </Editable>
                 ))}
               </ul>
             </Reveal>
