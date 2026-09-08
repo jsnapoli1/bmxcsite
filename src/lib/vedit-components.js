@@ -36,6 +36,7 @@ import VideosSection from '../components/sections/VideosSection.jsx';
 import Hero from '../components/hero/Hero.jsx';
 import PageMasthead from '../components/sections/PageMasthead.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
+import EmbedSection, { EMBED_DEFAULTS } from '../components/sections/EmbedSection.jsx';
 
 export const components = defineComponents({
   // --- Page mastheads -----------------------------------------------------
@@ -201,6 +202,31 @@ export const components = defineComponents({
   },
 
   // --- Building blocks ----------------------------------------------------
+  Embed: {
+    component: EmbedSection,
+    name: 'Embed',
+    group: 'Elements',
+    description: 'A YouTube video, Spotify player or Google Map from a pasted link.',
+    wrap: false,
+    fields: [
+      {
+        name: 'url',
+        type: 'text',
+        help: 'Paste a YouTube, Spotify or Google Maps link. Other links are refused.',
+      },
+      { name: 'title', type: 'text', help: 'Optional heading above the embed.' },
+      { name: 'eyebrow', type: 'text', help: 'Small label above the title.' },
+      {
+        name: 'ratio',
+        type: 'select',
+        options: ['16 / 9', '4 / 3', '1 / 1', '21 / 9'],
+        help: 'Spotify players suit 4 / 3 or 1 / 1; video suits 16 / 9.',
+      },
+      { name: 'caption', type: 'text', help: 'Optional line beneath the embed.' },
+    ],
+    defaults: EMBED_DEFAULTS,
+  },
+
   // A heading on its own, for composing a section that does not exist yet.
   SectionHeading: {
     component: SectionHeading,
