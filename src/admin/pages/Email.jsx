@@ -174,7 +174,7 @@ export default function Email() {
       ) : (
         <>
           <p className="admin-help">{subscribers.length} confirmed.</p>
-          <a className="admin-add" href="/api/admin/email/subscribers.csv" download>
+          <a className="admin-export" href="/api/admin/email/subscribers.csv" download>
             Download CSV
           </a>
         </>

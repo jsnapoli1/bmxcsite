@@ -13,20 +13,115 @@
   box-sizing: border-box;
 }
 
-.admin-shell {
-  max-width: 68rem;
-  margin: 0 auto;
-  padding: clamp(1.5rem, 1rem + 2vw, 3rem);
+/* The page is paper; the masthead is the one dark band on it, the same
+   navy the public site opens with. */
+body {
+  margin: 0;
   background: var(--color-surface);
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Holds the masthead's contents and the page body to one measure, so the
+   brand lines up with the nav column beneath it. */
+.admin-measure {
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 1rem + 2vw, 2.5rem);
+}
+
+.admin-shell {
+  padding-block: clamp(1.75rem, 1.25rem + 2vw, 3rem);
   color: var(--color-ink);
   min-height: 100vh;
 }
 
+/* --- Masthead ---------------------------------------------------------
+   Full-bleed navy. The gold rule beneath it is the camp's third logo
+   colour and the same device the site uses to close a dark band. */
 .admin-header {
-  border-bottom: 2px solid var(--color-ink);
-  padding-bottom: 0.75rem;
-  margin-bottom: 2rem;
+  background: var(--color-primary-deep);
+  border-bottom: 3px solid var(--color-accent);
 }
+
+.admin-header__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4.25rem;
+  padding-block: 0.75rem;
+}
+
+.admin-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+/* The source art is square with its own navy field, so it sits in a
+   rounded frame rather than being masked or recoloured — same treatment
+   as the public navbar. */
+.admin-brand__mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.admin-brand__wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.admin-brand__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: var(--tracking-snug);
+  color: var(--color-night-text);
+}
+
+.admin-brand__sub {
+  font-size: 0.625rem;
+  color: var(--color-night-muted);
+  margin-top: 3px;
+}
+
+.admin-header__right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* Name and role read as one line, the role marked by a gold rule rather
+   than a filled badge — no pills anywhere in this design. */
+.admin-identity {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-night-muted);
+  min-width: 0;
+}
+
+.admin-identity__role {
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--color-night-line);
+  color: var(--color-accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* --- Page headings ---------------------------------------------------- */
 
 .admin-shell h1 {
   font-family: var(--font-display);
@@ -34,28 +129,27 @@
   margin: 0;
 }
 
-.admin-identity {
-  margin: 0.25rem 0 0;
-  font-size: 0.9rem;
-  color: var(--color-muted);
-}
-
+/* The section title, set at handbook scale and closed with a rule. */
 .admin-section h2 {
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  margin: 0 0 0.25rem;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0 0 0.35rem;
 }
 
 .admin-help,
 .admin-notice {
-  color: var(--color-muted);
+  color: var(--color-ink-soft);
   font-size: 0.925rem;
-  max-width: 60ch;
+  line-height: var(--leading-normal);
+  max-width: 62ch;
 }
 
 .admin-error {
   border-left: 3px solid var(--color-accent);
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   background: var(--color-surface-sunken);
   font-size: 0.925rem;
 }
@@ -92,8 +186,8 @@
 
 .admin-layout {
   display: grid;
-  grid-template-columns: 13rem 1fr;
-  gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+  grid-template-columns: 14rem 1fr;
+  gap: clamp(1.75rem, 1.25rem + 2vw, 3.5rem);
   align-items: start;
 }
 
@@ -101,77 +195,99 @@
    because a grid item's default min-width is auto, not zero. */
 .admin-main { min-width: 0; }
 
-.admin-header__bar {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
 /* The dividing rule is drawn by the layout, not by the nav.
    `align-items: start` is what lets the nav be shorter than the page and
    therefore scroll with `position: sticky` — but a border on a
    content-sized nav stops wherever the last item ends. Painting it as a
    gradient on the container puts the line at full height while leaving
-   the nav free to stick. */
+   the nav free to stick.
+
+   The position matches the column width above; both move together. */
 .admin-layout:has(.admin-nav) {
   background-image: linear-gradient(var(--color-line), var(--color-line));
   background-size: 1px 100%;
-  background-position: 13rem 0;
+  background-position: 14rem 0;
   background-repeat: no-repeat;
 }
 
 .admin-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.0625rem;
   position: sticky;
   top: clamp(1.5rem, 1rem + 2vw, 3rem);
-  padding-right: 0.75rem;
+  padding-right: 1.5rem;
 }
 
+/* Names the column. Small, tracked and muted — the one place tracking is
+   used, and it is a label, not a heading, so it does not break the
+   no-uppercase-headings rule. */
+.admin-nav__label {
+  margin: 0 0 0.6rem;
+  padding-left: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Ruled entries, in the handbook language: each row is separated by a
+   hairline and marked on the left when current. */
 .admin-nav__link {
   border: none;
   border-left: 2px solid transparent;
   background: transparent;
   font: inherit;
   font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-muted);
+  font-weight: 500;
+  color: var(--color-ink-soft);
   text-align: left;
   padding: 0.5rem 0.75rem;
   cursor: pointer;
+  transition: color var(--duration-instant) ease, border-color var(--duration-instant) ease;
 }
 
-.admin-nav__link:hover { color: var(--color-ink); }
+.admin-nav__link:hover {
+  color: var(--color-primary);
+  border-left-color: var(--color-line-strong);
+}
 
 .admin-nav__link:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 1px;
 }
 
-.admin-nav__link--active {
-  color: var(--color-ink);
-  border-left-color: var(--color-primary);
-  background: var(--color-surface-sunken);
+/* Current section: navy text against a gold marker. Gold is the camp's
+   accent and reads as "you are here" without a filled block. */
+.admin-nav__link--active,
+.admin-nav__link--active:hover {
+  color: var(--color-primary);
+  font-weight: 700;
+  border-left-color: var(--color-accent);
 }
 
 /* The drawer toggle exists only in the narrow layout. */
+/* The drawer toggle sits on the navy masthead, so it is outlined in the
+   band's own light rather than the page's ink. */
 .admin-nav__toggle {
   display: none;
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--color-night-line);
   border-radius: 2px;
-  background: var(--color-surface-raised);
+  background: transparent;
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--color-night-text);
   padding: 0.4rem 0.8rem;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
+.admin-nav__toggle:hover { border-color: var(--color-accent); }
+
 .admin-nav__toggle:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
 
@@ -209,17 +325,28 @@
   /* In the drawer the active item is marked by its rule alone. The
      sidebar's tinted background spans the full width here, which reads as
      a filled band rather than a marked row. */
-  .admin-nav__link--active {
+  .admin-nav__link--active,
+  .admin-nav__link--active:hover {
     border-left: none;
-    border-bottom-color: var(--color-primary);
+    border-bottom-color: var(--color-accent);
     background: transparent;
   }
+
+  /* The label names a sidebar column; in the drawer there is no column,
+     and the toggle above already says "Sections". */
+  .admin-nav__label { display: none; }
 
   .admin-nav__toggle { display: block; }
 }
 
 @media (max-width: 30rem) {
-  .admin-shell { padding: 1rem 0.875rem 2rem; }
+  .admin-shell { padding-block: 1.25rem 2rem; }
+
+  /* The brand's "Est. 1969" line is the first thing to go when the
+     masthead has to hold a name and a toggle too. */
+  .admin-brand__sub { display: none; }
+
+  .admin-identity__role { display: none; }
 }
 
 /* An empty list, distinguished from a loading one: dashed, so it reads as

@@ -34,11 +34,29 @@
   vertical-align: middle;
 }
 
+/* Column heads are labels, not headings: small, tracked and muted, closed
+   by the heavy rule that opens the table body. */
 .admin-table thead th {
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
+  font-size: 0.6875rem;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
   font-weight: 700;
-  border-bottom: 2px solid var(--color-ink);
+  color: var(--color-ink-soft);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+/* Figures line up column-wise instead of drifting with proportional
+   digits — references, money and counts all read down the column. */
+.admin-table td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A row is the unit being scanned, so it gets a hover the way the ruled
+   lists elsewhere do. Rows are not clickable, so this is orientation
+   only — no cursor change. */
+.admin-table tbody tr:hover {
+  background: var(--color-surface-sunken);
 }
 
 .admin-table tbody th { font-weight: 600; }
@@ -87,6 +105,10 @@
     border-bottom: none;
     padding: 0.3rem 0;
   }
+
+  /* Each row is a block here, not a line in a grid, so the scanning band
+     that helps on desktop just tints an arbitrary rectangle. */
+  .admin-table tbody tr:hover { background: transparent; }
 
   .admin-table tbody th {
     font-size: 1rem;

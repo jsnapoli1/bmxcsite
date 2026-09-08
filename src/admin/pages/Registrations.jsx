@@ -104,10 +104,10 @@ export default function Registrations() {
                 {rows.length} {rows.length === 1 ? 'registration' : 'registrations'}.
               </p>
               <p>
-                {/* Styled like the Email tab's export rather than left as a
-                    bare anchor: the browser default is #00EE blue, which is
-                    not in this palette. */}
-                <a className="admin-add" href="/api/admin/registrations/export.csv" download>
+                {/* Styled as an export control rather than left as a bare
+                    anchor: the browser default is #00EE blue, which is not
+                    in this palette. */}
+                <a className="admin-export" href="/api/admin/registrations/export.csv" download>
                   Download CSV
                 </a>
               </p>

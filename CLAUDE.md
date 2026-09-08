@@ -340,6 +340,22 @@ public site's base typography), so `shell.css` restates the
 `box-sizing: border-box` reset. Without it, anything with an explicit
 width plus a border overflows its grid track.
 
+**The panel is its own HTML entry point, so it must load the fonts
+itself.** `admin.html` linked no stylesheet at all while `tokens.css`
+asked for Source Serif 4, Inter and JetBrains Mono — so every rule
+silently resolved to its fallback and the whole panel rendered in Iowan
+Old Style and Times. Nothing failed: the build passed, the tokens were
+correct, and the CSS was the same CSS the public site uses. It simply
+looked a decade older than bmxc.camp, and the cause was invisible in
+every file except the one that had no font link in it. `admin-preview.html`
+loads the same fonts, or the preview is not a picture of the panel.
+
+**The masthead is the panel's one dark band**, carrying the camp's mark
+and wordmark like the public navbar, closed by the gold rule. It renders
+on all four paths — loading, access error, no-permissions and the panel
+itself — via the `Masthead` component, so a director who cannot sign in
+still lands on something that looks like this site.
+
 **`admin-preview.html` is gitignored and local only.** The panel needs a
 Cloudflare Access JWT that does not exist on localhost, so
 `/api/admin/me` answers 403 and the real entry point renders only its
