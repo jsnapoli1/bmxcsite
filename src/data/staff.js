@@ -23,7 +23,6 @@
 
 export const STAFF_GROUPS = [
   {
-    id: 'camp-directors',
     group: 'Camp Directors',
     members: [
       {
@@ -47,7 +46,6 @@ export const STAFF_GROUPS = [
     ],
   },
   {
-    id: 'assistants-to-the-directors',
     group: 'Assistants to the Directors',
     members: [
       {
@@ -75,7 +73,6 @@ export const STAFF_GROUPS = [
     ],
   },
   {
-    id: 'veteran-coaches',
     group: 'Veteran Coaches',
     members: [
       {
@@ -122,7 +119,6 @@ export const STAFF_GROUPS = [
     ],
   },
   {
-    id: 'medical-support',
     group: 'Medical & Support',
     members: [
       {

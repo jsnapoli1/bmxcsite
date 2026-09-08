@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Editable } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
@@ -6,18 +7,27 @@ import { useContent } from '../hooks/useContent.js';
 import { STAFF_GROUPS, STAFF_CREDENTIALS, GUEST_SPEAKERS } from '../data/staff.js';
 import './staff.css';
 
-/** Builds initials for the avatar tile — no photos needed. */
-function initialsOf(name) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('');
-}
-
+/**
+ * The roster: name and title, grouped, each name opening that person's page.
+ *
+ * Shaped after how NCAA programmes present a coaching staff — Oregon,
+ * Colorado, NC State and Washington all list staff as a grouped table with
+ * headshots kept for the detail page, not the list. That happens to be the
+ * same answer this site's own design direction gives: ruled entries rather
+ * than a grid of floating cards.
+ */
 export default function Staff() {
-  const { content } = useContent('staff', { groups: STAFF_GROUPS });
+  const { content } = useContent('staff', {
+    groups: STAFF_GROUPS,
+    speakers: GUEST_SPEAKERS,
+    credentials: STAFF_CREDENTIALS,
+  });
+
+  // Both were static until the roster redesign, so a published document that
+  // predates them has neither key. Falling back keeps the sections rendering
+  // rather than blanking them on the first deploy.
+  const speakers = content.speakers ?? GUEST_SPEAKERS;
+  const credentials = content.credentials ?? STAFF_CREDENTIALS;
 
   return (
     <>
@@ -33,7 +43,12 @@ export default function Staff() {
           <Editable id="staff.sr.heading" as="span">Camp staff</Editable>
         </h2>
 
-        {content.groups.map((group, groupIndex) => (
+        {content.groups.map((group) => (
+          // Keyed on the group's name: it is the only handle a group has.
+          // The members below carry a persisted slug, but a group is a title
+          // and a sort order in D1 and nothing more, so renaming one orphans
+          // its override — the same trade the member ids were added to avoid,
+          // and worth fixing if groups ever gain an id column.
           <div className="staff-group" key={group.group}>
             <Reveal variant="fade" className="staff-group__label">
               <Editable id={`staff.group.${group.group}`} as="h3">
@@ -44,63 +59,34 @@ export default function Staff() {
               </span>
             </Reveal>
 
-            <ul className="staff-grid">
-              {group.members.map((member, index) => (
-                <Reveal as="li" key={member.name} delay={Math.min(index, 5) * 45} className="staff-card">
-                  <span className="staff-card__avatar" aria-hidden="true">
-                    {initialsOf(member.name)}
-                  </span>
-                  <div className="staff-card__body">
-                    {/* Keyed on the member's name — the only stable handle a
-                        staff row has (there is no id in the content shape).
-                        Renaming someone therefore orphans their override,
-                        which is the right failure: a renamed person is
-                        usually a different person. */}
-                    <Editable
-                      id={`staff.member.${member.name}.name`}
-                      as="h4"
-                      className="staff-card__name"
-                    >
-                      {member.name}
-                    </Editable>
-                    {/* The role gets its own handle, like the name and bio
-                        beside it. Without one, clicking "Veteran Coach · since
-                        2006" selected the whole card. `since` stays outside the
-                        editable span: it is a year from D1, and the separator
-                        belongs to the layout rather than the sentence. */}
-                    <p className="staff-card__role">
-                      <Editable
-                        id={`staff.member.${member.name}.role`}
-                        as="span"
-                      >
-                        {member.role}
-                      </Editable>
-                      {member.since ? (
-                        // The separator and the word "since" are authored copy;
-                        // the year is live from D1, so it interpolates rather
-                        // than being stored.
-                        <Editable
-                          id={`staff.member.${member.name}.since`}
-                          label={`${member.name} — since`}
-                          as="span"
-                          className="staff-card__since"
-                          vars={{ year: String(member.since) }}
-                        >
-                          {' · since {year}'}
-                        </Editable>
-                      ) : null}
-                    </p>
-                    <Editable
-                      id={`staff.member.${member.name}.bio`}
-                      as="p"
-                      className="staff-card__bio"
-                    >
-                      {member.bio}
-                    </Editable>
-                  </div>
-                </Reveal>
-              ))}
-            </ul>
+            <table className="staff-table">
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <Editable id="staff.table.name" as="span">Name</Editable>
+                  </th>
+                  <th scope="col">
+                    <Editable id="staff.table.title" as="span">Title</Editable>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {group.members.map((member) => (
+                  <tr key={member.slug ?? member.name}>
+                    {/* data-label drives the stacked layout below the table's
+                        breakpoint — the same contract .admin-table uses. */}
+                    <td data-label="Name" className="staff-table__name">
+                      {member.slug ? (
+                        <Link to={`/staff/${member.slug}`}>{member.name}</Link>
+                      ) : (
+                        member.name
+                      )}
+                    </td>
+                    <td data-label="Title">{member.role}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ))}
       </section>
@@ -117,7 +103,7 @@ export default function Staff() {
             as="h2"
           />
           <ul className="credentials__list">
-            {STAFF_CREDENTIALS.map((credential, index) => (
+            {credentials.map((credential, index) => (
               <Reveal as="li" key={credential.id} delay={Math.min(index, 5) * 45} className="credentials__item">
                 <span className="credentials__index" aria-hidden="true">
                   {String(index + 1).padStart(2, '0')}
@@ -147,11 +133,11 @@ export default function Staff() {
         />
 
         <ul className="speakers">
-          {GUEST_SPEAKERS.map((speaker, index) => (
-            <Reveal as="li" key={speaker.name + index} delay={Math.min(index, 5) * 35} className="speaker">
+          {speakers.map((speaker, index) => (
+            <Reveal as="li" key={speaker.id ?? speaker.name} delay={Math.min(index, 5) * 35} className="speaker">
               {/* The em-dash fallback is authored; the year is data. */}
               <Editable
-                id={`staff.speaker.${speaker.name}.year`}
+                id={`staff.speaker.${speaker.id ?? speaker.name}.year`}
                 label={`${speaker.name} — year`}
                 as="span"
                 className="speaker__year"
@@ -160,17 +146,15 @@ export default function Staff() {
                 {'{year}'}
               </Editable>
               <div className="speaker__body">
-                {/* Keyed on the name, as staff.member.* already is —
-                    never `index`, which the React key taints. */}
                 <Editable
-                  id={`staff.speaker.${speaker.name}.name`}
+                  id={`staff.speaker.${speaker.id ?? speaker.name}.name`}
                   as="h3"
                   className="speaker__name"
                 >
                   {speaker.name}
                 </Editable>
                 <Editable
-                  id={`staff.speaker.${speaker.name}.credential`}
+                  id={`staff.speaker.${speaker.id ?? speaker.name}.credential`}
                   as="p"
                   className="speaker__credential"
                 >
