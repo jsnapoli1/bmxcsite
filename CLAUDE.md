@@ -238,6 +238,18 @@ FAQ migration fills gaps without touching text.
   video's own id, so a swappable source would let the poster disagree with
   the video it plays.
 - **Decoration**: counter numerals, arrows, and `SplitText`'s word spans.
+- **Landmark names.** The `aria-label` on each `<nav>` ("Main navigation",
+  "Footer navigation", "FAQ categories"), the `<ol>` of registration steps,
+  and the brand link's "Blue Mountain XC Camp — home". These name a region so
+  a screen reader can jump to it; they are never read as prose, and a
+  renamed landmark is a worse page, not a redesigned one.
+
+**Attributes are content too, and were audited separately.** An `alt` or an
+`aria-label` is what a screen reader announces, and a text-only sweep never
+looks at one. Product `alt` text is editable through `EditableImage`, which
+sets `kind="image"` and gives the inspector an Alt field. The carousel's
+control names needed `useEditable` instead — see `Carousel.jsx`, since
+`<Editable>` cannot wrap an attribute.
 
 Everything else on every page resolves to itself. When adding a section,
 check the value *beside* a wrapped label too — the recurring mistake is
