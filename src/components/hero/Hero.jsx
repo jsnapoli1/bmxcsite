@@ -1,4 +1,4 @@
-import { Editable } from 'vedit';
+import { Editable, EditableImage } from 'vedit';
 import { CAMP, STATS } from '../../data/camp.js';
 import Button from '../ui/Button.jsx';
 import Reveal from '../motion/Reveal.jsx';
@@ -10,7 +10,12 @@ export default function Hero() {
     <section className="hero" aria-labelledby="hero-heading">
       {/* A real photo of camp rather than a synthetic CSS mountain. */}
       <div className="hero__photo" aria-hidden="true">
-        <img
+        {/* The one photo used at size. EditableImage so the source can
+            be swapped from the editor without a deploy; alt stays empty
+            because the parent is aria-hidden and the photo is decorative. */}
+        <EditableImage
+          id="home.hero.photo"
+          as="img"
           src="/photos/camp-group.jpg"
           alt=""
           width="1600"

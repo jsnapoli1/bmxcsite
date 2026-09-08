@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Editable } from 'vedit';
+import { Editable, EditableImage } from 'vedit';
 import './navbar.css';
 
 const LINKS = [
@@ -60,7 +60,9 @@ export default function Navbar() {
     <header className={`navbar${isScrolled ? ' is-scrolled' : ''}${isMenuOpen ? ' is-open' : ''}`}>
       <div className="navbar__inner container-wide">
         <NavLink to="/" className="navbar__brand" aria-label="Blue Mountain XC Camp — home">
-          <img
+          <EditableImage
+            id="chrome.navbar.mark"
+            as="img"
             className="navbar__mark"
             src="/bmxc-logo.png"
             alt=""

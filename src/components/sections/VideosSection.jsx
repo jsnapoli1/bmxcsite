@@ -47,6 +47,10 @@ export default function VideosSection({ id, ...rest }) {
             <div className="video-stage__poster">
               {activeYouTubeId ? (
                 <>
+                  {/* Not an EditableImage: the src is derived from the video's
+                      own YouTube id, so a swappable source would let the poster
+                      disagree with the video it plays. Change the video in
+                      src/data/videos.js instead. */}
                   <img
                     className="video-stage__thumb"
                     src={`https://i.ytimg.com/vi/${activeYouTubeId}/maxresdefault.jpg`}
@@ -149,6 +153,7 @@ export default function VideosSection({ id, ...rest }) {
                 >
                   <span className="video-card__media">
                     {youTubeId ? (
+                      /* Derived from the video id — see the stage poster above. */
                       <img
                         src={`https://i.ytimg.com/vi/${youTubeId}/hqdefault.jpg`}
                         alt=""

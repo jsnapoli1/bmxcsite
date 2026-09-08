@@ -1,4 +1,4 @@
-import { Editable } from 'vedit';
+import { Editable, EditableImage } from 'vedit';
 import MerchStore from '../components/sections/MerchStore.jsx';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
@@ -78,7 +78,9 @@ export default function Merch() {
                 className={`carousel__slide merch-item${item.hero ? ' merch-item--hero' : ''}`}
               >
                 <div className="merch-item__media">
-                  <img
+                  <EditableImage
+                    id={`merch.item.${item.id}.image`}
+                    as="img"
                     src={item.image}
                     alt={`${item.name} — ${item.color}`}
                     width="600"

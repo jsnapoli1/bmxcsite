@@ -403,7 +403,12 @@ export default function Register() {
                     name="busRoute" value={fields.busRoute}
                     onChange={(e) => set('busRoute', e.target.value)}
                   >
-                    <option value="">We will bring them ourselves</option>
+                    {/* `as="option"` rather than a wrapper inside it: an
+                        <option> may only contain text, so an inner span
+                        would be invalid and break the select. */}
+                    <Editable id="register.bus.none" as="option" value="">
+                      We will bring them ourselves
+                    </Editable>
                     {BUS_ROUTES.map((bus) => (
                       <option key={bus.key} value={bus.key}>
                         {bus.region} — {bus.stops} (${bus.price})
@@ -417,7 +422,9 @@ export default function Register() {
                     name="shirtSize" value={fields.shirtSize}
                     onChange={(e) => set('shirtSize', e.target.value)}
                   >
-                    <option value="">Choose a size</option>
+                    <Editable id="register.shirt.placeholder" as="option" value="">
+                      Choose a size
+                    </Editable>
                     {SHIRT_SIZES.map((size) => (
                       <option key={size} value={size}>{size}</option>
                     ))}

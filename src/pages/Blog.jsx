@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Editable } from 'vedit';
+import { Editable, EditableImage } from 'vedit';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import './blog.css';
@@ -87,7 +87,9 @@ export default function Blog() {
                     ) : null}
                   </div>
                   {post.hero_media_key ? (
-                    <img
+                    <EditableImage
+                      id={`blog.post.${post.slug}.thumb`}
+                      as="img"
                       className="blog-list__thumb"
                       src={`/media/${post.hero_media_key}`}
                       alt={post.hero_media_alt || ''}

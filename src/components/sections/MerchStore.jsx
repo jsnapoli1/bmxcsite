@@ -1,3 +1,4 @@
+import { EditableImage } from 'vedit';
 import { useEffect, useState } from 'react';
 import SectionHeading from '../ui/SectionHeading.jsx';
 import Reveal from '../motion/Reveal.jsx';
@@ -70,7 +71,9 @@ export default function MerchStore({ id = 'merch.store', ...rest }) {
             className="merch-store__item"
           >
             {product.images?.[0] && (
-              <img
+              <EditableImage
+                id={`merch.store.item.${product.id}.image`}
+                as="img"
                 className="merch-store__image"
                 src={shopUrl(product.images[0])}
                 alt={product.name}
