@@ -1,9 +1,13 @@
 import { Link, useParams } from 'react-router-dom';
 import { Editable, EditableImage } from 'vedit';
 import Reveal from '../components/motion/Reveal.jsx';
+import Lasers from '../components/motion/Lasers.jsx';
 import { useContent } from '../hooks/useContent.js';
 import { STAFF_GROUPS } from '../data/staff.js';
 import './staff.css';
+
+/** Members whose page fires lasers on click. Keyed on slug, which is stable. */
+const LASER_SLUGS = new Set(['patrick-mcgoldrick']);
 
 /** Initials, for a member with no headshot. The roster's own fallback. */
 function initialsOf(name) {
@@ -66,6 +70,7 @@ export default function StaffMember() {
 
   return (
     <main className="section container staff-member">
+      {LASER_SLUGS.has(member.slug) && <Lasers />}
       <p className="staff-member__back">
         <Link to="/staff">
           <Editable id="staff.member.back" as="span">Back to the staff list</Editable>
