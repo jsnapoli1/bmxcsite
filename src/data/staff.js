@@ -119,6 +119,13 @@ export const STAFF_GROUPS = [
           { id: 'wayland-cohocton', text: 'Three years coaching at Wayland-Cohocton High School, New York' },
         ],
       },
+      {
+        slug: 'patrick-mcgoldrick',
+        name: 'Patrick McGoldrick',
+        role: 'Professional DJ',
+        bio: 'Professional DJ.',
+        accolades: [],
+      },
     ],
   },
   {
