@@ -6,7 +6,7 @@ import { useContent } from '../hooks/useContent.js';
 import { STAFF_GROUPS } from '../data/staff.js';
 import './staff.css';
 
-/** Members whose page fires lasers on click. Keyed on slug, which is stable. */
+/** Members whose page gets the light show. Keyed on slug, which is stable. */
 const LASER_SLUGS = new Set(['patrick-mcgoldrick']);
 
 /** Initials, for a member with no headshot. The roster's own fallback. */
